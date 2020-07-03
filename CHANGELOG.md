@@ -1,5 +1,8 @@
+# 1.1.8
+- Remove unhelpful tickets info in release comments
+
 # 1.1.7
-- [WAL-8566] Promotions
+- Implement promotions
 - Code refactoring
 
 # 1.1.6
@@ -10,12 +13,12 @@
 - Fix settings bug
 
 # 1.1.4
-- [WAL-8526] Disable changing credentials on the showcases
+- Disable changing credentials on the showcases
 
 # 1.1.3
-- [WAL-8526] Make line item consistency default
-- [WAL-8526] Confirm transaction right away
-- [WAL-8526] Update settings descriptions
+- Make line item consistency default
+- Confirm transaction right away
+- Update settings descriptions
 
 # 1.1.2
 - Prepare internal server side install for showcases and demos
