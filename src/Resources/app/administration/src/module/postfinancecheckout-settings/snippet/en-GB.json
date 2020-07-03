@@ -1,0 +1,66 @@
+{
+  "postfinancecheckout-settings": {
+	"general": {
+	  "descriptionTextModule": "PostFinanceCheckout settings",
+	  "mainMenuItemGeneral": "PostFinanceCheckout"
+	},
+	"header": "PostFinanceCheckout",
+	"messageNotBlank": "This value should not be blank.",
+	"salesChannelCard": {
+	  "button": {
+		"description": "Click this button to set PostFinanceCheckout as default payment handler in the selected SalesChannel",
+		"label": "Set PostFinanceCheckout as default payment handler"
+	  }
+	},
+	"settingForm": {
+	  "credentials": {
+		"applicationKey": {
+		  "label": "Application Key",
+		  "tooltipText": "The Application Key is used to authenticate this plugin with the PostFinanceCheckout API."
+		},
+		"cardTitle": "Credentials",
+		"spaceId": {
+		  "label": "Space ID",
+		  "tooltipText": "The space ID is used to authenticate this plugin with the PostFinanceCheckout API."
+		},
+		"userId": {
+		  "label": "User ID",
+		  "tooltipText": "The user ID is used to authenticate this plugin with the PostFinanceCheckout API."
+		}
+	  },
+	  "messageSaveSuccess": "PostFinanceCheckout settings have been saved.",
+	  "messageOrderDeliveryStateError": "PostFinanceCheckout OrderDeliveryState could not be saved.",
+	  "messageOrderDeliveryStateUpdated": "PostFinanceCheckout OrderDeliveryState has been updated.",
+	  "messagePaymentMethodConfigurationError": "PostFinanceCheckout PaymentMethodConfiguration could not be saved. Please check your credentials.",
+	  "messagePaymentMethodConfigurationUpdated": "PostFinanceCheckout PaymentMethodConfiguration has been registered.",
+	  "messageWebHookError": "PostFinanceCheckout WebHook could not be saved. Please check your credentials.",
+	  "messageWebHookUpdated": "PostFinanceCheckout WebHook has been updated.",
+	  "options": {
+		"cardTitle": "Options",
+		"emailEnabled": {
+		  "label": "Send order confirmation email",
+		  "tooltipText": "If this setting is enabled your customers will receive an email from your store when their order payment is authorised"
+		},
+		"integration": {
+		  "label": "Integration",
+		  "options": {
+			"iframe": "Iframe",
+			"payment_page": "Payment Page"
+		  },
+		  "tooltipText": "Integration"
+		},
+		"lineItemConsistencyEnabled": {
+		  "label": "Line item consistency",
+		  "tooltipText": "If this option is enabled line item totals in PostFinanceCheckoutPayment will always match Shopware order total"
+		},
+		"spaceViewId": {
+		  "label": "Space View ID",
+		  "tooltipText": "Space View ID"
+		}
+	  },
+	  "save": "Save",
+	  "titleError": "Error",
+	  "titleSuccess": "Success"
+	}
+  }
+}

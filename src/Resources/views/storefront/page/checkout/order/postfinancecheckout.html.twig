@@ -1,0 +1,85 @@
+{% sw_extends '@Storefront/storefront/page/checkout/_page.html.twig' %}
+
+{% block base_header %}
+	{% sw_include '@PostFinanceCheckoutPayment/storefront/page/checkout/order/postfinancecheckout_header.html.twig' %}
+{% endblock %}
+
+{% block base_navigation %}{% endblock %}
+{% block base_body_classes %}postfinancecheckout-payment is-act-confirmpage{% endblock %}
+
+{% block page_checkout_main_content %}
+	{% block page_checkout_pay %}
+		{% block page_checkout_confirm_header %}
+            <h1 class="confirm-main-header">
+                {{ "postfinancecheckout.payHeader"|trans|sw_sanitize }}
+            </h1>
+        {% endblock %}
+
+		{% block page_checkout_pay_order %}
+			<div class="row finish-info">
+				{% block page_checkout_pay_order_address %}
+					<div class="col-md-12 finish-address">
+						{% sw_include '@Storefront/storefront/page/checkout/finish/finish-address.html.twig' %}
+					</div>
+				{% endblock %}
+			</div>
+		{% endblock %}
+
+		{% block page_checkout_pay_order_form %}
+			<div class="row finish-info">
+				<div class="col-md-12">
+					{% sw_include '@PostFinanceCheckoutPayment/storefront/page/checkout/order/postfinancecheckout_payment.html.twig' %}
+				</div>
+			</div>
+		{% endblock %}
+
+		{% block page_checkout_pay_product_table %}
+			<div class="card checkout-product-table">
+				<div class="card-body">
+					{% block page_checkout_pay_table_header %}
+						{% sw_include '@Storefront/storefront/page/checkout/confirm/confirm-product-header.html.twig' %}
+					{% endblock %}
+
+					{% block page_checkout_pay_items %}
+						{% for lineItem in page.order.nestedLineItems %}
+							{% block page_checkout_pay_item %}
+								{% sw_include '@Storefront/storefront/page/checkout/finish/finish-item.html.twig' %}
+							{% endblock %}
+						{% endfor %}
+					{% endblock %}
+				</div>
+			</div>
+		{% endblock %}
+	{% endblock %}
+{% endblock %}
+
+{% block page_checkout_aside_actions %}
+    <div class="checkout-aside-action">
+        <form name="confirmOrderForm" id="confirmOrderForm">
+			<button id="confirmFormSubmit"
+					class="btn btn-primary btn-block btn-lg"
+					form="confirmOrderForm"
+					disabled
+					type="submit">
+				{{ "postfinancecheckout.payButton"|trans|sw_sanitize }}
+			</button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block base_footer %}
+	{% sw_include '@Storefront/storefront/layout/footer/footer-minimal.html.twig' %}
+{% endblock %}
+
+{% block base_script_hmr_mode %}
+	{{ parent() }}
+	{% if page.extensions.postFinanceCheckoutData %}
+		{% if page.extensions.postFinanceCheckoutData.deviceJavascriptUrl %}
+			<script src="{{ page.extensions.postFinanceCheckoutData.deviceJavascriptUrl }}" async="async"></script>
+		{% endif %}
+		{% if page.extensions.postFinanceCheckoutData.javascriptUrl %}
+			<script src="{{ page.extensions.postFinanceCheckoutData.javascriptUrl }}"></script>
+		{% endif %}
+		<script type="text/javascript" src="{{ asset('bundles/postfinancecheckoutpayment/storefront/js/app.js') }}"></script>
+	{% endif %}
+{% endblock %}

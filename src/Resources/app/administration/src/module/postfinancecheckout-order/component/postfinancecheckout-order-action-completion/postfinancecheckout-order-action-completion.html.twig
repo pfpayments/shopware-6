@@ -1,0 +1,23 @@
+{% block postfinancecheckout_order_action_completion %}
+<sw-modal variant="small"
+		  :title="$tc(`postfinancecheckout-order.modal.title.capture`)"
+		  @modal-close="$emit('modal-close')">
+
+	{% block postfinancecheckout_order_action_completion_amount %}
+		<sw-checkbox-field
+				:label="$tc('postfinancecheckout-order.captureAction.button.text')"
+				v-model="isCompletion"></sw-checkbox-field>
+	{% endblock %}
+
+	{% block postfinancecheckout_order_action_completion_confirm_button %}
+	<template #modal-footer>
+		<sw-button variant="primary"
+				   @click="completion">
+			{{ $tc('postfinancecheckout-order.refundAction.confirmButton.text') }}
+		</sw-button>
+	</template>
+	{% endblock %}
+
+	<sw-loader v-if="isLoading"></sw-loader>
+</sw-modal>
+{% endblock %}

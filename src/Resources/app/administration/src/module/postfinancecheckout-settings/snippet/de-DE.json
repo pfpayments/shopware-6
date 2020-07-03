@@ -1,0 +1,66 @@
+{
+  "postfinancecheckout-settings": {
+	"general": {
+	  "descriptionTextModule": "PostFinanceCheckout-Einstellungen",
+	  "mainMenuItemGeneral": "PostFinanceCheckout"
+	},
+	"header": "PostFinanceCheckout",
+	"messageNotBlank": "Dieser Wert sollte nicht leer sein.",
+	"salesChannelCard": {
+	  "button": {
+		"description": "Klicken Sie auf diese Schaltfläche, um PostFinanceCheckout als Standard-Zahlungsabwickler im ausgewählten Vertriebskanal festzulegen",
+		"label": "PostFinanceCheckout als Standard-Zahlungsabwickler festlegen"
+	  }
+	},
+	"settingForm": {
+	  "credentials": {
+		"applicationKey": {
+		  "label": "Anwendungsschlüssel",
+		  "tooltipText": "Der Anwendungsschlüssel wird verwendet, um dieses Plugin mit der API PostFinanceCheckout zu authentifizieren."
+		},
+		"cardTitle": "Empfehlungsschreiben",
+		"spaceId": {
+		  "label": "Leerzeichen-ID",
+		  "tooltipText": "Die Leerzeichen-ID wird verwendet, um dieses Plugin mit der API PostFinanceCheckout zu authentifizieren."
+		},
+		"userId": {
+		  "label": "Benutzer-ID",
+		  "tooltipText": "Die Benutzer-ID wird verwendet, um dieses Plugin mit der PostFinanceCheckout-API zu authentifizieren."
+		}
+	  },
+	  "messageSaveSuccess": "PostFinanceCheckout-Einstellungen wurden gespeichert.",
+	  "messageOrderDeliveryStateError": "PostFinanceCheckout OrderDeliveryState konnte nicht gespeichert werden.",
+	  "messageOrderDeliveryStateUpdated": "PostFinanceCheckout OrderDeliveryState wurde aktualisiert.",
+	  "messagePaymentMethodConfigurationError": "PostFinanceCheckout PaymentMethodConfiguration konnte nicht gespeichert werden. Bitte überprüfen Sie Ihre Anmeldedaten.",
+	  "messagePaymentMethodConfigurationUpdated": "PostFinanceCheckout PaymentMethodConfiguration wurde registriert.",
+	  "messageWebHookError": "PostFinanceCheckout WebHook konnte nicht gespeichert werden. Bitte überprüfen Sie Ihre Zugangsdaten.",
+	  "messageWebHookUpdated": "PostFinanceCheckout WebHook wurde aktualisiert.",
+	  "options": {
+		"cardTitle": "Optionen",
+		"emailEnabled": {
+		  "label": "Auftragsbestätigung per E-Mail senden",
+		  "tooltipText": "Wenn diese Einstellung aktiviert ist, erhalten Ihre Kunden eine E-Mail von Ihrem Geschäft, wenn die Zahlung ihrer Bestellung autorisiert ist."
+		},
+		"integration": {
+		  "label": "Integration",
+		  "options": {
+			"iframe": "Iframe",
+			"payment_page": "Payment Page"
+		  },
+		  "tooltipText": "Integration"
+		},
+		"lineItemConsistencyEnabled": {
+		  "label": "Konsistenz der Einzelposteny",
+		  "tooltipText": "Wenn diese Option aktiviert ist, stimmen die Summen der Einzelposten in PostFinanceCheckoutPayment immer mit der Shopware-Bestellsumme überein"
+		},
+		"spaceViewId": {
+		  "label": "Space View ID",
+		  "tooltipText": "Space View ID"
+		}
+	  },
+	  "save": "Speichern",
+	  "titleError": "Fehler",
+	  "titleSuccess": "Erfolg"
+	}
+  }
+}

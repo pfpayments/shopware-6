@@ -1,0 +1,24 @@
+{% set postFinanceCheckoutData = page.extensions.postFinanceCheckoutData %}
+{% if postFinanceCheckoutData and postFinanceCheckoutData.integration %}
+	{% if postFinanceCheckoutData.integration in ['iframe'] %}
+		{% for transactionPossiblePaymentMethod in postFinanceCheckoutData.transactionPossiblePaymentMethods %}
+			<div class="card checkout-card">
+				<div class="card-body">
+					<div class="card-title">
+						{{ transactionPossiblePaymentMethod.getName() }}
+					</div>
+					<div id="postfinancecheckout-payment-panel"
+						class="postfinancecheckout-payment-panel"
+						data-postfinancecheckout-checkout-plugin="true"
+						data-id="{{ transactionPossiblePaymentMethod.getId() }}">
+						<div id="postfinancecheckoutLoader"><div></div></div>
+						<input value="false" type="hidden" name="postfinancecheckout_payment_handler_validation_status"
+							form="confirmOrderForm">
+						<div id="postfinancecheckout-payment-iframe"
+							class="postfinancecheckout-payment-iframe"></div>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+	{% endif %}
+{% endif %}

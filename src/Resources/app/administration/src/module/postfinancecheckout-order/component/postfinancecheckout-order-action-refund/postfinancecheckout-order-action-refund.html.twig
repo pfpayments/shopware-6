@@ -1,0 +1,26 @@
+{% block postfinancecheckout_order_action_refund %}
+<sw-modal variant="small"
+		  :title="$tc(`postfinancecheckout-order.modal.title.refund`)"
+		  @modal-close="$emit('modal-close')">
+
+	{% block postfinancecheckout_order_action_refund_amount %}
+		<sw-number-field v-model="refundAmount"
+						 :max="refundableAmount"
+						 :min="0"
+						 :label="$tc('postfinancecheckout-order.refund.refundAmount.label')"
+						 :suffix="currency">
+		</sw-number-field>
+	{% endblock %}
+
+	{% block postfinancecheckout_order_action_refund_confirm_button %}
+	<template #modal-footer>
+		<sw-button variant="primary"
+				   @click="refund">
+			{{ $tc('postfinancecheckout-order.refundAction.confirmButton.text') }}
+		</sw-button>
+	</template>
+	{% endblock %}
+
+	<sw-loader v-if="isLoading"></sw-loader>
+</sw-modal>
+{% endblock %}

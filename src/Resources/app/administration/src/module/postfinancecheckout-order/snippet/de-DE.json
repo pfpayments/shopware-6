@@ -1,0 +1,96 @@
+{
+  "postfinancecheckout-order": {
+	"buttons": {
+	  "label": {
+		"completion": "Vollständige",
+		"download-invoice": "Rechnung herunterladen",
+		"download-packing-slip": "Packzettel herunterladen",
+		"refund": "Eine neue Rückerstattung erstellen",
+		"void": "Genehmigung aufheben"
+	  }
+	},
+	"captureAction": {
+	  "button": {
+		"text": "Zahlung erfassen"
+	  },
+	  "currentAmount": "Betrag",
+	  "isFinal": "Dies ist die endgültige Gefangennahme",
+	  "maxAmount": "Maximaler Betrag",
+	  "successMessage": "Ihre Gefangennahme war erfolgreich",
+	  "successTitle": "Erfolg"
+	},
+	"general": {
+	  "title": "Bestellungen"
+	},
+	"header": "PostFinanceCheckout Payment",
+	"lineItem": {
+	  "cardTitle": "Einzelposten",
+	  "types": {
+		"amountIncludingTax": "Betrag",
+		"name": "Name",
+		"quantity": "Anzahl",
+		"taxAmount": "Steuern",
+		"type": "Geben Sie  ein.",
+		"uniqueId": "Eindeutige ID"
+	  }
+	},
+	"modal": {
+	  "title": {
+		"capture": "Erfassen",
+		"refund": "Neue Rückerstattung",
+		"void": "Autorisierung aufheben"
+	  }
+	},
+	"paymentDetails": {
+	  "cardTitle": "Zahlung",
+	  "error": {
+		"title": "Fehler beim Abrufen von Zahlungsdetails von PostFinanceCheckout"
+	  }
+	},
+	"refund": {
+	  "cardTitle": "Rückerstattungen",
+	  "refundAmount": {
+		"label": "Rückerstattungsbetrag"
+	  },
+	  "types": {
+		"amount": "Betrag",
+		"createdOn": "Erstellt am",
+		"id": "ID",
+		"state": "Staat"
+	  }
+	},
+	"refundAction": {
+	  "confirmButton": {
+		"text": "Ausführen"
+	  },
+	  "refundAmount": {
+		"label": "Betrag",
+		"placeholder": "Einen Betrag eingeben"
+	  },
+	  "successMessage": "Ihre Rückerstattung war erfolgreich",
+	  "successTitle": "Erfolg"
+	},
+	"transactionHistory": {
+	  "cardTitle": "Einzelheiten",
+	  "types": {
+		"authorized_amount": "Autorisierter Betrag",
+		"currency": "Währung",
+		"customer": "Kunde",
+		"payment_method": "Zahlungsweise",
+		"state": "Staat",
+		"transaction": "Transaktion"
+	  }
+	},
+	"voidAction": {
+	  "confirm": {
+		"button": {
+		  "cancel": "Nein",
+		  "confirm": "Autorisierung aufheben"
+		},
+		"message": "Wollen Sie diese Zahlung wirklich stornieren?"
+	  },
+	  "successMessage": "Die Zahlung wurde erfolgreich annulliert",
+	  "successTitle": "Erfolg"
+	}
+  }
+}

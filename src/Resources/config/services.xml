@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+
+<container xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		   xmlns="http://symfony.com/schema/dic/services"
+		   xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+	<services>
+		<service id="PostFinanceCheckoutPayment\Resources\app\storefront\src\snippets\de_DE\SnippetFile_de_DE">
+			<tag name="shopware.snippet.file"/>
+		</service>
+
+		<service id="PostFinanceCheckoutPayment\Resources\app\storefront\src\snippets\en_GB\SnippetFile_en_GB">
+			<tag name="shopware.snippet.file"/>
+		</service>
+	</services>
+</container>

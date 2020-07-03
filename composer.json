@@ -1,0 +1,50 @@
+{
+  "authors": [
+	{
+	  "homepage": "https://customweb.com",
+	  "name": "customweb GmbH"
+	}
+  ],
+  "autoload": {
+	"psr-4": {
+	  "PostFinanceCheckoutPayment\\": "src/"
+	}
+  },
+  "conflict": {
+	"shopware/administration": "<6,>=7",
+	"shopware/storefront": "<6,>=7"
+  },
+  "description": "PostFinanceCheckout integration for Shopware 6",
+  "extra": {
+	"copyright": "(c) by customweb GmbH",
+	"description": {
+	  "de-DE": "PostFinanceCheckout integration für Shopware 6",
+	  "en-GB": "PostFinanceCheckout integration for Shopware 6"
+	},
+	"label": {
+	  "de-DE": "PostFinanceCheckout Produkte für Shopware 6",
+	  "en-GB": "PostFinanceCheckout Products for Shopware 6"
+	},
+	"shopware-plugin-class": "PostFinanceCheckoutPayment\\PostFinanceCheckoutPayment"
+  },
+  "homepage": "https://www.postfinance.ch/checkout/",
+  "keywords": [
+	"PostFinance Checkout",
+	"payment",
+	"php",
+	"shopware"
+  ],
+  "license": "Apache-2.0",
+  "name": "postfinancecheckout/shopware-6",
+  "require": {
+	"ext-curl": "*",
+	"ext-json": "*",
+	"ext-mbstring": "*",
+	"php": ">=7.2",
+	"shopware/core": ">=6.2,<7",
+	"shopware/storefront": ">=6.2,<7",
+	"postfinancecheckout/sdk": "2.1.*"
+  },
+  "type": "shopware-platform-plugin",
+  "version": "1.1.7"
+}

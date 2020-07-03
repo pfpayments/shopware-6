@@ -1,0 +1,175 @@
+<?php declare(strict_types=1);
+
+namespace PostFinanceCheckoutPayment\Core\Api\Configuration\Controller;
+
+use Psr\Log\LoggerInterface;
+use Shopware\Core\{
+	Framework\Context,
+	Framework\Routing\Annotation\RouteScope,};
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\{
+	HttpFoundation\JsonResponse,
+	HttpFoundation\Request,
+	Routing\Annotation\Route};
+use PostFinanceCheckoutPayment\Core\{
+	Api\OrderDeliveryState\Service\OrderDeliveryStateService,
+	Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService,
+	Api\WebHooks\Service\WebHooksService,
+	Util\PaymentMethodUtil};
+
+/**
+ * Class ConfigurationController
+ *
+ * This class handles web calls that are made via the PostFinanceCheckoutPayment settings page.
+ *
+ * @package PostFinanceCheckoutPayment\Core\Api\Config\Controller
+ * @RouteScope(scopes={"api"})
+ */
+class ConfigurationController extends AbstractController {
+
+	/**
+	 * @var \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService
+	 */
+	protected $webHooksService;
+
+	/**
+	 * @var \Psr\Log\LoggerInterface
+	 */
+	protected $logger;
+
+	/**
+	 * @var \PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil
+	 */
+	private $paymentMethodUtil;
+
+	/**
+	 * @var \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
+	 */
+	private $paymentMethodConfigurationService;
+
+	/**
+	 * ConfigurationController constructor.
+	 *
+	 * @param \PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil                                                   $paymentMethodUtil
+	 * @param \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService $paymentMethodConfigurationService
+	 * @param \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService                                     $webHooksService
+	 */
+	public function __construct(
+		PaymentMethodUtil $paymentMethodUtil,
+		PaymentMethodConfigurationService $paymentMethodConfigurationService,
+		WebHooksService $webHooksService
+	)
+	{
+		$this->webHooksService   = $webHooksService;
+		$this->paymentMethodUtil = $paymentMethodUtil;
+
+		$this->paymentMethodConfigurationService = $paymentMethodConfigurationService;
+	}
+
+	/**
+	 * @param \Psr\Log\LoggerInterface $logger
+	 * @internal
+	 * @required
+	 *
+	 */
+	public function setLogger(LoggerInterface $logger): void
+	{
+		$this->logger = $logger;
+	}
+
+	/**
+	 * Set PostFinanceCheckoutPayment as the default payment for a give sales channel
+	 *
+	 * @param \Symfony\Component\HttpFoundation\Request $request
+	 * @param \Shopware\Core\Framework\Context          $context
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
+	 *
+	 * @Route(
+	 *     "/api/v{version}/_action/postfinancecheckout/configuration/set-postfinancecheckout-as-sales-channel-payment-default",
+	 *     name="api.action.postfinancecheckout.configuration.set-postfinancecheckout-as-sales-channel-payment-default",
+	 *     methods={"POST"}
+	 *     )
+	 */
+	public function setPostFinanceCheckoutAsSalesChannelPaymentDefault(Request $request, Context $context): JsonResponse
+	{
+		$salesChannelId = $request->request->get('salesChannelId');
+		$salesChannelId = ($salesChannelId == 'null') ? null : $salesChannelId;
+
+		$this->paymentMethodUtil->setPostFinanceCheckoutAsDefaultPaymentMethod($context, $salesChannelId);
+		return new JsonResponse([]);
+	}
+
+	/**
+	 * Register web hooks
+	 *
+	 * @param \Symfony\Component\HttpFoundation\Request $request
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
+	 * @throws \PostFinanceCheckout\Sdk\ApiException
+	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
+	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 *
+	 * @Route(
+	 *     "/api/v{version}/_action/postfinancecheckout/configuration/register-web-hooks",
+	 *     name="api.action.postfinancecheckout.configuration.register-web-hooks",
+	 *     methods={"POST"}
+	 *   )
+	 */
+	public function registerWebHooks(Request $request): JsonResponse
+	{
+		$salesChannelId = $request->request->get('salesChannelId');
+		$salesChannelId = ($salesChannelId == 'null') ? null : $salesChannelId;
+
+		$result = $this->webHooksService->setSalesChannelId($salesChannelId)->install();
+
+		return new JsonResponse(['result' => $result]);
+	}
+
+	/**
+	 * Synchronize payment method configurations
+	 *
+	 * @param \Symfony\Component\HttpFoundation\Request $request
+	 * @param \Shopware\Core\Framework\Context          $context
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
+	 * @throws \PostFinanceCheckout\Sdk\ApiException
+	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
+	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 *
+	 * @Route(
+	 *     "/api/v{version}/_action/postfinancecheckout/configuration/synchronize-payment-method-configuration",
+	 *     name="api.action.postfinancecheckout.configuration.synchronize-payment-method-configuration",
+	 *     methods={"POST"}
+	 *   )
+	 */
+	public function synchronizePaymentMethodConfiguration(Request $request, Context $context): JsonResponse
+	{
+		$salesChannelId = $request->request->get('salesChannelId');
+		$salesChannelId = ($salesChannelId == 'null') ? null : $salesChannelId;
+
+		$result = $this->paymentMethodConfigurationService->setSalesChannelId($salesChannelId)->synchronize($context);
+
+		return new JsonResponse(['result' => $result]);
+	}
+
+	/**
+	 * Install OrderDeliveryStates
+	 *
+	 * @param \Shopware\Core\Framework\Context $context
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
+	 *
+	 * @Route(
+	 *     "/api/v{version}/_action/postfinancecheckout/configuration/install-order-delivery-states",
+	 *     name="api.action.postfinancecheckout.configuration.install-order-delivery-states",
+	 *     methods={"POST"}
+	 *   )
+	 */
+	public function installOrderDeliveryStates(Context $context): JsonResponse
+	{
+		/**
+		 * @var \PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService $orderDeliveryStateService
+		 */
+		$orderDeliveryStateService = $this->container->get(OrderDeliveryStateService::class);
+		$orderDeliveryStateService->install($context);
+
+		return new JsonResponse([]);
+	}
+}
