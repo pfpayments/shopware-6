@@ -1,3 +1,6 @@
+# 1.1.9
+- Put try catch on webhook install
+
 # 1.1.8
 - Remove unhelpful tickets info in release comments
 

@@ -243,38 +243,39 @@ class WebHooksService {
 	 * Install Listeners
 	 *
 	 * @return array
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 */
 	protected function installListeners(): array
 	{
-		$webHookUrlId      = $this->getOrCreateWebHookUrl()->getId();
-		$installedWebHooks = $this->getInstalledWebHookListeners($webHookUrlId);
-		$webHookEntityIds  = array_map(function (WebhookListener $webHook) {
-			return $webHook->getEntity();
-		}, $installedWebHooks);
-		$returnValue       = [];
+		$returnValue = [];
+		try {
+			$webHookUrlId      = $this->getOrCreateWebHookUrl()->getId();
+			$installedWebHooks = $this->getInstalledWebHookListeners($webHookUrlId);
+			$webHookEntityIds  = array_map(function (WebhookListener $webHook) {
+				return $webHook->getEntity();
+			}, $installedWebHooks);
 
-		/**
-		 * @var $data Entity
-		 */
-		foreach ($this->webHookEntitiesConfig as $data) {
 
-			if (in_array($data->getId(), $webHookEntityIds)) {
-				continue;
+			/**
+			 * @var \PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct\Entity $data
+			 */
+			foreach ($this->webHookEntitiesConfig as $data) {
+
+				if (in_array($data->getId(), $webHookEntityIds)) {
+					continue;
+				}
+
+				$entity = (new WebhookListenerCreate())
+					->setName($data->getName())
+					->setEntity($data->getId())
+					->setNotifyEveryChange($data->isNotifyEveryChange())
+					->setState(CreationEntityState::CREATE)
+					->setEntityStates($data->getStates())
+					->setUrl($webHookUrlId);
+
+				$returnValue[] = $this->apiClient->getWebhookListenerService()->create($this->spaceId, $entity);
 			}
-
-			/** @noinspection PhpParamsInspection */
-			$entity = (new WebhookListenerCreate())
-				->setName($data->getName())
-				->setEntity($data->getId())
-				->setNotifyEveryChange($data->isNotifyEveryChange())
-				->setState(CreationEntityState::CREATE)
-				->setEntityStates($data->getStates())
-				->setUrl($webHookUrlId);
-
-			$returnValue[] = $this->apiClient->getWebhookListenerService()->create($this->spaceId, $entity);
+		} catch (\Exception $exception) {
+			$this->logger->critical($exception->getTraceAsString());
 		}
 
 		return $returnValue;
@@ -290,13 +291,13 @@ class WebHooksService {
 	 */
 	protected function getOrCreateWebHookUrl(): WebhookUrl
 	{
-
+		$url = $this->getWebHookCallBackUrl();
 		/** @noinspection PhpParamsInspection */
 		$entityQueryFilter = (new EntityQueryFilter())
 			->setType(EntityQueryFilterType::_AND)
 			->setChildren([
 				$this->getEntityFilter('state', CreationEntityState::ACTIVE),
-				$this->getEntityFilter('url', $this->getWebHookCallBackUrl()),
+				$this->getEntityFilter('url', $url),
 			]);
 
 		$query = (new EntityQuery())->setFilter($entityQueryFilter)->setNumberOfEntities(1);
@@ -310,7 +311,7 @@ class WebHooksService {
 		/** @noinspection PhpParamsInspection */
 		$entity = (new WebhookUrlCreate())
 			->setName('Shopware6::WebHookURL')
-			->setUrl($this->getWebHookCallBackUrl())
+			->setUrl($url)
 			->setState(CreationEntityState::ACTIVE);
 
 		return $this->apiClient->getWebhookUrlService()->create($this->spaceId, $entity);
