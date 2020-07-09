@@ -1,3 +1,6 @@
+# 1.1.10
+- Stop responding with server errors when orders are not found
+
 # 1.1.9
 - Put try catch on webhook install
 

@@ -208,7 +208,7 @@ class TransactionService {
 			];
 
 			$data = array_filter($data);
-			$this->container->get(TransactionEntityDefinition::ENTITY_NAME .'.repository')->upsert([$data], $context);
+			$this->container->get(TransactionEntityDefinition::ENTITY_NAME . '.repository')->upsert([$data], $context);
 
 		} catch (\Exception $exception) {
 			$this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage());
@@ -244,14 +244,16 @@ class TransactionService {
 	 */
 	private function getOrderEntity(string $orderId, Context $context): OrderEntity
 	{
-
-		$criteria = (new Criteria([$orderId]))->addAssociations(['deliveries']);
-
 		try {
-			return $this->container->get('order.repository')->search(
+			$criteria = (new Criteria([$orderId]))->addAssociations(['deliveries']);
+			$order    = $this->container->get('order.repository')->search(
 				$criteria,
 				$context
 			)->first();
+			if (is_null($order)) {
+				throw new OrderNotFoundException($orderId);
+			}
+			return $order;
 		} catch (\Exception $e) {
 			throw new OrderNotFoundException($orderId);
 		}
@@ -267,7 +269,7 @@ class TransactionService {
 	 */
 	public function getByOrderId(string $orderId, Context $context): TransactionEntity
 	{
-		return $this->container->get(TransactionEntityDefinition::ENTITY_NAME .'.repository')
+		return $this->container->get(TransactionEntityDefinition::ENTITY_NAME . '.repository')
 							   ->search(new Criteria([$orderId]), $context)
 							   ->get($orderId);
 	}
@@ -297,7 +299,7 @@ class TransactionService {
 	 */
 	public function getByTransactionId(int $transactionId, Context $context): ?TransactionEntity
 	{
-		return $this->container->get(TransactionEntityDefinition::ENTITY_NAME .'.repository')
+		return $this->container->get(TransactionEntityDefinition::ENTITY_NAME . '.repository')
 							   ->search((new Criteria())->addAssociations(['refunds']), $context)
 							   ->getEntities()
 							   ->getByTransactionId($transactionId);
@@ -312,7 +314,7 @@ class TransactionService {
 	 */
 	public function getRefundEntityCollectionByTransactionId(int $transactionId, Context $context): ?RefundEntityCollection
 	{
-		return $this->container->get(RefundEntityDefinition::ENTITY_NAME .'.repository')
+		return $this->container->get(RefundEntityDefinition::ENTITY_NAME . '.repository')
 							   ->search(new Criteria(), $context)
 							   ->getEntities()
 							   ->filterByTransactionId($transactionId);

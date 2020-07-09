@@ -170,7 +170,7 @@ class WebHookController extends AbstractController {
 	 */
 	public function callback(Request $request, Context $context, string $salesChannelId): Response
 	{
-		$status       = Response::HTTP_INTERNAL_SERVER_ERROR;
+		$status       = Response::HTTP_UNPROCESSABLE_ENTITY;
 		$callBackData = new WebHookRequest();
 		try {
 			// Configuration
@@ -223,7 +223,7 @@ class WebHookController extends AbstractController {
 	 */
 	public function updateRefund(WebHookRequest $callBackData, Context $context): Response
 	{
-		$status = Response::HTTP_INTERNAL_SERVER_ERROR;
+		$status = Response::HTTP_UNPROCESSABLE_ENTITY;
 
 		try {
 			/**
@@ -323,6 +323,9 @@ class WebHookController extends AbstractController {
 					$criteria,
 					$context
 				)->first();
+				if (is_null($this->orderEntity)) {
+					throw new OrderNotFoundException($orderId);
+				}
 			} catch (\Exception $e) {
 				throw new OrderNotFoundException($orderId);
 			}
@@ -340,7 +343,7 @@ class WebHookController extends AbstractController {
 	 */
 	private function updateTransaction(WebHookRequest $callBackData, Context $context): Response
 	{
-		$status = Response::HTTP_INTERNAL_SERVER_ERROR;
+		$status = Response::HTTP_UNPROCESSABLE_ENTITY;
 
 		try {
 			/**
@@ -390,7 +393,7 @@ class WebHookController extends AbstractController {
 	 */
 	public function updateTransactionInvoice(WebHookRequest $callBackData, Context $context): Response
 	{
-		$status = Response::HTTP_INTERNAL_SERVER_ERROR;
+		$status = Response::HTTP_UNPROCESSABLE_ENTITY;
 
 		try {
 			/**
@@ -451,7 +454,7 @@ class WebHookController extends AbstractController {
 			/**
 			 * @var OrderDeliveryStateHandler $orderDeliveryStateHandler
 			 */
-			$order               = $this->getOrderEntity($orderId, $context);
+			$order                     = $this->getOrderEntity($orderId, $context);
 			$orderDeliveryStateHandler = $this->container->get(OrderDeliveryStateHandler::class);
 			$orderDeliveryStateHandler->unhold($order->getDeliveries()->last()->getId(), $context);
 		} catch (\Exception $exception) {
