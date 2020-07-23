@@ -183,7 +183,7 @@ class TransactionPayload extends AbstractPayload {
 
 			$productAttributes = $this->getProductAttributes($shopLineItem);
 
-			if(!empty($productAttributes)) {
+			if (!empty($productAttributes)) {
 				$lineItem->setAttributes($productAttributes);
 			}
 
@@ -249,13 +249,14 @@ class TransactionPayload extends AbstractPayload {
 	protected function getProductAttributes(OrderLineItemEntity $shopLineItem): ?array
 	{
 		$productAttributes = [];
-		$lineItemPayload = $shopLineItem->getPayload();
+		$lineItemPayload   = $shopLineItem->getPayload();
 
 		if (is_array($lineItemPayload) && !empty($lineItemPayload['options'])) {
 			foreach ($lineItemPayload['options'] as $option) {
-				$key                     = $this->fixLength('option_' . $option['group'], 40);
+				$label                   = $option['group'];
+				$key                     = $this->fixLength('option_' . md5($label), 40);
 				$productAttributes[$key] = (new LineItemAttributeCreate())
-					->setLabel($option['group'])
+					->setLabel($label)
 					->setValue($option['option']);
 			}
 		}

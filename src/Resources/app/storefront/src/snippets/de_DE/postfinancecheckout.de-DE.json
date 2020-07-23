@@ -2,5 +2,10 @@
   "postfinancecheckout": {
     "payHeader": "Bestellung bezahlen",
     "payButton": "Zahlen"
+  },
+  "cookie": {
+    "postfinancecheckout": {
+      "name": "PostFinanceCheckout-Zahlungen"
+    }
   }
 }

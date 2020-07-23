@@ -20,11 +20,11 @@
 		},
 		"cardTitle": "Empfehlungsschreiben",
 		"spaceId": {
-		  "label": "Leerzeichen-ID",
-		  "tooltipText": "Die Leerzeichen-ID wird verwendet, um dieses Plugin mit der API PostFinanceCheckout zu authentifizieren."
+		  "label": "Space ID",
+		  "tooltipText": "Die Space ID wird verwendet, um dieses Plugin mit der API PostFinanceCheckout zu authentifizieren."
 		},
 		"userId": {
-		  "label": "Benutzer-ID",
+		  "label": "Benutzer-Id",
 		  "tooltipText": "Die Benutzer-ID wird verwendet, um dieses Plugin mit der PostFinanceCheckout-API zu authentifizieren."
 		}
 	  },

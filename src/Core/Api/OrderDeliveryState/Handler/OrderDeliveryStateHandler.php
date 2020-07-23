@@ -5,6 +5,7 @@ namespace PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Handler;
 use Shopware\Core\{
 	Checkout\Order\Aggregate\OrderDelivery\OrderDeliveryDefinition,
 	Framework\Context,
+	System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions,
 	System\StateMachine\StateMachineRegistry,
 	System\StateMachine\Transition};
 
@@ -62,6 +63,23 @@ class OrderDeliveryStateHandler {
 				OrderDeliveryDefinition::ENTITY_NAME,
 				$entityId,
 				self::ACTION_UNHOLD,
+				'stateId'
+			),
+			$context
+		);
+	}
+
+	/**
+	 * @param string                           $entityId
+	 * @param \Shopware\Core\Framework\Context $context
+	 */
+	public function cancel(string $entityId, Context $context): void
+	{
+		$this->stateMachineRegistry->transition(
+			new Transition(
+				OrderDeliveryDefinition::ENTITY_NAME,
+				$entityId,
+				StateMachineTransitionActions::ACTION_CANCEL,
 				'stateId'
 			),
 			$context

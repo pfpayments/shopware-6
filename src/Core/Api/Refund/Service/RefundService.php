@@ -82,7 +82,9 @@ class RefundService {
 			$transactionEntity = $this->getTransactionEntityByTransactionId($transaction->getId(), $context);
 			$settings          = $this->settingsService->getSettings($transactionEntity->getSalesChannel()->getId());
 			$apiClient         = $settings->getApiClient();
-			$refundPayload     = (new RefundPayload($this->logger))->get($transaction, $refundableAmount);
+			$refundPayloadClass = new RefundPayload();
+			$refundPayloadClass->setLogger($this->logger);
+			$refundPayload     = $refundPayloadClass->get($transaction, $refundableAmount);
 			if (!is_null($refundPayload)) {
 				$refund = $apiClient->getRefundService()->refund($settings->getSpaceId(), $refundPayload);
 				$this->upsert($refund, $context);

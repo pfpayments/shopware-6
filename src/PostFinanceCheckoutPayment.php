@@ -6,13 +6,18 @@ use Shopware\Core\{
 	Framework\Plugin,
 	Framework\Plugin\Context\ActivateContext,
 	Framework\Plugin\Context\DeactivateContext,
-	Framework\Plugin\Context\InstallContext,
 	Framework\Plugin\Context\UninstallContext};
 use Symfony\Component\{
 	Config\FileLocator,
 	DependencyInjection\ContainerBuilder,
 	DependencyInjection\Loader\XmlFileLoader,};
 use PostFinanceCheckoutPayment\Core\Util\Traits\PostFinanceCheckoutPaymentPluginTrait;
+
+
+// expect the vendor folder on Shopware store releases
+if (file_exists(dirname(__DIR__) . '/vendor/autoload.php')) {
+	require_once dirname(__DIR__) . '/vendor/autoload.php';
+}
 
 /**
  * Class PostFinanceCheckoutPayment

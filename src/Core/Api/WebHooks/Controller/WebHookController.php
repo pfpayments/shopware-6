@@ -352,24 +352,34 @@ class WebHookController extends AbstractController {
 			 */
 			$transaction = $this->settings->getApiClient()
 										  ->getTransactionService()
-										  ->read(
-											  $callBackData->getSpaceId(),
-											  $callBackData->getEntityId()
-										  );
+										  ->read($callBackData->getSpaceId(), $callBackData->getEntityId());
 			$orderId     = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
 
 			$this->executeLocked($orderId, function () use ($orderId, $transaction, $context) {
 				$this->transactionService->upsert($transaction, $context);
 				$orderTransactionId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
 				$orderTransaction   = $this->getOrderTransaction($orderId, $context);
-				if (
-					!in_array(
-						$orderTransaction->getStateMachineState()->getTechnicalName(),
-						$this->transactionFinalStates
-					) &&
-					in_array($transaction->getState(), $this->transactionFailedStates)
-				) {
-					$this->orderTransactionStateHandler->cancel($orderTransactionId, $context);
+				if (!in_array(
+					$orderTransaction->getStateMachineState()->getTechnicalName(),
+					$this->transactionFinalStates
+				)) {
+					switch ($transaction->getState()) {
+						case TransactionState::FAILED:
+							$this->orderTransactionStateHandler->fail($orderTransactionId, $context);
+							$this->unholdAndCancelDelivery($orderId, $context);
+						case TransactionState::DECLINE:
+						case TransactionState::VOIDED:
+							$this->orderTransactionStateHandler->cancel($orderTransactionId, $context);
+							$this->unholdAndCancelDelivery($orderId, $context);
+							break;
+						case TransactionState::FULFILL:
+							$this->unholdDelivery($orderId, $context);
+						case TransactionState::AUTHORIZED:
+							$this->orderTransactionStateHandler->process($orderTransactionId, $context);
+							break;
+						default:
+							break;
+					}
 				}
 
 				if ($this->settings->isEmailEnabled() && in_array($transaction->getState(), $this->postfinancecheckoutTransactionSuccessStates)) {
@@ -416,8 +426,7 @@ class WebHookController extends AbstractController {
 				$orderTransaction   = $this->getOrderTransaction($orderId, $context);
 				if (!in_array(
 					$orderTransaction->getStateMachineState()->getTechnicalName(),
-					$this->transactionFinalStates,
-					true
+					$this->transactionFinalStates
 				)) {
 					switch ($transactionInvoice->getState()) {
 						case TransactionInvoiceState::DERECOGNIZED:
@@ -425,7 +434,6 @@ class WebHookController extends AbstractController {
 							break;
 						case TransactionInvoiceState::NOT_APPLICABLE:
 						case TransactionInvoiceState::PAID:
-							$this->orderTransactionStateHandler->process($orderTransactionId, $context);
 							$this->orderTransactionStateHandler->paid($orderTransactionId, $context);
 							$this->unholdDelivery($orderId, $context);
 							break;
@@ -457,6 +465,28 @@ class WebHookController extends AbstractController {
 			$order                     = $this->getOrderEntity($orderId, $context);
 			$orderDeliveryStateHandler = $this->container->get(OrderDeliveryStateHandler::class);
 			$orderDeliveryStateHandler->unhold($order->getDeliveries()->last()->getId(), $context);
+		} catch (\Exception $exception) {
+			$this->logger->critical($exception->getTraceAsString());
+		}
+	}
+
+	/**
+	 * Unhold and cancel delivery
+	 *
+	 * @param string                           $orderId
+	 * @param \Shopware\Core\Framework\Context $context
+	 */
+	private function unholdAndCancelDelivery(string $orderId, Context $context)
+	{
+		try {
+			/**
+			 * @var OrderDeliveryStateHandler $orderDeliveryStateHandler
+			 */
+			$order                     = $this->getOrderEntity($orderId, $context);
+			$orderDeliveryStateHandler = $this->container->get(OrderDeliveryStateHandler::class);
+			$orderDeliveryId           = $order->getDeliveries()->last()->getId();
+			$orderDeliveryStateHandler->unhold($orderDeliveryId, $context);
+			$orderDeliveryStateHandler->cancel($orderDeliveryId, $context);
 		} catch (\Exception $exception) {
 			$this->logger->critical($exception->getTraceAsString());
 		}

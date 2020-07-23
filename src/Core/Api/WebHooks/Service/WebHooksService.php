@@ -176,8 +176,6 @@ class WebHooksService {
 	 */
 	public function setApiClient(ApiClient $apiClient): WebHooksService
 	{
-		$apiClientBasePath = getenv('POSTFINANCECHECKOUT_API_BASE_PATH') ? getenv('POSTFINANCECHECKOUT_API_BASE_PATH') : $apiClient->getBasePath();
-		$apiClient->setBasePath($apiClientBasePath);
 		$this->apiClient = $apiClient;
 		return $this;
 	}
@@ -276,6 +274,7 @@ class WebHooksService {
 			}
 		} catch (\Exception $exception) {
 			$this->logger->critical($exception->getTraceAsString());
+			return $exception->getTrace();
 		}
 
 		return $returnValue;

@@ -29,7 +29,11 @@ class Migration1590646356OrderEntity extends MigrationStep {
 	 */
 	public function update(Connection $connection): void
 	{
-		$connection->executeUpdate('ALTER TABLE `order` ADD COLUMN `postfinancecheckout_lock` DATETIME DEFAULT NULL;');
+		try {
+			$connection->executeUpdate('ALTER TABLE `order` ADD COLUMN `postfinancecheckout_lock` DATETIME DEFAULT NULL;');
+		}catch (\Exception $exception){
+			echo $exception->getMessage();
+		}
 	}
 
 	/**
