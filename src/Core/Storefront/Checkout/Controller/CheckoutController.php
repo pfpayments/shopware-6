@@ -20,13 +20,12 @@ use Shopware\Storefront\{
 	Page\Checkout\Finish\CheckoutFinishPage,
 	Page\GenericPageLoader,};
 use Symfony\Component\{
-	HttpFoundation\JsonResponse,
 	HttpFoundation\Request,
 	HttpFoundation\Response,
 	Routing\Annotation\Route};
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use PostFinanceCheckout\Sdk\{
 	Model\Transaction,
-	Model\TransactionPending,
 	Model\TransactionState};
 use PostFinanceCheckoutPayment\Core\{
 	Api\Transaction\Service\TransactionService,
@@ -186,7 +185,17 @@ class CheckoutController extends StorefrontController {
 			->setIntegration($this->settings->getIntegration())
 			->setJavascriptUrl($javascriptUrl)
 			->setDeviceJavascriptUrl($this->settings->getSpaceId(), $this->container->get('session')->getId())
-			->setTransactionPossiblePaymentMethods($possiblePaymentMethods);
+			->setTransactionPossiblePaymentMethods($possiblePaymentMethods)
+			->setCheckoutUrl($this->generateUrl(
+				'frontend.postfinancecheckout.checkout.pay',
+				['orderId' => $orderId,],
+				UrlGeneratorInterface::ABSOLUTE_URL
+			))
+			->setCartRecreateUrl($this->generateUrl(
+				'frontend.postfinancecheckout.checkout.recreate-cart',
+				['orderId' => $orderId,],
+				UrlGeneratorInterface::ABSOLUTE_URL
+			));
 
 		$page->addExtension('postFinanceCheckoutData', $checkoutPageData);
 

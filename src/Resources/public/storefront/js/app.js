@@ -29,10 +29,11 @@
         payment_method_handler_status: 'input[name="postfinancecheckout_payment_handler_validation_status"]',
         payment_form_id: 'confirmOrderForm',
         button_cancel_id: 'postfinancecheckoutOrderCancel',
-        order_id: '',
         loader_id: 'postfinancecheckoutLoader',
-        pay_url: '/postfinancecheckout/checkout/pay?orderId=',
-        recreate_cart_url: '/postfinancecheckout/checkout/recreate-cart?orderId=',
+        checkout_url: null,
+        checkout_url_id: 'checkoutUrl',
+        cart_recreate_url: null,
+        cart_recreate_url_id: 'cartRecreateUrl',
         handler: null,
 
         /**
@@ -40,9 +41,8 @@
          */
         init: function () {
             PostFinanceCheckoutCheckout.activateLoader(true);
-            this.order_id = this.getParameterByName('orderId');
-            this.pay_url += this.order_id;
-            this.recreate_cart_url += this.order_id;
+            this.checkout_url = document.getElementById(this.checkout_url_id).value;
+            this.cart_recreate_url = document.getElementById(this.cart_recreate_url_id).value;
 
             document.getElementById(this.button_cancel_id).addEventListener('click', this.recreateCart, false);
             document.getElementById(this.payment_form_id).addEventListener('submit', this.submitPayment, false);
@@ -64,7 +64,7 @@
         },
 
         recreateCart: function (e) {
-            window.location.href = PostFinanceCheckoutCheckout.recreate_cart_url;
+            window.location.href = PostFinanceCheckoutCheckout.cart_recreate_url;
             e.preventDefault();
         },
 
@@ -159,24 +159,6 @@
             if (errorElement) {
                 errorElement.parentNode.removeChild(errorElement);
             }
-        },
-
-        /**
-         * Get query name value
-         *
-         * @param name
-         * @param url
-         * @link https://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript
-         * @return {*}
-         */
-        getParameterByName: function (name, url) {
-            if (!url) url = window.location.href;
-            name = name.replace(/[\[\]]/g, '\\$&');
-            const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-                results = regex.exec(url);
-            if (!results) return null;
-            if (!results[2]) return '';
-            return decodeURIComponent(results[2].replace(/\+/g, ' '));
         }
     };
 
@@ -189,13 +171,17 @@
  */
 window.addEventListener('load', function (e) {
     PostFinanceCheckoutCheckout.init();
-    window.history.pushState({}, document.title, PostFinanceCheckoutCheckout.recreate_cart_url);
-    window.history.pushState({}, document.title, PostFinanceCheckoutCheckout.pay_url);
+    window.history.pushState({}, document.title, PostFinanceCheckoutCheckout.cart_recreate_url);
+    window.history.pushState({}, document.title, PostFinanceCheckoutCheckout.checkout_url);
 }, false);
 
+/**
+ * This only works if the user has interacted with the page
+ * @link https://stackoverflow.com/questions/57339098/chrome-popstate-not-firing-on-back-button-if-no-user-interaction
+ */
 window.addEventListener('popstate', function (e) {
     if (window.history.state == null) { // This means it's page load
         return;
     }
-    window.location.href = PostFinanceCheckoutCheckout.recreate_cart_url;
+    window.location.href = PostFinanceCheckoutCheckout.cart_recreate_url;
 }, false);

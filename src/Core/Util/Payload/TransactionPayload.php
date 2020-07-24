@@ -360,17 +360,59 @@ class TransactionPayload extends AbstractPayload {
 	 */
 	protected function getAddressPayload(CustomerEntity $customer, CustomerAddressEntity $customerAddressEntity): AddressCreate
 	{
+		// Family name
+		$family_name = null;
+		if (!empty($customerAddressEntity->getLastName())) {
+			$family_name = $customerAddressEntity->getLastName();
+		} else {
+			if (!empty($customer->getLastName())) {
+				$family_name = $customer->getLastName();
+			}
+		}
+		$family_name = !empty($family_name) ? $this->fixLength($family_name, 100) : null;
+
+		// Given name
+		$given_name = null;
+		if (!empty($customerAddressEntity->getFirstName())) {
+			$given_name = $customerAddressEntity->getFirstName();
+		} else if (!empty($customer->getFirstName())) {
+			$given_name = $customer->getFirstName();
+		}
+		$given_name = !empty($given_name) ? $this->fixLength($given_name, 100) : null;
+
+		// Organization name
+		$organization_name = null;
+		if (!empty($customerAddressEntity->getCompany())) {
+			$organization_name = $customerAddressEntity->getCompany();
+		} else if (!empty($customer->getCompany())) {
+			$organization_name = $customer->getCompany();
+		}
+		$organization_name = !empty($organization_name) ? $this->fixLength($organization_name, 100) : null;
+
+		// Salutation
+		$salutation = null;
+		if (!(
+			empty($customerAddressEntity->getSalutation()) ||
+			empty($customerAddressEntity->getSalutation()->getDisplayName())
+		)) {
+			$salutation = $customerAddressEntity->getSalutation()->getDisplayName();
+		} else if (!empty($customer->getSalutation())) {
+			$salutation = $customer->getSalutation()->getDisplayName();
+
+		}
+		$salutation = !empty($salutation) ? $this->fixLength($salutation, 20) : null;
+
 		$addressData = [
 			'city'              => $customerAddressEntity->getCity() ? $this->fixLength($customerAddressEntity->getCity(), 100) : null,
 			'country'           => $customerAddressEntity->getCountry() ? $customerAddressEntity->getCountry()->getIso() : null,
 			'email_address'     => $customer->getEmail() ? $this->fixLength($customer->getEmail(), 254) : null,
-			'family_name'       => $customer->getLastName() ? $this->fixLength($customer->getLastName(), 100) : null,
-			'given_name'        => $customer->getFirstName() ? $this->fixLength($customer->getFirstName(), 100) : null,
-			'organization_name' => $customer->getCompany() ? $this->fixLength($customer->getCompany(), 100) : null,
+			'family_name'       => $family_name,
+			'given_name'        => $given_name,
+			'organization_name' => $organization_name,
 			'phone_number'      => $customerAddressEntity->getPhoneNumber() ? $this->fixLength($customerAddressEntity->getPhoneNumber(), 100) : null,
 			'postcode'          => $customerAddressEntity->getZipcode() ? $this->fixLength($customerAddressEntity->getZipcode(), 40) : null,
 			'postal_state'      => $customerAddressEntity->getCountryState() ? $customerAddressEntity->getCountryState()->getShortCode() : null,
-			'salutation'        => $customer->getSalutation() ? $this->fixLength($customer->getSalutation()->getDisplayName(), 20) : null,
+			'salutation'        => $salutation,
 			'street'            => $customerAddressEntity->getStreet() ? $this->fixLength($customerAddressEntity->getStreet(), 300) : null,
 		];
 

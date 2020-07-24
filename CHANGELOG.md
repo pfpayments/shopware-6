@@ -1,3 +1,7 @@
+# 1.1.15
+- Send customer first name and last name from billing and shipping profiles
+- Respect Shop URL
+
 # 1.1.14
 - Add cookies to the cookie manager
 - Resize icon to 40px * 40px

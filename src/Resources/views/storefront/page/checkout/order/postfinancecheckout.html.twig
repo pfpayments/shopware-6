@@ -56,6 +56,8 @@
 {% block page_checkout_aside_actions %}
     <div class="checkout-aside-action">
         <form name="confirmOrderForm" id="confirmOrderForm">
+			<input type="hidden" id="cartRecreateUrl" value="{{ page.extensions.postFinanceCheckoutData.cartRecreateUrl }}" />
+			<input type="hidden" id="checkoutUrl" value="{{ page.extensions.postFinanceCheckoutData.checkoutUrl }}" />
 			<button id="confirmFormSubmit"
 					class="btn btn-primary btn-block btn-lg"
 					form="confirmOrderForm"

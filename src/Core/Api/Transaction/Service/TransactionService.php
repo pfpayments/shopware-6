@@ -54,10 +54,10 @@ class TransactionService {
 
 	/**
 	 * TransactionService constructor.
+	 *
 	 * @param \Psr\Container\ContainerInterface                                   $container
 	 * @param \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider          $localeCodeProvider
 	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService $settingsService
-	 * @param \Psr\Log\LoggerInterface                                            $logger
 	 */
 	public function __construct(
 		ContainerInterface $container,

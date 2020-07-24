@@ -10,35 +10,76 @@ use Shopware\Core\Framework\Struct\Struct;
  * @package PostFinanceCheckoutPayment\Storefront\Checkout\Struct
  */
 class CheckoutPageData extends Struct {
+
+	/**
+	 * @var string
+	 */
+	protected $cartRecreateUrl;
+
+	/**
+	 * @var string
+	 */
+	protected $checkoutUrl;
 	/**
 	 * @var string
 	 */
 	protected $deviceJavascriptUrl;
-
 	/**
 	 * @var string
 	 */
 	protected $integration;
-
 	/**
 	 * @var string
 	 */
 	protected $javascriptUrl;
-
 	/**
 	 * @var string
 	 */
 	protected $paymentMethodId;
-
 	/**
 	 * @var array
 	 */
 	protected $possiblePaymentMethodsArray = [];
-
 	/**
 	 * @var array
 	 */
 	protected $transactionPossiblePaymentMethods = [];
+
+	/**
+	 * @return string
+	 */
+	public function getCartRecreateUrl(): string
+	{
+		return $this->cartRecreateUrl;
+	}
+
+	/**
+	 * @param string $cartRecreateUrl
+	 * @return CheckoutPageData
+	 */
+	public function setCartRecreateUrl(string $cartRecreateUrl): CheckoutPageData
+	{
+		$this->cartRecreateUrl = $cartRecreateUrl;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCheckoutUrl(): string
+	{
+		return $this->checkoutUrl;
+	}
+
+	/**
+	 * @param string $checkoutUrl
+	 * @return CheckoutPageData
+	 */
+	public function setCheckoutUrl(string $checkoutUrl): CheckoutPageData
+	{
+		$this->checkoutUrl = $checkoutUrl;
+		return $this;
+	}
 
 	/**
 	 * @return string
