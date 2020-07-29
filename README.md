@@ -20,12 +20,17 @@ composer installed.
 
 Once composer is installed, execute the following command in your project root to install this library:
 
-```sh
+```bash
 composer require postfinancecheckout/shopware-6
 php bin/console plugin:refresh
-php bin/console plugin:install PostFinanceCheckoutPayment
-php bin/console plugin:activate PostFinanceCheckoutPayment
-php bin/console cache:clear
+php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment
+```
+
+#### Update via composer
+```bash
+composer update postfinancecheckout/shopware-6
+php bin/console plugin:refresh
+php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment
 ```
 
 ### Manual Installation
@@ -34,12 +39,11 @@ Alternatively you can download the package in its entirety. The [Releases](../..
 
 Uncompress the zip file you download, and include the autoloader in your project:
 
-```php
+```bash
 # unzip to ShopwareInstallDir/custom/plugins/PostFinanceCheckoutPayment
+composer require postfinancecheckout/sdk 2.1.1
 php bin/console plugin:refresh
-php bin/console plugin:install PostFinanceCheckoutPayment
-php bin/console plugin:activate PostFinanceCheckoutPayment
-php bin/console cache:clear
+php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment
 ```
 
 ## Usage
@@ -48,7 +52,7 @@ account dashboard.
 
 ## Documentation
 
-[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/1.1.15/docs/en/documentation.html)
+[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/1.1.16/docs/en/documentation.html)
 
 ## License
 

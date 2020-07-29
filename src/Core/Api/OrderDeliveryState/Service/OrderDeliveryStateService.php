@@ -10,6 +10,7 @@ use Shopware\Core\{
 	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
 	Framework\Uuid\Uuid};
 use PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler;
+use PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider;
 
 /**
  * Class OrderDeliveryStateService
@@ -79,18 +80,20 @@ class OrderDeliveryStateService {
 		$holdStateId = is_null($holdStateMachineStateEntity) ? Uuid::randomHex() : $holdStateMachineStateEntity->getId();
 
 		if (is_null($holdStateMachineStateEntity)) {
-			$data = [
+			$translations = [
+				'en-GB' => [
+					'name' => 'Hold',
+				],
+				'de-DE' => [
+					'name' => 'Halten',
+				],
+			];
+			$translations = $this->container->get(LocaleCodeProvider::class)->getAvailableTranslations($translations, $context);
+			$data         = [
 				'id'             => $holdStateId,
 				'technicalName'  => OrderDeliveryStateHandler::STATE_HOLD,
 				'stateMachineId' => $stateMachineId,
-				'translations'   => [
-					'en-GB' => [
-						'name' => 'Hold',
-					],
-					'de-DE' => [
-						'name' => 'Halten',
-					],
-				],
+				'translations'   => $translations,
 			];
 			$stateMachineStateRepository->upsert([$data], $context);
 		}
@@ -133,6 +136,7 @@ class OrderDeliveryStateService {
 				'name' => 'Halten',
 			],
 		];
+		$translations = $this->container->get(LocaleCodeProvider::class)->getAvailableTranslations($translations, $context);
 
 		$this->upsertTransition(OrderDeliveryStateHandler::ACTION_HOLD, $stateMachineId, $openStateId, $holdStateId, $translations, $context);
 	}
@@ -181,6 +185,8 @@ class OrderDeliveryStateService {
 				'name' => 'Aufheben',
 			],
 		];
+
+		$translations = $this->container->get(LocaleCodeProvider::class)->getAvailableTranslations($translations, $context);
 
 		$this->upsertTransition(OrderDeliveryStateHandler::ACTION_UNHOLD, $stateMachineId, $holdStateId, $openStateId, $translations, $context);
 	}

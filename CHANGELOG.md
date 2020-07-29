@@ -1,3 +1,8 @@
+# 1.1.16
+- Only provide translations for available languages
+- Return CustomerCanceledAsyncPaymentException on cancelled transactions
+- Update SDK to 2.1.1
+
 # 1.1.15
 - Send customer first name and last name from billing and shipping profiles
 - Respect Shop URL
