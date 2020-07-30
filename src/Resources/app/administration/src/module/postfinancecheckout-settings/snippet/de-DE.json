@@ -50,7 +50,7 @@
 		  "tooltipText": "Integration"
 		},
 		"lineItemConsistencyEnabled": {
-		  "label": "Konsistenz der Einzelposteny",
+		  "label": "Konsistenz der Einzelposten",
 		  "tooltipText": "Wenn diese Option aktiviert ist, stimmen die Summen der Einzelposten in PostFinanceCheckoutPayment immer mit der Shopware-Bestellsumme überein"
 		},
 		"spaceViewId": {

@@ -233,7 +233,7 @@ class WebHookController extends AbstractController {
 									  ->read($callBackData->getSpaceId(), $callBackData->getEntityId());
 			$orderId = $refund->getTransaction()->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
 
-			$this->executeLocked($orderId, function () use ($orderId, $refund, $context) {
+			$this->executeLocked($orderId,$context, function () use ($orderId, $refund, $context) {
 
 				$this->refundService->upsert($refund, $context);
 
@@ -273,18 +273,19 @@ class WebHookController extends AbstractController {
 	 * @return mixed
 	 * @throws \Doctrine\DBAL\ConnectionException
 	 */
-	private function executeLocked(string $orderId, callable $operation)
+	private function executeLocked(string $orderId, Context $context, callable $operation)
 	{
 		$this->connection->setTransactionIsolation(TransactionIsolationLevel::READ_COMMITTED);
 		$this->connection->beginTransaction();
 		try {
-			$this->connection->executeUpdate('UPDATE `order` SET `postfinancecheckout_lock` = ? WHERE HEX(`id`) = ?', [
-				date('Y-m-d H:i:s'),
-				$orderId,
-			]);
-			$this->connection->executeQuery('SELECT `postfinancecheckout_lock` FROM `order` WHERE HEX(`id`) = ?', [
-				$orderId,
-			]);
+
+			$data = [
+				'id'                         => $orderId,
+				'postfinancecheckout_lock' => date('Y-m-d H:i:s'),
+			];
+
+			$this->container->get('order.repository')->upsert([$data], $context);
+			$this->container->get('order.repository')->search(new Criteria([$orderId]), $context)->first();
 
 			$result = $operation();
 
@@ -355,10 +356,11 @@ class WebHookController extends AbstractController {
 										  ->read($callBackData->getSpaceId(), $callBackData->getEntityId());
 			$orderId     = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
 
-			$this->executeLocked($orderId, function () use ($orderId, $transaction, $context) {
+			$this->executeLocked($orderId, $context, function () use ($orderId, $transaction, $context) {
 				$this->transactionService->upsert($transaction, $context);
 				$orderTransactionId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
 				$orderTransaction   = $this->getOrderTransaction($orderId, $context);
+				$this->logger->info("OrderId: {$orderId}  Current state: {$orderTransaction->getStateMachineState()->getTechnicalName()}");
 				if (!in_array(
 					$orderTransaction->getStateMachineState()->getTechnicalName(),
 					$this->transactionFinalStates
@@ -417,7 +419,7 @@ class WebHookController extends AbstractController {
 													 ->getTransaction()
 													 ->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
 
-			$this->executeLocked($orderId, function () use ($orderId, $transactionInvoice, $context) {
+			$this->executeLocked($orderId, $context, function () use ($orderId, $transactionInvoice, $context) {
 
 				$orderTransactionId = $transactionInvoice->getCompletion()
 														 ->getLineItemVersion()

@@ -253,11 +253,19 @@ class TransactionPayload extends AbstractPayload {
 
 		if (is_array($lineItemPayload) && !empty($lineItemPayload['options'])) {
 			foreach ($lineItemPayload['options'] as $option) {
+
 				$label                   = $option['group'];
-				$key                     = $this->fixLength('option_' . md5($label), 40);
-				$productAttributes[$key] = (new LineItemAttributeCreate())
-					->setLabel($label)
-					->setValue($option['option']);
+				$lineItemAttributeCreate = (new LineItemAttributeCreate())
+					->setLabel($this->fixLength($label, 512))
+					->setValue($this->fixLength($option['option'], 512));
+
+				if ($lineItemAttributeCreate->valid()) {
+					$key                     = $this->fixLength('option_' . md5($label), 40);
+					$productAttributes[$key] = $lineItemAttributeCreate;
+				} else {
+					$this->logger->critical('LineItemAttributeCreate payload invalid:', $lineItemAttributeCreate->listInvalidProperties());
+					throw new InvalidPayloadException('LineItemAttributeCreate payload invalid:' . json_encode($lineItemAttributeCreate->listInvalidProperties()));
+				}
 			}
 		}
 
@@ -375,8 +383,10 @@ class TransactionPayload extends AbstractPayload {
 		$given_name = null;
 		if (!empty($customerAddressEntity->getFirstName())) {
 			$given_name = $customerAddressEntity->getFirstName();
-		} else if (!empty($customer->getFirstName())) {
-			$given_name = $customer->getFirstName();
+		} else {
+			if (!empty($customer->getFirstName())) {
+				$given_name = $customer->getFirstName();
+			}
 		}
 		$given_name = !empty($given_name) ? $this->fixLength($given_name, 100) : null;
 
@@ -384,8 +394,10 @@ class TransactionPayload extends AbstractPayload {
 		$organization_name = null;
 		if (!empty($customerAddressEntity->getCompany())) {
 			$organization_name = $customerAddressEntity->getCompany();
-		} else if (!empty($customer->getCompany())) {
-			$organization_name = $customer->getCompany();
+		} else {
+			if (!empty($customer->getCompany())) {
+				$organization_name = $customer->getCompany();
+			}
 		}
 		$organization_name = !empty($organization_name) ? $this->fixLength($organization_name, 100) : null;
 
@@ -396,9 +408,11 @@ class TransactionPayload extends AbstractPayload {
 			empty($customerAddressEntity->getSalutation()->getDisplayName())
 		)) {
 			$salutation = $customerAddressEntity->getSalutation()->getDisplayName();
-		} else if (!empty($customer->getSalutation())) {
-			$salutation = $customer->getSalutation()->getDisplayName();
+		} else {
+			if (!empty($customer->getSalutation())) {
+				$salutation = $customer->getSalutation()->getDisplayName();
 
+			}
 		}
 		$salutation = !empty($salutation) ? $this->fixLength($salutation, 20) : null;
 

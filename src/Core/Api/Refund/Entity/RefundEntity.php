@@ -5,6 +5,7 @@ namespace PostFinanceCheckoutPayment\Core\Api\Refund\Entity;
 use Shopware\Core\{
 	Framework\DataAbstractionLayer\Entity,
 	Framework\DataAbstractionLayer\EntityIdTrait};
+use PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntityDefinition;
 
 /**
  * Class RefundEntity
@@ -34,6 +35,11 @@ class RefundEntity extends Entity {
 	 * @var string
 	 */
 	protected $state;
+
+	/**
+	 * @var ?\PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntityDefinition
+	 */
+	protected $transaction;
 
 	/**
 	 * @var int
@@ -102,6 +108,23 @@ class RefundEntity extends Entity {
 	public function setState(string $state): void
 	{
 		$this->state = $state;
+	}
+
+	/**
+	 *
+	 * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntityDefinition|null
+	 */
+	public function getTransaction(): ?TransactionEntityDefinition
+	{
+		return $this->transaction;
+	}
+
+	/**
+	 * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntityDefinition $transaction
+	 */
+	public function setTransaction(TransactionEntityDefinition $transaction): void
+	{
+		$this->transaction = $transaction;
 	}
 
 	/**

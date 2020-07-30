@@ -3,6 +3,7 @@
 namespace PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity;
 
 use Shopware\Core\{
+	Checkout\Payment\PaymentMethodEntity,
 	Framework\DataAbstractionLayer\Entity,
 	Framework\DataAbstractionLayer\EntityIdTrait};
 
@@ -19,6 +20,11 @@ class PaymentMethodConfigurationEntity extends Entity {
 	 * @var array
 	 */
 	protected $data;
+
+	/**
+	 * @var \Shopware\Core\Checkout\Payment\PaymentMethodEntity|null
+	 */
+	protected $paymentMethod;
 
 	/**
 	 * @var int
@@ -59,6 +65,22 @@ class PaymentMethodConfigurationEntity extends Entity {
 	public function setData(array $data): void
 	{
 		$this->data = $data;
+	}
+
+	/**
+	 * @return \Shopware\Core\Checkout\Payment\PaymentMethodEntity|null
+	 */
+	public function getPaymentMethod(): ?PaymentMethodEntity
+	{
+		return $this->paymentMethod;
+	}
+
+	/**
+	 * @param \Shopware\Core\Checkout\Payment\PaymentMethodEntity $paymentMethod
+	 */
+	public function setPaymentMethod(PaymentMethodEntity $paymentMethod): void
+	{
+		$this->paymentMethod = $paymentMethod;
 	}
 
 	/**

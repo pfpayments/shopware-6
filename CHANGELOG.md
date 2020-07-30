@@ -1,3 +1,6 @@
+# 1.1.17
+- Use DAL on webhook locks
+
 # 1.1.16
 - Only provide translations for available languages
 - Return CustomerCanceledAsyncPaymentException on cancelled transactions
