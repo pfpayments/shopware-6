@@ -214,7 +214,10 @@ class PaymentMethodConfigurationService {
 	}
 
 	/**
+	 * Enable payment methods from PostFinanceCheckout API
+	 *
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
@@ -256,10 +259,13 @@ class PaymentMethodConfigurationService {
 
 			$this->container->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository')
 							->upsert([$data], $context);
+
 		}
 	}
 
 	/**
+	 * Fetch merchant payment methods from PostFinanceCheckout API
+	 *
 	 * @return \PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration[]
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException

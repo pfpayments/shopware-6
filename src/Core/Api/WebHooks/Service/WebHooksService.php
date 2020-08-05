@@ -3,6 +3,7 @@
 namespace PostFinanceCheckoutPayment\Core\Api\WebHooks\Service;
 
 use Psr\Log\LoggerInterface;
+use Shopware\Core\PlatformRequest;
 use Symfony\Component\{
 	Routing\Generator\UrlGeneratorInterface,
 	Routing\RouterInterface,};
@@ -343,10 +344,7 @@ class WebHooksService {
 	{
 		return $this->router->generate(
 			'api.action.postfinancecheckout.webhook.update',
-			[
-				'version'        => 1,
-				'salesChannelId' => $this->getSalesChannelId() ?? 'null',
-			],
+			['version' => PlatformRequest::API_VERSION, 'salesChannelId' => $this->getSalesChannelId() ?? 'null',],
 			UrlGeneratorInterface::ABSOLUTE_URL
 		);
 	}

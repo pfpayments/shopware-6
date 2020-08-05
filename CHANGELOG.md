@@ -1,3 +1,8 @@
+# 1.1.18
+- Test against Shopware 6.3
+- Fix error on invalid space id
+- Remove hardcoded Shopware API version
+
 # 1.1.17
 - Use DAL on webhook locks
 

@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\{
 	HttpFoundation\JsonResponse,
 	HttpFoundation\Request,
+	HttpFoundation\Response,
 	Routing\Annotation\Route};
 use PostFinanceCheckoutPayment\Core\{
 	Api\OrderDeliveryState\Service\OrderDeliveryStateService,
@@ -130,9 +131,6 @@ class ConfigurationController extends AbstractController {
 	 * @param \Symfony\Component\HttpFoundation\Request $request
 	 * @param \Shopware\Core\Framework\Context          $context
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
 	 * @Route(
 	 *     "/api/v{version}/_action/postfinancecheckout/configuration/synchronize-payment-method-configuration",
@@ -144,10 +142,20 @@ class ConfigurationController extends AbstractController {
 	{
 		$salesChannelId = $request->request->get('salesChannelId');
 		$salesChannelId = ($salesChannelId == 'null') ? null : $salesChannelId;
+		$result         = [];
+		$status         = Response::HTTP_OK;
+		try {
+			$result = $this->paymentMethodConfigurationService->setSalesChannelId($salesChannelId)->synchronize($context);
+		} catch (\Exception $exception) {
+			$status = Response::HTTP_NOT_ACCEPTABLE;
+			$result = [
+				'errorTitle' => $exception->getMessage(),
+				'errorMessage' => $exception->getTraceAsString()
+			];
+			$this->logger->emergency($exception->getTraceAsString());
+		}
 
-		$result = $this->paymentMethodConfigurationService->setSalesChannelId($salesChannelId)->synchronize($context);
-
-		return new JsonResponse(['result' => $result]);
+		return new JsonResponse(['result' => $result], $status);
 	}
 
 	/**
