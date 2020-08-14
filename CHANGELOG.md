@@ -1,3 +1,6 @@
+# 1.1.19
+- Allow customers to download order invoices
+
 # 1.1.18
 - Test against Shopware 6.3
 - Fix error on invalid space id

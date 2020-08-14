@@ -1,11 +1,12 @@
 {
   "postfinancecheckout": {
-    "payHeader": "Pay order",
-    "payButton": "Pay"
-  },
-  "cookie": {
-    "postfinancecheckout": {
-      "name": "PostFinanceCheckout Payment"
-    }
+	"account": {
+	  "downloadInvoice": "Download Invoice"
+	},
+	"cookie": {
+	  "name": "PostFinanceCheckout Payment"
+	},
+	"payButton": "Pay",
+	"payHeader": "Pay order"
   }
 }

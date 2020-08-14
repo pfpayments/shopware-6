@@ -1,11 +1,12 @@
 {
   "postfinancecheckout": {
-    "payHeader": "Bestellung bezahlen",
-    "payButton": "Zahlen"
-  },
-  "cookie": {
-    "postfinancecheckout": {
-      "name": "PostFinanceCheckout-Zahlungen"
-    }
+	"account": {
+	  "downloadInvoice": "Rechnung herunterladen"
+	},
+	"cookie": {
+	  "name": "PostFinanceCheckout-Zahlungen"
+	},
+	"payButton": "Zahlen",
+	"payHeader": "Bestellung bezahlen"
   }
 }

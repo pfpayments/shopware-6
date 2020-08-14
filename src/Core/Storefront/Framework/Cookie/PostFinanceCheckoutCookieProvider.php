@@ -38,7 +38,7 @@ class PostFinanceCheckoutCookieProvider implements CookieProviderInterface {
 			}
 
 			$cookie['entries'][] = [
-				'snippet_name' => 'cookie.postfinancecheckout.name',
+				'snippet_name' => 'postfinancecheckout.cookie.name',
 				'cookie'       => 'postfinancecheckout-cookie-key',
 			];
 		}
