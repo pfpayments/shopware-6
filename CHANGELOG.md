@@ -1,3 +1,6 @@
+# 1.1.21
+- Remove hardcoded Shopware API version
+
 # 1.1.20
 - Update webhook URLs on plugin update
 - Add translations

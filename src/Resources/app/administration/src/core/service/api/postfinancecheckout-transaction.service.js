@@ -53,7 +53,7 @@ class PostFinanceCheckoutTransactionService extends ApiService {
 	 * @return {string}
 	 */
 	getInvoiceDocument(context, salesChannelId, transactionId) {
-		return `${context.apiPath}/v1/_action/${this.getApiBasePath()}/transaction/get-invoice-document/${salesChannelId}/${transactionId}`;
+		return `${context.apiPath}/v${context.apiVersion}/_action/${this.getApiBasePath()}/transaction/get-invoice-document/${salesChannelId}/${transactionId}`;
 	}
 
 	/**
@@ -65,7 +65,7 @@ class PostFinanceCheckoutTransactionService extends ApiService {
 	 * @return {string}
 	 */
 	getPackingSlip(context, salesChannelId, transactionId) {
-		return `${context.apiPath}/v1/_action/${this.getApiBasePath()}/transaction/get-packing-slip/${salesChannelId}/${transactionId}`;
+		return `${context.apiPath}/v${context.apiVersion}/_action/${this.getApiBasePath()}/transaction/get-packing-slip/${salesChannelId}/${transactionId}`;
 	}
 }
 
