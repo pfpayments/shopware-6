@@ -7,6 +7,14 @@
 	  "name": "PostFinanceCheckout-Zahlungen"
 	},
 	"payButton": "Zahlen",
-	"payHeader": "Bestellung bezahlen"
+	"payHeader": "Bestellung bezahlen",
+	"payload": {
+	  "adjustmentLineItem": "Anpassung Einzelposten",
+	  "shipping": {
+		"name": "Versand",
+		"lineItem": "Versand-Einzelposten"
+	  },
+	  "taxes": "Steuern"
+	}
   }
 }

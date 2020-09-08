@@ -245,6 +245,7 @@ class WebHooksService {
 	 */
 	protected function installListeners(): array
 	{
+		$this->logger->info('Installing webhooks.');
 		$returnValue = [];
 		try {
 			$webHookUrlId      = $this->getOrCreateWebHookUrl()->getId();

@@ -7,6 +7,14 @@
 	  "name": "PostFinanceCheckout Payment"
 	},
 	"payButton": "Pay",
-	"payHeader": "Pay order"
+	"payHeader": "Pay order",
+	"payload": {
+	  "adjustmentLineItem": "Adjustment Line Item",
+	  "shipping": {
+		"name": "Shipping",
+		"lineItem": "Shipping Line Item"
+	  },
+	  "taxes": "Taxes"
+	}
   }
 }

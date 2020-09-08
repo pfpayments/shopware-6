@@ -13,6 +13,7 @@ use Shopware\Core\{
 	Framework\DataAbstractionLayer\Search\Criteria,
 	System\SalesChannel\SalesChannelContext};
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use PostFinanceCheckout\Sdk\{
 	Model\AddressCreate,
 	Model\LineItemAttributeCreate,
@@ -67,6 +68,11 @@ class TransactionPayload extends AbstractPayload {
 	private $localeCodeProvider;
 
 	/**
+	 * @var TranslatorInterface
+	 */
+	protected $translator;
+
+	/**
 	 * TransactionPayload constructor.
 	 *
 	 * @param \Psr\Container\ContainerInterface                                  $container
@@ -88,6 +94,7 @@ class TransactionPayload extends AbstractPayload {
 		$this->settings            = $settings;
 		$this->transaction         = $transaction;
 		$this->container           = $container;
+		$this->translator          = $this->container->get('translator');
 	}
 
 	/**
@@ -169,7 +176,7 @@ class TransactionPayload extends AbstractPayload {
 		foreach ($this->transaction->getOrder()->getLineItems() as $shopLineItem) {
 			$taxes    = $this->getTaxes(
 				$shopLineItem->getPrice()->getCalculatedTaxes(),
-				'Taxes'
+				$this->translator->trans('postfinancecheckout.payload.taxes')
 			);
 			$uniqueId = $this->fixLength($shopLineItem->getId(), 200);
 			$sku      = $shopLineItem->getProductId() ? $this->fixLength($shopLineItem->getProductId(), 200) : $uniqueId;
@@ -283,7 +290,7 @@ class TransactionPayload extends AbstractPayload {
 
 			if ($amount > 0) {
 
-				$shippingName = $this->salesChannelContext->getShippingMethod()->getName() ?? 'Shipping';
+				$shippingName = $this->salesChannelContext->getShippingMethod()->getName() ?? $this->translator->trans('postfinancecheckout.payload.shipping.name');
 				$taxes        = $this->getTaxes(
 					$this->transaction->getOrder()->getShippingCosts()->getCalculatedTaxes(),
 					$shippingName
@@ -291,7 +298,7 @@ class TransactionPayload extends AbstractPayload {
 
 				$lineItem = (new LineItemCreate())
 					->setAmountIncludingTax($amount)
-					->setName($this->fixLength($shippingName . ' Shipping Line Item', 150))
+					->setName($this->fixLength($shippingName . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
 					->setQuantity($this->transaction->getOrder()->getShippingCosts()->getQuantity() ?? 1)
 					->setTaxes($taxes)
 					->setSku($this->fixLength($shippingName . '-Shipping-Line-Item', 200))
@@ -341,7 +348,7 @@ class TransactionPayload extends AbstractPayload {
 
 			} else {
 				$lineItem = (new LineItemCreate())
-					->setName('Adjustment Line Item')
+					->setName($this->translator->trans('postfinancecheckout.payload.adjustmentLineItem'))
 					->setUniqueId('Adjustment-Line-Item')
 					->setSku('Adjustment-Line-Item')
 					->setQuantity(1);

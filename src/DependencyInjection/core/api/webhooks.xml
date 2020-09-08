@@ -29,7 +29,7 @@
 		</service>
 
 		<!-- Services -->
-		<service id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService">
+		<service id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService" public="true">
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
 			<argument type="service" id="router.default"/>
 			<call method="setLogger">

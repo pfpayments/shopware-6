@@ -1,3 +1,8 @@
+# 1.1.20
+- Update webhook URLs on plugin update
+- Add translations
+- Fix email bug
+
 # 1.1.19
 - Allow customers to download order invoices
 

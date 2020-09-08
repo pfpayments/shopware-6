@@ -92,7 +92,8 @@ class CheckoutSubscriber implements EventSubscriberInterface {
 
 			if (
 				!$emailOriginIsPostFinanceCheckoutPayment &&
-				PostFinanceCheckoutPaymentHandler::class == $order->getTransactions()->first()->getPaymentMethod()->getHandlerIdentifier()
+				$order->getTransactions()->last()->getPaymentMethod() &&
+				PostFinanceCheckoutPaymentHandler::class == $order->getTransactions()->last()->getPaymentMethod()->getHandlerIdentifier()
 			) {
 				$event->getContext()->addExtension('postfinancecheckout-disable', new ArrayStruct());
 				$event->stopPropagation();
