@@ -59,6 +59,13 @@
 		}
 	  },
 	  "save": "Save",
+	  "storefrontOptions": {
+		"cardTitle": "Storefront Options",
+		"invoiceDownloadEnabled": {
+		  "label": "Invoice Download",
+		  "tooltipText": "If this setting is enabled your customers will be able to download order invoices from PostFinanceCheckout"
+		}
+	  },
 	  "titleError": "Error",
 	  "titleSuccess": "Success"
 	}

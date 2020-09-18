@@ -46,6 +46,13 @@ class Settings extends Struct {
 	protected $lineItemConsistencyEnabled;
 
 	/**
+	 * Enable storefront invoice download
+	 *
+	 * @var bool
+	 */
+	protected $storefrontInvoiceDownloadEnabled;
+
+	/**
 	 * Space Id
 	 *
 	 * @var int
@@ -113,6 +120,22 @@ class Settings extends Struct {
 	public function setLineItemConsistencyEnabled(bool $lineItemConsistencyEnabled): void
 	{
 		$this->lineItemConsistencyEnabled = $lineItemConsistencyEnabled;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isStorefrontInvoiceDownloadEnabled(): bool
+	{
+		return boolval($this->storefrontInvoiceDownloadEnabled);
+	}
+
+	/**
+	 * @param bool $storefrontInvoiceDownloadEnabled
+	 */
+	public function setStorefrontInvoiceDownloadEnabled(bool $storefrontInvoiceDownloadEnabled): void
+	{
+		$this->storefrontInvoiceDownloadEnabled = $storefrontInvoiceDownloadEnabled;
 	}
 
 	/**

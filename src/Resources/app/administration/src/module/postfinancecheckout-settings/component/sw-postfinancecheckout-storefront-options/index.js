@@ -5,10 +5,10 @@ import constants from '../../page/postfinancecheckout-settings/configuration-con
 
 const {Component, Mixin} = Shopware;
 
-Component.register('sw-postfinancecheckout-options', {
+Component.register('sw-postfinancecheckout-storefront-options', {
 	template: template,
 
-	name: 'PostFinanceCheckoutOptions',
+	name: 'PostFinanceCheckoutStorefrontOptions',
 
 	mixins: [
 		Mixin.getByName('notification')
@@ -39,18 +39,6 @@ Component.register('sw-postfinancecheckout-options', {
 	},
 
 	computed: {
-		integrationOptions() {
-			return [
-				{
-					id: 'iframe',
-					name: this.$tc('postfinancecheckout-settings.settingForm.options.integration.options.iframe')
-				},
-				{
-					id: 'payment_page',
-					name: this.$tc('postfinancecheckout-settings.settingForm.options.integration.options.payment_page')
-				}
-			];
-		}
 	},
 
 	methods: {

@@ -5,6 +5,7 @@ import './extension/sw-settings-index';
 import './page/postfinancecheckout-settings';
 import './component/sw-postfinancecheckout-credentials';
 import './component/sw-postfinancecheckout-options';
+import './component/sw-postfinancecheckout-storefront-options';
 import enGB from './snippet/en-GB.json';
 import deDE from './snippet/de-DE.json';
 

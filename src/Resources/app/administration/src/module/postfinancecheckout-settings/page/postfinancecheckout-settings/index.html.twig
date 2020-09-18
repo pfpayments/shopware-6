@@ -85,7 +85,6 @@
 				<template #content="{ actualConfigData, allConfigs, selectedSalesChannelId }">
 					<div v-if="actualConfigData">
 
-						{% block postfinancecheckout_settings_content_card_channel_config_credentials_card %}
 						<sw-postfinancecheckout-credentials
 								:actualConfigData="actualConfigData"
 								:allConfigs="allConfigs"
@@ -99,9 +98,7 @@
 								:isLoading="isLoading"
 								:isShowcase="isShowcase"
 						></sw-postfinancecheckout-credentials>
-						{% endblock %}
 
-						{% block postfinancecheckout_settings_content_card_channel_config_options_card %}
 						<sw-postfinancecheckout-options
 								:actualConfigData="actualConfigData"
 								:allConfigs="allConfigs"
@@ -109,7 +106,15 @@
 								:selectedSalesChannelId="selectedSalesChannelId"
 						>
 						</sw-postfinancecheckout-options>
-						{% endblock %}
+
+						<sw-postfinancecheckout-storefront-options
+								:actualConfigData="actualConfigData"
+								:allConfigs="allConfigs"
+								:isLoading="isLoading"
+								:selectedSalesChannelId="selectedSalesChannelId"
+						>
+						</sw-postfinancecheckout-storefront-options>
+
 
 					</div>
 				</template>

@@ -1,7 +1,7 @@
 /* global Shopware */
 
-import template from './postfinancecheckout-credentials.html.twig';
-import constants from '../../page/postfinancecheckout-settings/postfinancecheckout-config-consts'
+import template from './index.html.twig';
+import constants from '../../page/postfinancecheckout-settings/configuration-constants'
 
 const {Component, Mixin} = Shopware;
 

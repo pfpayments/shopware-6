@@ -17,15 +17,16 @@ class SettingsService {
 	/**
 	 * Prefix to PostFinanceCheckout configs
 	 */
-	public const SYSTEM_CONFIG_DOMAIN                 = 'PostFinanceCheckoutPayment.config.';
-	public const CONFIG_APPLICATION_KEY               = 'applicationKey';
-	public const CONFIG_EMAIL_ENABLED                 = 'emailEnabled';
-	public const CONFIG_INTEGRATION                   = 'integration';
-	public const CONFIG_IS_SHOWCASE                   = 'isShowcase';
-	public const CONFIG_LINE_ITEM_CONSISTENCY_ENABLED = 'lineItemConsistencyEnabled';
-	public const CONFIG_SPACE_ID                      = 'spaceId';
-	public const CONFIG_SPACE_VIEW_ID                 = 'spaceViewId';
-	public const CONFIG_USER_ID                       = 'userId';
+	public const SYSTEM_CONFIG_DOMAIN                       = 'PostFinanceCheckoutPayment.config.';
+	public const CONFIG_APPLICATION_KEY                     = 'applicationKey';
+	public const CONFIG_EMAIL_ENABLED                       = 'emailEnabled';
+	public const CONFIG_INTEGRATION                         = 'integration';
+	public const CONFIG_IS_SHOWCASE                         = 'isShowcase';
+	public const CONFIG_LINE_ITEM_CONSISTENCY_ENABLED       = 'lineItemConsistencyEnabled';
+	public const CONFIG_SPACE_ID                            = 'spaceId';
+	public const CONFIG_SPACE_VIEW_ID                       = 'spaceViewId';
+	public const CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED = 'storefrontInvoiceDownloadEnabled';
+	public const CONFIG_USER_ID                             = 'userId';
 
 	/**
 	 * @var \Shopware\Core\System\SystemConfig\SystemConfigService

@@ -1,7 +1,7 @@
 /* global Shopware */
 
-import template from './postfinancecheckout.html.twig';
-import constants from './postfinancecheckout-config-consts';
+import template from './index.html.twig';
+import constants from './configuration-constants';
 
 const {Component, Mixin} = Shopware;
 
@@ -42,6 +42,7 @@ Component.register('postfinancecheckout-settings', {
             configIntegrationDefaultValue: 'iframe',
             configEmailEnabledDefaultValue: true,
             configLineItemConsistencyEnabledDefaultValue: true,
+            configStorefrontInvoiceDownloadEnabledEnabledDefaultValue: true,
 
             ...constants
         };
@@ -84,6 +85,10 @@ Component.register('postfinancecheckout-settings', {
                         this.config[this.CONFIG_LINE_ITEM_CONSISTENCY_ENABLED] = this.configLineItemConsistencyEnabledDefaultValue;
                     }
 
+                    if (!(this.CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED in this.config)) {
+                        this.config[this.CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED] = this.configStorefrontInvoiceDownloadEnabledEnabledDefaultValue;
+                    }
+
                 } else {
 
                     this.applicationKeyFilled = !!this.config[this.CONFIG_APPLICATION_KEY] || !!defaultConfig[this.CONFIG_APPLICATION_KEY];
@@ -101,6 +106,10 @@ Component.register('postfinancecheckout-settings', {
 
                     if (!(this.CONFIG_LINE_ITEM_CONSISTENCY_ENABLED in this.config) || !(this.CONFIG_LINE_ITEM_CONSISTENCY_ENABLED in defaultConfig)) {
                         this.config[this.CONFIG_LINE_ITEM_CONSISTENCY_ENABLED] = this.configLineItemConsistencyEnabledDefaultValue;
+                    }
+
+                    if (!(this.CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED in this.config) || !(this.CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED in defaultConfig)) {
+                        this.config[this.CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED] = this.configStorefrontInvoiceDownloadEnabledEnabledDefaultValue;
                     }
                 }
             },

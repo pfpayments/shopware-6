@@ -59,6 +59,13 @@
 		}
 	  },
 	  "save": "Speichern",
+	  "storefrontOptions": {
+		"cardTitle": "Geschäftsfront-Optionen",
+		"invoiceDownloadEnabled": {
+		  "label": "Rechnung Download",
+		  "tooltipText": "Wenn diese Einstellung aktiviert ist, können Ihre Kunden Auftragsrechnungen von PostFinanceCheckout herunterladen."
+		}
+	  },
 	  "titleError": "Fehler",
 	  "titleSuccess": "Erfolg"
 	}
