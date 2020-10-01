@@ -52,7 +52,7 @@ account dashboard.
 
 ## Documentation
 
-[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/1.1.22/docs/en/documentation.html)
+[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/1.1.23/docs/en/documentation.html)
 
 ## License
 

@@ -96,9 +96,13 @@
                     PostFinanceCheckoutCheckout.validationCallBack(validationResult);
                 });
                 PostFinanceCheckoutCheckout.handler.setInitializeCallback(() => {
-                    var loader = document.getElementById(PostFinanceCheckoutCheckout.loader_id);
+                    let loader = document.getElementById(PostFinanceCheckoutCheckout.loader_id);
                     loader.parentNode.removeChild(loader);
                     PostFinanceCheckoutCheckout.activateLoader(false);
+                    const iframe = document.getElementById(PostFinanceCheckoutCheckout.payment_method_iframe_id).getElementsByTagName('iframe')[0];
+                    if(iframe.clientHeight < 1){ // iframe has no fields
+                        PostFinanceCheckoutCheckout.handler.submit();
+                    }
                 });
                 const iframeContainer = document.getElementById(PostFinanceCheckoutCheckout.payment_method_iframe_id);
                 PostFinanceCheckoutCheckout.handler.create(iframeContainer);
@@ -126,26 +130,26 @@
         },
 
         showErrors: function(errors) {
-            var alert = document.createElement('div');
+            let alert = document.createElement('div');
             alert.setAttribute('class', 'alert alert-danger');
             alert.setAttribute('role', 'alert');
             alert.setAttribute('id', 'postfinancecheckout-errors');
             document.getElementsByClassName('flashbags')[0].appendChild(alert);
 
-            var alertContentContainer = document.createElement('div');
+            let alertContentContainer = document.createElement('div');
             alertContentContainer.setAttribute('class', 'alert-content-container');
             alert.appendChild(alertContentContainer);
 
-            var alertContent = document.createElement('div');
+            let alertContent = document.createElement('div');
             alertContent.setAttribute('class', 'alert-content');
             alertContentContainer.appendChild(alertContent);
 
             if (errors.length > 1) {
-                var alertList = document.createElement('ul');
+                let alertList = document.createElement('ul');
                 alertList.setAttribute('class', 'alert-list');
                 alertContent.appendChild(alertList);
-                for (var index = 0; index < errors.length; index++) {
-                    var alertListItem = document.createElement('li');
+                for (let index = 0; index < errors.length; index++) {
+                    let alertListItem = document.createElement('li');
                     alertListItem.textContent = errors[index];
                     alertList.appendChild(alertListItem);
                 }
@@ -155,7 +159,7 @@
         },
 
         hideErrors: function() {
-            var errorElement = document.getElementById('postfinancecheckout-errors');
+            let errorElement = document.getElementById('postfinancecheckout-errors');
             if (errorElement) {
                 errorElement.parentNode.removeChild(errorElement);
             }

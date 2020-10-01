@@ -1,3 +1,9 @@
+# 1.1.23
+- Submit payment form when iframe has no fields
+
+# 1.1.22
+- Order invoice download setting
+
 # 1.1.21
 - Remove hardcoded Shopware API version
 
