@@ -1,3 +1,8 @@
+# 1.1.24
+- Fix webhook response
+- Fix translation
+- Prepare for Shopware 6.4
+
 # 1.1.23
 - Submit payment form when iframe has no fields
 

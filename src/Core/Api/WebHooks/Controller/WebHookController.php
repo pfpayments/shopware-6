@@ -191,6 +191,7 @@ class WebHookController extends AbstractController {
 				default:
 					$this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : Listener not implemented : ', $callBackData->jsonSerialize());
 			}
+			$status = Response::HTTP_OK;
 		} catch (\Exception $exception) {
 			$this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		}
@@ -268,10 +269,11 @@ class WebHookController extends AbstractController {
 	}
 
 	/**
-	 * @param string   $orderId
+	 * @param string $orderId
+	 * @param Context $context
 	 * @param callable $operation
 	 * @return mixed
-	 * @throws \Doctrine\DBAL\ConnectionException
+	 * @throws \Exception
 	 */
 	private function executeLocked(string $orderId, Context $context, callable $operation)
 	{

@@ -2,11 +2,11 @@
   "postfinancecheckout-order": {
 	"buttons": {
 	  "label": {
-		"completion": "Vollständige",
+		"completion": "Abschluss",
 		"download-invoice": "Rechnung herunterladen",
 		"download-packing-slip": "Packzettel herunterladen",
 		"refund": "Eine neue Rückerstattung erstellen",
-		"void": "Genehmigung aufheben"
+		"void": "Genehmigung annullieren"
 	  }
 	},
 	"captureAction": {
@@ -14,9 +14,9 @@
 		"text": "Zahlung erfassen"
 	  },
 	  "currentAmount": "Betrag",
-	  "isFinal": "Dies ist die endgültige Gefangennahme",
+	  "isFinal": "Dies ist die endgültige Verbuchung",
 	  "maxAmount": "Maximaler Betrag",
-	  "successMessage": "Ihre Gefangennahme war erfolgreich",
+	  "successMessage": "Ihre Verbuchung war erfolgreich",
 	  "successTitle": "Erfolg"
 	},
 	"general": {
@@ -30,14 +30,14 @@
 		"name": "Name",
 		"quantity": "Anzahl",
 		"taxAmount": "Steuern",
-		"type": "Geben Sie  ein.",
+		"type": "Typ",
 		"uniqueId": "Eindeutige ID"
 	  }
 	},
 	"modal": {
 	  "title": {
 		"capture": "Erfassen",
-		"refund": "Neue Rückerstattung",
+		"refund": "Neue Gutschrift",
 		"void": "Autorisierung aufheben"
 	  }
 	},
@@ -48,9 +48,9 @@
 	  }
 	},
 	"refund": {
-	  "cardTitle": "Rückerstattungen",
+	  "cardTitle": "Gutschriften",
 	  "refundAmount": {
-		"label": "Rückerstattungsbetrag"
+		"label": "Gutschriftsbetrag"
 	  },
 	  "types": {
 		"amount": "Betrag",

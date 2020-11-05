@@ -15,16 +15,16 @@
 	"settingForm": {
 	  "credentials": {
 		"applicationKey": {
-		  "label": "Anwendungsschlüssel",
+		  "label": "Application Key",
 		  "tooltipText": "Der Anwendungsschlüssel wird verwendet, um dieses Plugin mit der API PostFinanceCheckout zu authentifizieren."
 		},
-		"cardTitle": "Empfehlungsschreiben",
+		"cardTitle": "Anmeldedaten",
 		"spaceId": {
 		  "label": "Space ID",
 		  "tooltipText": "Die Space ID wird verwendet, um dieses Plugin mit der API PostFinanceCheckout zu authentifizieren."
 		},
 		"userId": {
-		  "label": "Benutzer-Id",
+		  "label": "User ID",
 		  "tooltipText": "Die Benutzer-ID wird verwendet, um dieses Plugin mit der PostFinanceCheckout-API zu authentifizieren."
 		}
 	  },
@@ -51,7 +51,7 @@
 		},
 		"lineItemConsistencyEnabled": {
 		  "label": "Konsistenz der Einzelposten",
-		  "tooltipText": "Wenn diese Option aktiviert ist, stimmen die Summen der Einzelposten in PostFinanceCheckoutPayment immer mit der Shopware-Bestellsumme überein"
+		  "tooltipText": "Wenn diese Option aktiviert ist, stimmen die Summen der Einzelposten in PostFinanceCheckoutPayment immer mit der Shopware-Bestellsumme überein."
 		},
 		"spaceViewId": {
 		  "label": "Space View ID",
@@ -60,7 +60,7 @@
 	  },
 	  "save": "Speichern",
 	  "storefrontOptions": {
-		"cardTitle": "Geschäftsfront-Optionen",
+		"cardTitle": "Storefront-Optionen",
 		"invoiceDownloadEnabled": {
 		  "label": "Rechnung Download",
 		  "tooltipText": "Wenn diese Einstellung aktiviert ist, können Ihre Kunden Auftragsrechnungen von PostFinanceCheckout herunterladen."

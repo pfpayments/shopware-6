@@ -41,7 +41,7 @@ Uncompress the zip file you download, and include the autoloader in your project
 
 ```bash
 # unzip to ShopwareInstallDir/custom/plugins/PostFinanceCheckoutPayment
-composer require postfinancecheckout/sdk 2.1.2
+composer require postfinancecheckout/sdk 2.1.4
 php bin/console plugin:refresh
 php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment
 ```
@@ -52,7 +52,7 @@ account dashboard.
 
 ## Documentation
 
-[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/1.1.23/docs/en/documentation.html)
+[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/1.1.24/docs/en/documentation.html)
 
 ## License
 
