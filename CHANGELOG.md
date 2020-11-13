@@ -1,3 +1,6 @@
+# 1.1.25
+- Fix Email sending
+
 # 1.1.24
 - Fix webhook response
 - Fix translation

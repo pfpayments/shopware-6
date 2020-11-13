@@ -14,7 +14,8 @@ use Shopware\Core\{
 	Checkout\Order\OrderEntity,
 	Framework\Context,
 	Framework\DataAbstractionLayer\Search\Criteria,
-	Framework\Routing\Annotation\RouteScope};
+	Framework\Routing\Annotation\RouteScope,
+	System\StateMachine\Exception\IllegalTransitionException};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\{
 	HttpFoundation\JsonResponse,
@@ -23,6 +24,7 @@ use Symfony\Component\{
 	Routing\Annotation\Route,};
 use PostFinanceCheckout\Sdk\{
 	Model\RefundState,
+	Model\Transaction,
 	Model\TransactionInvoiceState,
 	Model\TransactionState,};
 use PostFinanceCheckoutPayment\Core\{
@@ -144,6 +146,7 @@ class WebHookController extends AbstractController {
 
 	/**
 	 * @param \Psr\Log\LoggerInterface $logger
+	 *
 	 * @internal
 	 * @required
 	 *
@@ -159,6 +162,7 @@ class WebHookController extends AbstractController {
 	 * @param \Symfony\Component\HttpFoundation\Request $request
 	 * @param \Shopware\Core\Framework\Context          $context
 	 * @param string                                    $salesChannelId
+	 *
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse|\Symfony\Component\HttpFoundation\Response
 	 * @Route(
 	 *     "/api/v{version}/_action/postfinancecheckout/webHook/callback/{salesChannelId}",
@@ -203,6 +207,7 @@ class WebHookController extends AbstractController {
 	 *
 	 * @param \Shopware\Core\Framework\Context $context
 	 * @param string                           $salesChannelId
+	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
@@ -220,6 +225,7 @@ class WebHookController extends AbstractController {
 	 *
 	 * @param \PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct\WebHookRequest $callBackData
 	 * @param \Shopware\Core\Framework\Context                                      $context
+	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
 	public function updateRefund(WebHookRequest $callBackData, Context $context): Response
@@ -234,7 +240,7 @@ class WebHookController extends AbstractController {
 									  ->read($callBackData->getSpaceId(), $callBackData->getEntityId());
 			$orderId = $refund->getTransaction()->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
 
-			$this->executeLocked($orderId,$context, function () use ($orderId, $refund, $context) {
+			$this->executeLocked($orderId, $context, function () use ($orderId, $refund, $context) {
 
 				$this->refundService->upsert($refund, $context);
 
@@ -261,6 +267,9 @@ class WebHookController extends AbstractController {
 
 			});
 			$status = Response::HTTP_OK;
+		} catch (IllegalTransitionException $exception) {
+			$status = Response::HTTP_OK;
+			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		} catch (\Exception $exception) {
 			$this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		}
@@ -269,9 +278,10 @@ class WebHookController extends AbstractController {
 	}
 
 	/**
-	 * @param string $orderId
-	 * @param Context $context
+	 * @param string   $orderId
+	 * @param Context  $context
 	 * @param callable $operation
+	 *
 	 * @return mixed
 	 * @throws \Exception
 	 */
@@ -302,6 +312,7 @@ class WebHookController extends AbstractController {
 	/**
 	 * @param String                           $orderId
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return \Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity
 	 */
 	private function getOrderTransaction(String $orderId, Context $context): OrderTransactionEntity
@@ -314,6 +325,7 @@ class WebHookController extends AbstractController {
 	 *
 	 * @param String                           $orderId
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return \Shopware\Core\Checkout\Order\OrderEntity
 	 */
 	private function getOrderEntity(string $orderId, Context $context): OrderEntity
@@ -342,6 +354,7 @@ class WebHookController extends AbstractController {
 	 *
 	 * @param \PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct\WebHookRequest $callBackData
 	 * @param \Shopware\Core\Framework\Context                                      $context
+	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
 	private function updateTransaction(WebHookRequest $callBackData, Context $context): Response
@@ -371,6 +384,7 @@ class WebHookController extends AbstractController {
 						case TransactionState::FAILED:
 							$this->orderTransactionStateHandler->fail($orderTransactionId, $context);
 							$this->unholdAndCancelDelivery($orderId, $context);
+							break;
 						case TransactionState::DECLINE:
 						case TransactionState::VOIDED:
 							$this->orderTransactionStateHandler->cancel($orderTransactionId, $context);
@@ -378,6 +392,7 @@ class WebHookController extends AbstractController {
 							break;
 						case TransactionState::FULFILL:
 							$this->unholdDelivery($orderId, $context);
+							break;
 						case TransactionState::AUTHORIZED:
 							$this->orderTransactionStateHandler->process($orderTransactionId, $context);
 							break;
@@ -386,16 +401,29 @@ class WebHookController extends AbstractController {
 					}
 				}
 
-				if ($this->settings->isEmailEnabled() && in_array($transaction->getState(), $this->postfinancecheckoutTransactionSuccessStates)) {
-					$this->orderMailService->send($orderId, $context);
-				}
-
 			});
 			$status = Response::HTTP_OK;
+		} catch (IllegalTransitionException $exception) {
+			$status = Response::HTTP_OK;
+			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		} catch (\Exception $exception) {
 			$this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		}
+
+		$this->sendEmail($transaction, $context);
 		return new JsonResponse(['data' => $callBackData->jsonSerialize()], $status);
+	}
+
+	/**
+	 * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
+	 * @param \Shopware\Core\Framework\Context                                       $context
+	 */
+	protected function sendEmail(Transaction $transaction, Context $context): void
+	{
+		$orderId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
+		if ($this->settings->isEmailEnabled() && in_array($transaction->getState(), $this->postfinancecheckoutTransactionSuccessStates)) {
+			$this->orderMailService->send($orderId, $context);
+		}
 	}
 
 	/**
@@ -403,6 +431,7 @@ class WebHookController extends AbstractController {
 	 *
 	 * @param \PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct\WebHookRequest $callBackData
 	 * @param \Shopware\Core\Framework\Context                                      $context
+	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
 	public function updateTransactionInvoice(WebHookRequest $callBackData, Context $context): Response
@@ -447,6 +476,9 @@ class WebHookController extends AbstractController {
 				}
 			});
 			$status = Response::HTTP_OK;
+		} catch (IllegalTransitionException $exception) {
+			$status = Response::HTTP_OK;
+			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		} catch (\Exception $exception) {
 			$this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		}
@@ -460,7 +492,7 @@ class WebHookController extends AbstractController {
 	 * @param string                           $orderId
 	 * @param \Shopware\Core\Framework\Context $context
 	 */
-	private function unholdDelivery(string $orderId, Context $context)
+	private function unholdDelivery(string $orderId, Context $context): void
 	{
 		try {
 			/**
@@ -470,7 +502,7 @@ class WebHookController extends AbstractController {
 			$orderDeliveryStateHandler = $this->container->get(OrderDeliveryStateHandler::class);
 			$orderDeliveryStateHandler->unhold($order->getDeliveries()->last()->getId(), $context);
 		} catch (\Exception $exception) {
-			$this->logger->critical($exception->getTraceAsString());
+			$this->logger->info($exception->getMessage(), $exception->getTrace());
 		}
 	}
 
@@ -480,7 +512,7 @@ class WebHookController extends AbstractController {
 	 * @param string                           $orderId
 	 * @param \Shopware\Core\Framework\Context $context
 	 */
-	private function unholdAndCancelDelivery(string $orderId, Context $context)
+	private function unholdAndCancelDelivery(string $orderId, Context $context): void
 	{
 		try {
 			/**
@@ -492,7 +524,7 @@ class WebHookController extends AbstractController {
 			$orderDeliveryStateHandler->unhold($orderDeliveryId, $context);
 			$orderDeliveryStateHandler->cancel($orderDeliveryId, $context);
 		} catch (\Exception $exception) {
-			$this->logger->critical($exception->getTraceAsString());
+			$this->logger->info($exception->getMessage(), $exception->getTrace());
 		}
 	}
 

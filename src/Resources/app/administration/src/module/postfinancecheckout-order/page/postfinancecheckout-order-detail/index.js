@@ -3,8 +3,8 @@
 import '../../component/postfinancecheckout-order-action-completion';
 import '../../component/postfinancecheckout-order-action-refund';
 import '../../component/postfinancecheckout-order-action-void';
-import template from './postfinancecheckout-order-detail.html.twig';
-import './postfinancecheckout-order-detail.scss';
+import template from './index.html.twig';
+import './index.scss';
 
 const {Component, Mixin, Filter, Context, Utils} = Shopware;
 const Criteria = Shopware.Data.Criteria;

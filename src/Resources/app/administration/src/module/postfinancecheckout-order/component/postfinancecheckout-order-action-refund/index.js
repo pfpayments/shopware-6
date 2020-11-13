@@ -1,6 +1,6 @@
 /* global Shopware */
 
-import template from './postfinancecheckout-order-action-refund.html.twig';
+import template from './index.html.twig';
 
 const {Component, Mixin, Filter, Utils} = Shopware;
 

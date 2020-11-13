@@ -88,13 +88,15 @@ class CheckoutSubscriber implements EventSubscriberInterface {
 			 * @var $order OrderEntity
 			 */
 			$order                                     = $templateData['order'];
-			$emailOriginIsPostFinanceCheckoutPayment = isset($templateData[OrderMailService::EMAIL_ORIGIN_IS_POSTFINANCECHECKOUT]);
+			$isPostFinanceCheckoutEmail = isset($templateData[OrderMailService::EMAIL_ORIGIN_IS_POSTFINANCECHECKOUT]);
 
 			if (
-				!$emailOriginIsPostFinanceCheckoutPayment &&
+				$this->settingsService->getSettings($order->getSalesChannelId())->isEmailEnabled() &&
+				!$isPostFinanceCheckoutEmail &&
 				$order->getTransactions()->last()->getPaymentMethod() &&
 				PostFinanceCheckoutPaymentHandler::class == $order->getTransactions()->last()->getPaymentMethod()->getHandlerIdentifier()
 			) {
+				$this->logger->info('Email disabled for ', ['orderId' => $order->getId()]);
 				$event->getContext()->addExtension('postfinancecheckout-disable', new ArrayStruct());
 				$event->stopPropagation();
 			}
