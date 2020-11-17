@@ -12,8 +12,7 @@ use Shopware\Core\{
 	Framework\DataAbstractionLayer\Search\Criteria,
 	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
 	Framework\Plugin\Util\PluginIdProvider,
-	Framework\Uuid\Uuid,
-	System\Language\LanguageCollection};
+	Framework\Uuid\Uuid};
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use PostFinanceCheckout\Sdk\{
 	ApiClient,
@@ -25,7 +24,8 @@ use PostFinanceCheckoutPayment\Core\{
 	Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity,
 	Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntityDefinition,
 	Checkout\PaymentHandler\PostFinanceCheckoutPaymentHandler,
-	Settings\Service\SettingsService};
+	Settings\Service\SettingsService,
+	Util\LocaleCodeProvider};
 use PostFinanceCheckoutPayment\PostFinanceCheckoutPayment;
 
 
@@ -57,10 +57,12 @@ class PaymentMethodConfigurationService {
 	 * @var \Symfony\Component\DependencyInjection\ContainerInterface
 	 */
 	protected $container;
+
 	/**
 	 * @var \Shopware\Core\Content\ImportExport\DataAbstractionLayer\Serializer\SerializerRegistry
 	 */
 	protected $serializerRegistry;
+
 	/**
 	 * @var \Psr\Log\LoggerInterface
 	 */
@@ -82,6 +84,11 @@ class PaymentMethodConfigurationService {
 	private $languages;
 
 	/**
+	 * @var \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider
+	 */
+	private $localeCodeProvider;
+
+	/**
 	 * PaymentMethodConfigurationService constructor.
 	 *
 	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService                        $settingsService
@@ -96,14 +103,16 @@ class PaymentMethodConfigurationService {
 		SerializerRegistry $serializerRegistry
 	)
 	{
-		$this->settingsService    = $settingsService;
 		$this->container          = $container;
+		$this->settingsService    = $settingsService;
 		$this->mediaSerializer    = $mediaSerializer;
 		$this->serializerRegistry = $serializerRegistry;
+		$this->localeCodeProvider = $this->container->get(LocaleCodeProvider::class);
 	}
 
 	/**
 	 * @param \Psr\Log\LoggerInterface $logger
+	 *
 	 * @internal
 	 * @required
 	 *
@@ -123,6 +132,7 @@ class PaymentMethodConfigurationService {
 
 	/**
 	 * @param \PostFinanceCheckout\Sdk\ApiClient $apiClient
+	 *
 	 * @return \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
 	 */
 	public function setApiClient(ApiClient $apiClient): PaymentMethodConfigurationService
@@ -133,6 +143,7 @@ class PaymentMethodConfigurationService {
 
 	/**
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return array
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
@@ -165,6 +176,7 @@ class PaymentMethodConfigurationService {
 	 * Set sales channel id
 	 *
 	 * @param string|null $salesChannelId
+	 *
 	 * @return \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
 	 */
 	public function setSalesChannelId(?string $salesChannelId = null): PaymentMethodConfigurationService
@@ -279,11 +291,7 @@ class PaymentMethodConfigurationService {
 			->search($this->getSpaceId(), new EntityQuery());
 
 
-		usort($paymentMethodConfigurations, function ($item1, $item2) {
-			/**
-			 * @var \PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration $item1
-			 * @var \PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration $item2
-			 */
+		usort($paymentMethodConfigurations, function (PaymentMethodConfiguration $item1, PaymentMethodConfiguration $item2) {
 			return $item1->getSortOrder() <=> $item2->getSortOrder();
 		});
 
@@ -300,6 +308,7 @@ class PaymentMethodConfigurationService {
 
 	/**
 	 * @param int $spaceId
+	 *
 	 * @return \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
 	 */
 	public function setSpaceId(int $spaceId): PaymentMethodConfigurationService
@@ -312,6 +321,7 @@ class PaymentMethodConfigurationService {
 	 * @param int                              $spaceId
 	 * @param int                              $paymentMethodConfigurationId
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity|null
 	 */
 	protected function getPaymentMethodConfigurationEntity(
@@ -383,16 +393,7 @@ class PaymentMethodConfigurationService {
 	protected function getPaymentMethodConfigurationTranslation(PaymentMethodConfiguration $paymentMethodConfiguration, Context $context): array
 	{
 		$translations       = [];
-		$availableLanguages = $this->getAvailableLanguages($context);
-		$locales            = array_map(
-			function ($language) {
-				/**
-				 * @var \Shopware\Core\System\Language\LanguageEntity $language
-				 */
-				return $language->getLocale()->getCode();
-			},
-			$availableLanguages->jsonSerialize()
-		);
+		$locales            = $this->localeCodeProvider->getAvailableLocales($context);
 		foreach ($locales as $locale) {
 			$translations[$locale] = [
 				'name'        => $this->translate($paymentMethodConfiguration->getResolvedTitle(), $locale) ?? $paymentMethodConfiguration->getName(),
@@ -400,17 +401,6 @@ class PaymentMethodConfigurationService {
 			];
 		}
 		return $translations;
-	}
-
-	/**
-	 * @param \Shopware\Core\Framework\Context $context
-	 * @return \Shopware\Core\System\Language\LanguageCollection
-	 */
-	protected function getAvailableLanguages(Context $context): LanguageCollection
-	{
-		return $this->container->get('language.repository')->search((new Criteria())->addAssociations([
-			'locale',
-		]), $context)->getEntities();
 	}
 
 	/**
@@ -487,6 +477,7 @@ class PaymentMethodConfigurationService {
 	 * @param string                                                      $id
 	 * @param \PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration $paymentMethodConfiguration
 	 * @param \Shopware\Core\Framework\Context                            $context
+	 *
 	 * @return string|null
 	 */
 	protected function upsertMedia(string $id, PaymentMethodConfiguration $paymentMethodConfiguration, Context $context): ?string
@@ -512,7 +503,9 @@ class PaymentMethodConfigurationService {
 				],
 			], $context);
 
-
+			/**
+			 * @var \Shopware\Core\Content\Media\MediaDefinition
+			 */
 			$mediaDefinition = $this->container->get(MediaDefinition::class);
 			$this->mediaSerializer->setRegistry($this->serializerRegistry);
 			$data = [

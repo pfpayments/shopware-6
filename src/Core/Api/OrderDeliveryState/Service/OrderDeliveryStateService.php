@@ -9,8 +9,9 @@ use Shopware\Core\{
 	Framework\DataAbstractionLayer\Search\Criteria,
 	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
 	Framework\Uuid\Uuid};
-use PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler;
-use PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider;
+use PostFinanceCheckoutPayment\Core\{
+	Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
+	Util\LocaleCodeProvider};
 
 /**
  * Class OrderDeliveryStateService
@@ -25,13 +26,37 @@ class OrderDeliveryStateService {
 	protected $container;
 
 	/**
+	 * @var \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider
+	 */
+	protected $localeCodeProvider;
+
+	/**
+	 * @var \Shopware\Core\System\StateMachine\StateMachineDefinition
+	 */
+	protected $stateMachineRepository;
+
+	/**
+	 * @var \Shopware\Core\System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionDefinition
+	 */
+	protected $stateMachineTransitionRepository;
+
+	/**
+	 * @var \Shopware\Core\System\StateMachine\Aggregation\StateMachineState\StateMachineStateDefinition
+	 */
+	protected $stateMachineStateRepository;
+
+	/**
 	 * OrderDeliveryStateHandler constructor.
 	 *
 	 * @param \Psr\Container\ContainerInterface $container
 	 */
 	public function __construct(ContainerInterface $container)
 	{
-		$this->container = $container;
+		$this->container                        = $container;
+		$this->localeCodeProvider               = $this->container->get(LocaleCodeProvider::class);
+		$this->stateMachineRepository           = $this->container->get('state_machine.repository');
+		$this->stateMachineStateRepository      = $this->container->get('state_machine_state.repository');
+		$this->stateMachineTransitionRepository = $this->container->get('state_machine_transition.repository');
 	}
 
 	/**
@@ -50,52 +75,43 @@ class OrderDeliveryStateService {
 
 	/**
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return \Shopware\Core\System\StateMachine\StateMachineEntity
 	 */
 	protected function getStateMachineEntity(Context $context): string
 	{
 		$stateMachineCriteria = (new Criteria())
 			->addFilter(new EqualsFilter('technicalName', OrderDeliveryStates::STATE_MACHINE));
-		$stateMachineEntity   = $this->container->get('state_machine.repository')->search($stateMachineCriteria, $context)->first();
-		return $stateMachineEntity->getId();
+		return $this->stateMachineRepository->search($stateMachineCriteria, $context)->first()->getId();
 	}
 
 	/**
 	 * @param string                           $stateMachineId
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return string
 	 */
 	protected function getHoldStateId(string $stateMachineId, Context $context): string
 	{
-		$stateMachineStateRepository = $this->container->get('state_machine_state.repository');
-
 		$holdStateMachineStateCriteria = (new Criteria())
 			->addFilter(
 				new EqualsFilter('technicalName', OrderDeliveryStateHandler::STATE_HOLD),
 				new EqualsFilter('stateMachineId', $stateMachineId)
 			);
 
-		$holdStateMachineStateEntity = $stateMachineStateRepository->search($holdStateMachineStateCriteria, $context)->first();
+		$holdStateMachineStateEntity = $this->stateMachineStateRepository->search($holdStateMachineStateCriteria, $context)->first();
 
 		$holdStateId = is_null($holdStateMachineStateEntity) ? Uuid::randomHex() : $holdStateMachineStateEntity->getId();
 
 		if (is_null($holdStateMachineStateEntity)) {
-			$translations = [
-				'en-GB' => [
-					'name' => 'Hold',
-				],
-				'de-DE' => [
-					'name' => 'Halten',
-				],
-			];
-			$translations = $this->container->get(LocaleCodeProvider::class)->getAvailableTranslations($translations, $context);
+			$translations = $this->localeCodeProvider->getAvailableTranslations('postfinancecheckout.deliveryState.hold', 'Hold', $context);
 			$data         = [
 				'id'             => $holdStateId,
 				'technicalName'  => OrderDeliveryStateHandler::STATE_HOLD,
 				'stateMachineId' => $stateMachineId,
 				'translations'   => $translations,
 			];
-			$stateMachineStateRepository->upsert([$data], $context);
+			$this->stateMachineStateRepository->upsert([$data], $context);
 		}
 
 		return $holdStateId;
@@ -104,20 +120,18 @@ class OrderDeliveryStateService {
 	/**
 	 * @param string                           $stateMachineId
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return string
 	 */
 	protected function getOpenStateId(string $stateMachineId, Context $context): string
 	{
-		$stateMachineStateRepository = $this->container->get('state_machine_state.repository');
-
 		$stateMachineStateCriteria = (new Criteria())
 			->addFilter(
 				new EqualsFilter('technicalName', OrderDeliveryStates::STATE_OPEN),
 				new EqualsFilter('stateMachineId', $stateMachineId)
 			);
 
-		$stateMachineStateEntity = $stateMachineStateRepository->search($stateMachineStateCriteria, $context)->first();
-		return $stateMachineStateEntity->getId();
+		return $this->stateMachineStateRepository->search($stateMachineStateCriteria, $context)->first()->getId();
 	}
 
 	/**
@@ -126,25 +140,24 @@ class OrderDeliveryStateService {
 	 * @param string                           $holdStateId
 	 * @param \Shopware\Core\Framework\Context $context
 	 */
-	protected function upsertHoldTransition(string $stateMachineId, string $openStateId, string $holdStateId, Context $context)
+	protected function upsertHoldTransition(string $stateMachineId, string $openStateId, string $holdStateId, Context $context): void
 	{
-		$translations = [
-			'en-GB' => [
-				'name' => 'Hold',
-			],
-			'de-DE' => [
-				'name' => 'Halten',
-			],
-		];
-		$translations = $this->container->get(LocaleCodeProvider::class)->getAvailableTranslations($translations, $context);
+		$translations = $this->localeCodeProvider->getAvailableTranslations('postfinancecheckout.deliveryState.hold','Hold', $context);
 
 		$this->upsertTransition(OrderDeliveryStateHandler::ACTION_HOLD, $stateMachineId, $openStateId, $holdStateId, $translations, $context);
 	}
 
+	/**
+	 * @param string                           $actionName
+	 * @param string                           $stateMachineId
+	 * @param string                           $fromStateId
+	 * @param string                           $toStateId
+	 * @param array                            $translations
+	 * @param \Shopware\Core\Framework\Context $context
+	 */
 	protected function upsertTransition(string $actionName, string $stateMachineId, string $fromStateId, string $toStateId, array $translations, Context $context): void
 	{
-		$stateMachineTransitionRepository = $this->container->get('state_machine_transition.repository');
-		$criteria                         = (new Criteria())
+		$criteria = (new Criteria())
 			->addFilter(
 				new EqualsFilter('actionName', $actionName),
 				new EqualsFilter('stateMachineId', $stateMachineId),
@@ -152,7 +165,7 @@ class OrderDeliveryStateService {
 				new EqualsFilter('toStateId', $toStateId)
 			);
 
-		$stateMachineTransitionEntity = $stateMachineTransitionRepository->search($criteria, $context)->first();
+		$stateMachineTransitionEntity = $this->stateMachineTransitionRepository->search($criteria, $context)->first();
 		$transitionId                 = is_null($stateMachineTransitionEntity) ? Uuid::randomHex() : $stateMachineTransitionEntity->getId();
 
 		if (is_null($stateMachineTransitionEntity)) {
@@ -164,7 +177,7 @@ class OrderDeliveryStateService {
 				'toStateId'      => $toStateId,
 				'translations'   => $translations,
 			];
-			$stateMachineTransitionRepository->upsert([$data], $context);
+			$this->stateMachineTransitionRepository->upsert([$data], $context);
 		}
 
 	}
@@ -175,18 +188,9 @@ class OrderDeliveryStateService {
 	 * @param string                           $holdStateId
 	 * @param \Shopware\Core\Framework\Context $context
 	 */
-	protected function upsertUnholdTransition(string $stateMachineId, string $holdStateId, string $openStateId, Context $context)
+	protected function upsertUnholdTransition(string $stateMachineId, string $holdStateId, string $openStateId, Context $context): void
 	{
-		$translations = [
-			'en-GB' => [
-				'name' => 'Unhold',
-			],
-			'de-DE' => [
-				'name' => 'Aufheben',
-			],
-		];
-
-		$translations = $this->container->get(LocaleCodeProvider::class)->getAvailableTranslations($translations, $context);
+		$translations = $this->localeCodeProvider->getAvailableTranslations('postfinancecheckout.deliveryState.unhold','Unhold',$context);
 
 		$this->upsertTransition(OrderDeliveryStateHandler::ACTION_UNHOLD, $stateMachineId, $holdStateId, $openStateId, $translations, $context);
 	}
