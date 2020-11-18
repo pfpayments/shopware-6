@@ -15,10 +15,13 @@
     "payload": {
       "adjustmentLineItem": "Anpassung Einzelposten",
       "shipping": {
-        "name": "Versand",
-        "lineItem": "Versand-Einzelposten"
+        "lineItem": "Versand-Einzelposten",
+        "name": "Versand"
       },
       "taxes": "Steuern"
+    },
+    "paymentMethod": {
+      "notAvailable": "Die Zahlungsmethode ist derzeit nicht verfügbar. Bitte wählen Sie eine andere Zahlungsmethode."
     }
   }
 }

@@ -95,6 +95,7 @@ class CheckoutController extends StorefrontController {
 
 	/**
 	 * @param \Psr\Log\LoggerInterface $logger
+	 *
 	 * @internal
 	 * @required
 	 *
@@ -107,6 +108,7 @@ class CheckoutController extends StorefrontController {
 	/**
 	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
 	 * @param \Symfony\Component\HttpFoundation\Request              $request
+	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
@@ -130,7 +132,12 @@ class CheckoutController extends StorefrontController {
 		// Configuration
 		$this->settings = $this->settingsService->getSettings($salesChannelContext->getSalesChannel()->getId());
 
-		$transaction = $this->getTransaction($orderId, $salesChannelContext->getContext());
+		$transaction     = $this->getTransaction($orderId, $salesChannelContext->getContext());
+		$recreateCartUrl = $this->generateUrl(
+			'frontend.postfinancecheckout.checkout.recreate-cart',
+			['orderId' => $orderId,],
+			UrlGeneratorInterface::ABSOLUTE_URL
+		);
 
 		if (in_array(
 			$transaction->getState(),
@@ -155,9 +162,6 @@ class CheckoutController extends StorefrontController {
 			}
 		}
 
-		$page          = $this->load($request, $salesChannelContext);
-		$javascriptUrl = '';
-
 		$possiblePaymentMethods = $this->settings->getApiClient()
 												 ->getTransactionService()
 												 ->fetchPaymentMethods(
@@ -166,19 +170,12 @@ class CheckoutController extends StorefrontController {
 													 $this->settings->getIntegration()
 												 );
 
-		switch ($this->settings->getIntegration()) {
-			case Integration::IFRAME:
-				$javascriptUrl = $this->settings->getApiClient()->getTransactionIframeService()
-												->javascriptUrl($this->settings->getSpaceId(), $transaction->getId());
-				break;
-			case Integration::LIGHTBOX:
-				$javascriptUrl = $this->settings->getApiClient()->getTransactionLightboxService()
-												->javascriptUrl($this->settings->getSpaceId(), $transaction->getId());
-				break;
-			default:
-				$this->logger->critical(strtr('invalid integration : :integration', [':integration' => $this->settings->getIntegration()]));
-
+		if (empty($possiblePaymentMethods)) {
+			$this->addFlash('danger', $this->trans('postfinancecheckout.paymentMethod.notAvailable'));
+			return $this->redirect($recreateCartUrl, Response::HTTP_MOVED_PERMANENTLY);
 		}
+
+		$javascriptUrl = $this->getTransactionJavaScriptUrl($transaction->getId());
 
 		// Set Checkout Page Data
 		$checkoutPageData = (new CheckoutPageData())
@@ -191,12 +188,8 @@ class CheckoutController extends StorefrontController {
 				['orderId' => $orderId,],
 				UrlGeneratorInterface::ABSOLUTE_URL
 			))
-			->setCartRecreateUrl($this->generateUrl(
-				'frontend.postfinancecheckout.checkout.recreate-cart',
-				['orderId' => $orderId,],
-				UrlGeneratorInterface::ABSOLUTE_URL
-			));
-
+			->setCartRecreateUrl($recreateCartUrl);
+		$page             = $this->load($request, $salesChannelContext);
 		$page->addExtension('postFinanceCheckoutData', $checkoutPageData);
 
 		return $this->renderStorefront(
@@ -206,8 +199,38 @@ class CheckoutController extends StorefrontController {
 	}
 
 	/**
+	 * Get transaction Javascript URL
+	 *
+	 * @param int $transactionId
+	 *
+	 * @return string
+	 * @throws \PostFinanceCheckout\Sdk\ApiException
+	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
+	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 */
+	private function getTransactionJavaScriptUrl(int $transactionId): string
+	{
+		$javascriptUrl = '';
+		switch ($this->settings->getIntegration()) {
+			case Integration::IFRAME:
+				$javascriptUrl = $this->settings->getApiClient()->getTransactionIframeService()
+												->javascriptUrl($this->settings->getSpaceId(), $transactionId);
+				break;
+			case Integration::LIGHTBOX:
+				$javascriptUrl = $this->settings->getApiClient()->getTransactionLightboxService()
+												->javascriptUrl($this->settings->getSpaceId(), $transactionId);
+				break;
+			default:
+				$this->logger->critical(strtr('invalid integration : :integration', [':integration' => $this->settings->getIntegration()]));
+
+		}
+		return $javascriptUrl;
+	}
+
+	/**
 	 * @param                                  $orderId
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return \PostFinanceCheckout\Sdk\Model\Transaction
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
@@ -222,6 +245,7 @@ class CheckoutController extends StorefrontController {
 	/**
 	 * @param \Symfony\Component\HttpFoundation\Request              $request
 	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
+	 *
 	 * @return \Shopware\Storefront\Page\Checkout\Finish\CheckoutFinishPage
 	 */
 	protected function load(Request $request, SalesChannelContext $salesChannelContext): CheckoutFinishPage
@@ -235,6 +259,7 @@ class CheckoutController extends StorefrontController {
 	/**
 	 * @param string                           $orderId
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return \Shopware\Core\Checkout\Order\OrderEntity
 	 */
 	private function getOrder(string $orderId, Context $context): OrderEntity
@@ -268,6 +293,7 @@ class CheckoutController extends StorefrontController {
 	 * @param \Shopware\Core\Checkout\Cart\Cart                      $cart
 	 * @param \Symfony\Component\HttpFoundation\Request              $request
 	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
+	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException

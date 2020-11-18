@@ -1,3 +1,9 @@
+# 1.1.27
+- Retry orders on unavailable payment method
+
+# 1.1.26
+- Fix locales and translations
+
 # 1.1.25
 - Fix Email sending
 
