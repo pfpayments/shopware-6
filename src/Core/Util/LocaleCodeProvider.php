@@ -160,6 +160,8 @@ class LocaleCodeProvider {
 			$availableLanguages->jsonSerialize()
 		);
 		$locales[]          = $this->getDefaultLocaleCode($context);
+		$locales[]          = 'de-DE';
+		$locales[]          = 'en-GB';
 		$locales            = array_unique($locales);
 		return $locales;
 	}

@@ -4,6 +4,7 @@ namespace PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
+	Checkout\Cart\Rule\CartAmountRule,
 	Content\ImportExport\DataAbstractionLayer\Serializer\Entity\MediaSerializer,
 	Content\ImportExport\DataAbstractionLayer\Serializer\SerializerRegistry,
 	Content\ImportExport\Struct\Config,
@@ -12,6 +13,7 @@ use Shopware\Core\{
 	Framework\DataAbstractionLayer\Search\Criteria,
 	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
 	Framework\Plugin\Util\PluginIdProvider,
+	Framework\Rule\Container\AndRule,
 	Framework\Uuid\Uuid};
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use PostFinanceCheckout\Sdk\{
@@ -35,6 +37,8 @@ use PostFinanceCheckoutPayment\PostFinanceCheckoutPayment;
  * @package PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service
  */
 class PaymentMethodConfigurationService {
+
+	public const POSTFINANCECHECKOUT_AVAILABILITY_RULE_NAME = 'PostFinanceCheckoutAvailabilityRule';
 
 	/**
 	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
@@ -89,6 +93,11 @@ class PaymentMethodConfigurationService {
 	private $localeCodeProvider;
 
 	/**
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 */
+	private $ruleRepository;
+
+	/**
 	 * PaymentMethodConfigurationService constructor.
 	 *
 	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService                        $settingsService
@@ -108,6 +117,7 @@ class PaymentMethodConfigurationService {
 		$this->mediaSerializer    = $mediaSerializer;
 		$this->serializerRegistry = $serializerRegistry;
 		$this->localeCodeProvider = $this->container->get(LocaleCodeProvider::class);
+		$this->ruleRepository     = $this->container->get('rule.repository');;
 	}
 
 	/**
@@ -365,13 +375,16 @@ class PaymentMethodConfigurationService {
 			$context
 		);
 
+		$availabilityRuleId = $this->getAvailabilityRuleId($context);
+
 		$data = [
-			'id'                => $id,
-			'handlerIdentifier' => PostFinanceCheckoutPaymentHandler::class,
-			'pluginId'          => $pluginId,
-			'position'          => $paymentMethodConfiguration->getSortOrder() - 100,
-			'active'            => true,
-			'translations'      => $this->getPaymentMethodConfigurationTranslation($paymentMethodConfiguration, $context),
+			'id'                 => $id,
+			'handlerIdentifier'  => PostFinanceCheckoutPaymentHandler::class,
+			'availabilityRuleId' => $availabilityRuleId,
+			'pluginId'           => $pluginId,
+			'position'           => $paymentMethodConfiguration->getSortOrder() - 100,
+			'active'             => true,
+			'translations'       => $this->getPaymentMethodConfigurationTranslation($paymentMethodConfiguration, $context),
 		];
 
 		$data['mediaId'] = $this->upsertMedia($id, $paymentMethodConfiguration, $context);
@@ -379,6 +392,47 @@ class PaymentMethodConfigurationService {
 		$data = array_filter($data);
 
 		$this->container->get('payment_method.repository')->upsert([$data], $context);
+	}
+
+	/**
+	 * @param \Shopware\Core\Framework\Context $context
+	 *
+	 * @return string
+	 */
+	private function getAvailabilityRuleId(Context $context): string
+	{
+		$criteria         = (new Criteria())->addFilter(new EqualsFilter('name', self::POSTFINANCECHECKOUT_AVAILABILITY_RULE_NAME));
+		$availabilityRule = $this->ruleRepository->search($criteria, $context)->first();
+
+		if (!is_null($availabilityRule)) {
+			return $availabilityRule->getId();
+		}
+
+		$ruleId = Uuid::randomHex();
+		$data   = [
+			'id'          => $ruleId,
+			'name'        => self::POSTFINANCECHECKOUT_AVAILABILITY_RULE_NAME,
+			'priority'    => 1,
+			'description' => 'Determines whether or not PostFinanceCheckout payment methods are available for the given rule context.',
+			'conditions'  => [
+				[
+					'type'     => (new AndRule())->getName(),
+					'children' => [
+						[
+							'type'  => (new CartAmountRule())->getName(),
+							'value' => [
+								'operator' => CartAmountRule::OPERATOR_GTE,
+								'amount'   => 0,
+							],
+						],
+					],
+				],
+			],
+		];
+
+		$this->ruleRepository->create([$data], $context);
+
+		return $ruleId;
 	}
 
 	/**
@@ -392,8 +446,8 @@ class PaymentMethodConfigurationService {
 	 */
 	protected function getPaymentMethodConfigurationTranslation(PaymentMethodConfiguration $paymentMethodConfiguration, Context $context): array
 	{
-		$translations       = [];
-		$locales            = $this->localeCodeProvider->getAvailableLocales($context);
+		$translations = [];
+		$locales      = $this->localeCodeProvider->getAvailableLocales($context);
 		foreach ($locales as $locale) {
 			$translations[$locale] = [
 				'name'        => $this->translate($paymentMethodConfiguration->getResolvedTitle(), $locale) ?? $paymentMethodConfiguration->getName(),

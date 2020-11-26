@@ -1,3 +1,7 @@
+# 1.2.0
+- Add payment method availability rule
+- Hardcoded system languages
+
 # 1.1.27
 - Retry orders on unavailable payment method
 
