@@ -1,3 +1,6 @@
+# 1.3.0
+- Update payment method syncing
+
 # 1.2.0
 - Add payment method availability rule
 - Hardcoded system languages

@@ -60,6 +60,78 @@ class WebHooksService {
 	protected $webHookEntitiesConfig = [];
 
 	/**
+	 * WebHook configs
+	 */
+	protected $webHookEntityArrayConfig = [
+		/**
+		 * Transaction WebHook Entity Id
+		 *
+		 * @link https://www.postfinance.ch/checkout/doc/api/webhook-entity/view/1472041829003
+		 */
+		[
+			'id'                => '1472041829003',
+			'name'              => 'Shopware6::WebHook::Transaction',
+			'states'            => [
+				TransactionState::AUTHORIZED,
+				TransactionState::COMPLETED,
+				TransactionState::CONFIRMED,
+				TransactionState::DECLINE,
+				TransactionState::FAILED,
+				TransactionState::FULFILL,
+				TransactionState::PROCESSING,
+				TransactionState::VOIDED,
+			],
+			'notifyEveryChange' => false,
+		],
+		/**
+		 * Transaction Invoice WebHook Entity Id
+		 *
+		 * @link https://www.postfinance.ch/checkout/doc/api/webhook-entity/view/1472041816898
+		 */
+		[
+			'id'                => '1472041816898',
+			'name'              => 'Shopware6::WebHook::Transaction Invoice',
+			'states'            => [
+				TransactionInvoiceState::NOT_APPLICABLE,
+				TransactionInvoiceState::PAID,
+				TransactionInvoiceState::DERECOGNIZED,
+			],
+			'notifyEveryChange' => false,
+		],
+		/**
+		 * Refund WebHook Entity Id
+		 *
+		 * @link https://www.postfinance.ch/checkout/doc/api/webhook-entity/view/1472041839405
+		 */
+		[
+			'id'                => '1472041839405',
+			'name'              => 'Shopware6::WebHook::Refund',
+			'states'            => [
+				RefundState::FAILED,
+				RefundState::SUCCESSFUL,
+			],
+			'notifyEveryChange' => false,
+		],
+		/**
+		 * Payment Method Configuration Id
+		 *
+		 * @link https://www.postfinance.ch/checkout/doc/api/webhook-entity/view/1472041857405
+		 */
+		[
+			'id'                => '1472041857405',
+			'name'              => 'Shopware6::WebHook::Payment Method Configuration',
+			'states'            => [
+				CreationEntityState::ACTIVE,
+				CreationEntityState::DELETED,
+				CreationEntityState::DELETING,
+				CreationEntityState::INACTIVE
+			],
+			'notifyEveryChange' => true,
+		],
+
+	];
+
+	/**
 	 * @var \Psr\Log\LoggerInterface
 	 */
 	protected $logger;
@@ -87,73 +159,18 @@ class WebHooksService {
 	 */
 	protected function setWebHookEntitiesConfig(): void
 	{
-		/**
-		 * Transaction WebHook Entity Id
-		 * @link https://www.postfinance.ch/checkout/doc/api/webhook-entity/view/1472041829003
-		 */
-		$this->webHookEntitiesConfig[] = (new Entity())->assign([
-			'id'                => 1472041829003,
-			'name'              => 'Shopware6::WebHook::Transaction',
-			'url'               => null,
-			'states'            => [
-				TransactionState::AUTHORIZED,
-				TransactionState::COMPLETED,
-				TransactionState::CONFIRMED,
-				TransactionState::DECLINE,
-				TransactionState::FAILED,
-				TransactionState::FULFILL,
-				TransactionState::PROCESSING,
-				TransactionState::VOIDED,
-			],
-			'notifyEveryChange' => false,
-		]);
-
-		/**
-		 * Transaction Invoice WebHook Entity Id
-		 * @link https://www.postfinance.ch/checkout/doc/api/webhook-entity/view/1472041816898
-		 */
-		$this->webHookEntitiesConfig[] = (new Entity())->assign([
-			'id'                => 1472041816898,
-			'name'              => 'Shopware6::WebHook::Transaction Invoice',
-			'url'               => null,
-			'states'            => [
-				TransactionInvoiceState::NOT_APPLICABLE,
-				TransactionInvoiceState::PAID,
-				TransactionInvoiceState::DERECOGNIZED,
-			],
-			'notifyEveryChange' => false,
-		]);
-
-		/**
-		 * Refund WebHook Entity Id
-		 * @link https://www.postfinance.ch/checkout/doc/api/webhook-entity/view/1472041839405
-		 */
-		$this->webHookEntitiesConfig[] = (new Entity())->assign([
-			'id'                => 1472041839405,
-			'name'              => 'Shopware6::WebHook::Refund',
-			'url'               => null,
-			'states'            => [
-				RefundState::FAILED,
-				RefundState::SUCCESSFUL,
-			],
-			'notifyEveryChange' => false,
-		]);
-
-		/**
-		 * Payment Method Configuration Id
-		 * @link https://www.postfinance.ch/checkout/doc/api/webhook-entity/view/1472041857405
-		 */
-		$this->webHookEntitiesConfig[] = (new Entity())->assign([
-			'id'                => 1472041857405,
-			'name'              => 'Shopware6::WebHook::Payment Method Configuration',
-			'url'               => null,
-			'states'            => [],
-			'notifyEveryChange' => true,
-		]);
+		foreach ($this->webHookEntityArrayConfig as $item) {
+			$this->webHookEntitiesConfig[] = (new Entity())
+				->setId((int) $item['id'])
+				->setName($item['name'])
+				->setStates($item['states'])
+				->setNotifyEveryChange($item['notifyEveryChange']);
+		}
 	}
 
 	/**
 	 * @param \Psr\Log\LoggerInterface $logger
+	 *
 	 * @internal
 	 * @required
 	 *
@@ -173,6 +190,7 @@ class WebHooksService {
 
 	/**
 	 * @param \PostFinanceCheckout\Sdk\ApiClient $apiClient
+	 *
 	 * @return \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService
 	 */
 	public function setApiClient(ApiClient $apiClient): WebHooksService
@@ -191,6 +209,7 @@ class WebHooksService {
 
 	/**
 	 * @param int $spaceId
+	 *
 	 * @return \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService
 	 */
 	public function setSpaceId(int $spaceId): WebHooksService
@@ -230,6 +249,7 @@ class WebHooksService {
 	 * Set sales channel id
 	 *
 	 * @param string|null $salesChannelId
+	 *
 	 * @return \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService
 	 */
 	public function setSalesChannelId(?string $salesChannelId = null): WebHooksService
@@ -324,6 +344,7 @@ class WebHooksService {
 	 * @param string $fieldName
 	 * @param        $value
 	 * @param string $operator
+	 *
 	 * @return \PostFinanceCheckout\Sdk\Model\EntityQueryFilter
 	 */
 	protected function getEntityFilter(string $fieldName, $value, string $operator = CriteriaOperator::EQUALS): EntityQueryFilter
@@ -352,6 +373,7 @@ class WebHooksService {
 
 	/**
 	 * @param int $webHookUrlId
+	 *
 	 * @return array
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException

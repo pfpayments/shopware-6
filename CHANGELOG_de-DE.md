@@ -1,3 +1,6 @@
+# 1.3.0
+- Aktualisieren Sie die Synchronisierung der Zahlungsmethode
+
 # 1.2.0
 - Verfügbarkeitsregel für Zahlungsmethoden hinzufügen
 - Hardcodierte Systemsprachen
