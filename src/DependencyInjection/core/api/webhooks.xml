@@ -15,6 +15,7 @@
 		<service id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Controller\WebHookController" public="true">
 			<argument type="service" id="Doctrine\DBAL\Connection"/>
 			<argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+			<argument type="service" id="Shopware\Core\Checkout\Order\SalesChannel\OrderService"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Refund\Service\RefundService"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\OrderMailService"/>

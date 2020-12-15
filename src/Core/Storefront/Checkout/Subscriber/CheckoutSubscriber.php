@@ -4,10 +4,9 @@ namespace PostFinanceCheckoutPayment\Core\Storefront\Checkout\Subscriber;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
+	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates,
 	Checkout\Order\OrderEntity,
-	Content\MailTemplate\Service\Event\MailBeforeSentEvent,
-	Content\MailTemplate\Service\Event\MailBeforeValidateEvent,
-	Framework\Struct\ArrayStruct};
+	Content\MailTemplate\Service\Event\MailBeforeValidateEvent};
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use PostFinanceCheckoutPayment\Core\{
@@ -52,6 +51,7 @@ class CheckoutSubscriber implements EventSubscriberInterface {
 
 	/**
 	 * @param \Psr\Log\LoggerInterface $logger
+	 *
 	 * @internal
 	 * @required
 	 *
@@ -69,14 +69,11 @@ class CheckoutSubscriber implements EventSubscriberInterface {
 		return [
 			CheckoutConfirmPageLoadedEvent::class => ['onConfirmPageLoaded', 1],
 			MailBeforeValidateEvent::class        => ['onMailBeforeValidate', 1],
-			MailBeforeSentEvent::class            => ['onMailBeforeSent', 1],
 		];
 	}
 
 	/**
 	 * Stop order emails being sent out
-	 *
-	 * @see https://issues.shopware.com/issues/NEXT-9067
 	 *
 	 * @param \Shopware\Core\Content\MailTemplate\Service\Event\MailBeforeValidateEvent $event
 	 */
@@ -85,31 +82,41 @@ class CheckoutSubscriber implements EventSubscriberInterface {
 		$templateData = $event->getTemplateData();
 		if (!empty($templateData['order']) && ($templateData['order'] instanceof OrderEntity)) {
 			/**
-			 * @var $order OrderEntity
+			 * @var $order \Shopware\Core\Checkout\Order\OrderEntity
 			 */
-			$order                                     = $templateData['order'];
+			$order                                      = $templateData['order'];
+			$isPostFinanceCheckoutEmailSettingEnabled = $this->settingsService->getSettings($order->getSalesChannelId())->isEmailEnabled();
+
+			if (!$isPostFinanceCheckoutEmailSettingEnabled) { //setting is disabled
+				return;
+			}
+
+			$orderTransactionLast = $order->getTransactions()->last();
+			if (empty($orderTransactionLast) || empty($orderTransactionLast->getPaymentMethod())) { // no payment method available
+				return;
+			}
+
+			$isPostFinanceCheckoutPM = PostFinanceCheckoutPaymentHandler::class == $orderTransactionLast->getPaymentMethod()->getHandlerIdentifier();
+			if (!$isPostFinanceCheckoutPM) { // not our payment method
+				return;
+			}
+
+			$isOrderTransactionStateOpen = in_array(
+				$orderTransactionLast->getStateMachineState()->getTechnicalName(), [
+				OrderTransactionStates::STATE_OPEN,
+				OrderTransactionStates::STATE_IN_PROGRESS,
+			]);
+
+			if (!$isOrderTransactionStateOpen) { // order payment status is open or in progress
+				return;
+			}
+
 			$isPostFinanceCheckoutEmail = isset($templateData[OrderMailService::EMAIL_ORIGIN_IS_POSTFINANCECHECKOUT]);
 
-			if (
-				$this->settingsService->getSettings($order->getSalesChannelId())->isEmailEnabled() &&
-				!$isPostFinanceCheckoutEmail &&
-				$order->getTransactions()->last()->getPaymentMethod() &&
-				PostFinanceCheckoutPaymentHandler::class == $order->getTransactions()->last()->getPaymentMethod()->getHandlerIdentifier()
-			) {
+			if (!$isPostFinanceCheckoutEmail) {
 				$this->logger->info('Email disabled for ', ['orderId' => $order->getId()]);
-				$event->getContext()->addExtension('postfinancecheckout-disable', new ArrayStruct());
 				$event->stopPropagation();
 			}
-		}
-	}
-
-	/**
-	 * @param \Shopware\Core\Content\MailTemplate\Service\Event\MailBeforeSentEvent $event
-	 */
-	public function onMailBeforeSent(MailBeforeSentEvent $event): void
-	{
-		if ($event->getContext()->hasExtension('postfinancecheckout-disable')) {
-			$event->stopPropagation();
 		}
 	}
 

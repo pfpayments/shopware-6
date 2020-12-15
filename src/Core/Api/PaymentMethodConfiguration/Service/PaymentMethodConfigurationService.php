@@ -99,6 +99,11 @@ class PaymentMethodConfigurationService {
 	private $ruleRepository;
 
 	/**
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 */
+	private $paymentMethodRepository;
+
+	/**
 	 * PaymentMethodConfigurationService constructor.
 	 *
 	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService                        $settingsService
@@ -113,12 +118,13 @@ class PaymentMethodConfigurationService {
 		SerializerRegistry $serializerRegistry
 	)
 	{
-		$this->container          = $container;
-		$this->settingsService    = $settingsService;
-		$this->mediaSerializer    = $mediaSerializer;
-		$this->serializerRegistry = $serializerRegistry;
-		$this->localeCodeProvider = $this->container->get(LocaleCodeProvider::class);
-		$this->ruleRepository     = $this->container->get('rule.repository');;
+		$this->container               = $container;
+		$this->ruleRepository          = $this->container->get('rule.repository');
+		$this->settingsService         = $settingsService;
+		$this->mediaSerializer         = $mediaSerializer;
+		$this->serializerRegistry      = $serializerRegistry;
+		$this->localeCodeProvider      = $this->container->get(LocaleCodeProvider::class);
+		$this->paymentMethodRepository = $this->container->get('payment_method.repository');
 	}
 
 	/**
@@ -169,7 +175,7 @@ class PaymentMethodConfigurationService {
 
 		$this->disablePaymentMethodConfigurations($context);
 		$this->enablePaymentMethodConfigurations($context);
-		$this->disableOrphanPaymentMethods();
+		$this->disableOrphanedPaymentMethods();
 		return [];
 	}
 
@@ -229,14 +235,14 @@ class PaymentMethodConfigurationService {
 
 		$postFinanceCheckoutPMConfigurationRepository->update($data, $context);
 
-		$this->container->get('payment_method.repository')->update($pmdata, $context);
+		$this->paymentMethodRepository->update($pmdata, $context);
 	}
 
 	/**
 	 * Full proof method to disable any orphaned payment methods
 	 *
 	 */
-	protected function disableOrphanPaymentMethods(): void
+	protected function disableOrphanedPaymentMethods(): void
 	{
 		try {
 			$query = "UPDATE payment_method 
@@ -267,7 +273,7 @@ class PaymentMethodConfigurationService {
 			'id'     => $paymentMethodId,
 			'active' => $active,
 		];
-		$this->container->get('payment_method.repository')->update([$paymentMethod], $context);
+		$this->paymentMethodRepository->update([$paymentMethod], $context);
 	}
 
 	/**
@@ -406,7 +412,7 @@ class PaymentMethodConfigurationService {
 			$context
 		);
 
-		$availabilityRuleId = $this->getAvailabilityRuleId($context);
+		$availabilityRuleId = $this->getAvailabilityRuleId($id, $context);
 
 		$data = [
 			'id'                 => $id,
@@ -423,16 +429,30 @@ class PaymentMethodConfigurationService {
 
 		$data = array_filter($data);
 
-		$this->container->get('payment_method.repository')->upsert([$data], $context);
+		$this->paymentMethodRepository->upsert([$data], $context);
 	}
 
 	/**
+	 * Get payment method availability rule
+	 *
+	 * @param string                           $id
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
 	 * @return string
 	 */
-	private function getAvailabilityRuleId(Context $context): string
+	private function getAvailabilityRuleId(string $id, Context $context): string
 	{
+		/**
+		 * @var \Shopware\Core\Checkout\Payment\PaymentMethodEntity $paymentMethod
+		 */
+		$paymentMethod = $this->paymentMethodRepository->search((new Criteria([$id])), $context)->first();
+		if(!(
+			is_null($paymentMethod) ||
+			is_null($paymentMethod->getAvailabilityRuleId())
+		)){
+			return $paymentMethod->getAvailabilityRuleId();
+		}
+
 		$criteria         = (new Criteria())->addFilter(new EqualsFilter('name', self::POSTFINANCECHECKOUT_AVAILABILITY_RULE_NAME));
 		$availabilityRule = $this->ruleRepository->search($criteria, $context)->first();
 
@@ -453,8 +473,8 @@ class PaymentMethodConfigurationService {
 						[
 							'type'  => (new CartAmountRule())->getName(),
 							'value' => [
-								'operator' => CartAmountRule::OPERATOR_GTE,
-								'amount'   => 0,
+								'operator' => CartAmountRule::OPERATOR_GT,
+								'amount'   => 0.00,
 							],
 						],
 					],

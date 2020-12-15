@@ -13,10 +13,11 @@ use Shopware\Core\{
 	Framework\Context,
 	Framework\DataAbstractionLayer\Search\Criteria,
 	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
+	Framework\Validation\DataBag\DataBag,
 	System\SalesChannel\SalesChannelEntity};
-use Symfony\Component\HttpFoundation\ParameterBag;
-use PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity;
-use PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntityDefinition;
+use PostFinanceCheckoutPayment\Core\{
+	Api\Transaction\Entity\TransactionEntity,
+	Api\Transaction\Entity\TransactionEntityDefinition};
 
 /**
  * Class OrderMailService
@@ -60,6 +61,7 @@ class OrderMailService {
 
 	/**
 	 * @param \Psr\Log\LoggerInterface $logger
+	 *
 	 * @internal
 	 * @required
 	 *
@@ -88,10 +90,17 @@ class OrderMailService {
 				return;
 			}
 
-			$salesChannel = $this->getSalesChannel($order, $context);
+			$languageIdChain[]      = $order->getLanguageId();
+			$contextLanguageIdChain = $context->getLanguageIdChain();
+			foreach ($contextLanguageIdChain as $languageId) {
+				$contextLanguageIdChain[] = $languageId;
+			}
+			array_unique($languageIdChain);
+
+			$context->assign(['languageIdChain' => $languageIdChain,]);
+
 			$templateData = [
 				'order'                                     => $order,
-				'salesChannel'                              => $salesChannel,
 				self::EMAIL_ORIGIN_IS_POSTFINANCECHECKOUT => true,
 			];
 
@@ -111,11 +120,12 @@ class OrderMailService {
 	 *
 	 * @param string                           $orderId
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity
 	 */
 	protected function getTransactionEntityByOrderId(string $orderId, Context $context): TransactionEntity
 	{
-		return $this->container->get(TransactionEntityDefinition::ENTITY_NAME .'.repository')
+		return $this->container->get(TransactionEntityDefinition::ENTITY_NAME . '.repository')
 							   ->search(new Criteria([$orderId]), $context)
 							   ->get($orderId);
 	}
@@ -123,6 +133,7 @@ class OrderMailService {
 	/**
 	 * @param string                           $orderId
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return \Shopware\Core\Checkout\Order\OrderEntity
 	 */
 	protected function getOrder(string $orderId, Context $context): OrderEntity
@@ -140,6 +151,7 @@ class OrderMailService {
 			'language',
 			'lineItems',
 			'orderCustomer',
+			'orderCustomer.customer',
 			'orderCustomer.salutation',
 			'salesChannel',
 			'stateMachineState',
@@ -159,6 +171,7 @@ class OrderMailService {
 	/**
 	 * @param \Shopware\Core\Checkout\Order\OrderEntity $order
 	 * @param \Shopware\Core\Framework\Context          $context
+	 *
 	 * @return mixed
 	 */
 	protected function getSalesChannel(OrderEntity $order, Context $context): SalesChannelEntity
@@ -172,24 +185,29 @@ class OrderMailService {
 		return $this->container->get('sales_channel.repository')->search($salesChannelCriteria, $context)->first();
 	}
 
+
 	/**
 	 * @param \Shopware\Core\Checkout\Order\OrderEntity $order
 	 * @param \Shopware\Core\Framework\Context          $context
 	 * @param string                                    $technicalName
-	 * @return \Symfony\Component\HttpFoundation\ParameterBag
+	 *
+	 * @return \Shopware\Core\Framework\Validation\DataBag\DataBag
 	 */
-	protected function getData(OrderEntity $order, Context $context, string $technicalName): ParameterBag
+	protected function getData(OrderEntity $order, Context $context, string $technicalName): DataBag
 	{
 		$mailTemplate = $this->getMailTemplate($order, $context, $technicalName, true);
-		$data         = new ParameterBag();
+		$data         = new DataBag();
 		$data->add([
 			'recipients'     => [$order->getOrderCustomer()->getEmail() => $order->getOrderCustomer()->getFirstName() . ' ' . $order->getOrderCustomer()->getLastName(),],
-			'senderName'     => $mailTemplate->getSenderName(),
+			'senderName'     => $mailTemplate->getTranslation('senderName'),
 			'salesChannelId' => $order->getSalesChannelId(),
-			'contentHtml'    => $mailTemplate->getContentHtml(),
-			'contentPlain'   => $mailTemplate->getContentPlain(),
-			'subject'        => $mailTemplate->getSubject(),
+			'templateId'     => $mailTemplate->getId(),
+			'customFields'   => $mailTemplate->getCustomFields(),
+			'contentHtml'    => $mailTemplate->getTranslation('contentHtml'),
+			'contentPlain'   => $mailTemplate->getTranslation('contentPlain'),
+			'subject'        => $mailTemplate->getTranslation('subject'),
 		]);
+
 		return $data;
 	}
 
@@ -198,11 +216,13 @@ class OrderMailService {
 	 * @param \Shopware\Core\Framework\Context          $context
 	 * @param string                                    $technicalName
 	 * @param bool                                      $filterBySalesChannelId
+	 *
 	 * @return \Shopware\Core\Content\MailTemplate\MailTemplateEntity
 	 */
 	protected function getMailTemplate(OrderEntity $order, Context $context, string $technicalName, bool $filterBySalesChannelId = true): MailTemplateEntity
 	{
 		$criteria = (new Criteria())->addFilter(new EqualsFilter('mailTemplateType.technicalName', $technicalName))
+									->addAssociation('media.media')
 									->setLimit(1);
 
 		if ($filterBySalesChannelId && !empty($order->getSalesChannelId())) {
@@ -224,6 +244,6 @@ class OrderMailService {
 	 */
 	protected function markTransactionEntityConfirmationEmailAsSent(string $orderId, Context $context)
 	{
-		$this->container->get(TransactionEntityDefinition::ENTITY_NAME .'.repository')->upsert([['id' => $orderId, 'confirmationEmailSent' => true]], $context);
+		$this->container->get(TransactionEntityDefinition::ENTITY_NAME . '.repository')->upsert([['id' => $orderId, 'confirmationEmailSent' => true]], $context);
 	}
 }

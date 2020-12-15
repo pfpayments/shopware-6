@@ -1,3 +1,8 @@
+# 1.4.0
+- Fix payment method availability rule
+- Fix email sending
+- Cancel failed orders
+
 # 1.3.0
 - Update payment method syncing
 

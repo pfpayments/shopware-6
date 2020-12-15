@@ -1,3 +1,8 @@
+# 1.4.0
+- Festlegen der Verfügbarkeitsregel für Zahlungsmethoden
+- E-Mail-Versand korrigiert
+- Fehlgeschlagene Bestellungen stornieren
+
 # 1.3.0
 - Aktualisieren Sie die Synchronisierung der Zahlungsmethode
 

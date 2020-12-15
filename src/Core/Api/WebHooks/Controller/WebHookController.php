@@ -12,16 +12,18 @@ use Shopware\Core\{
 	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler,
 	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates,
 	Checkout\Order\OrderEntity,
+	Checkout\Order\SalesChannel\OrderService,
 	Framework\Context,
 	Framework\DataAbstractionLayer\Search\Criteria,
 	Framework\Routing\Annotation\RouteScope,
+	System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions,
 	System\StateMachine\Exception\IllegalTransitionException};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\{
-	HttpFoundation\JsonResponse,
+use Symfony\Component\{HttpFoundation\JsonResponse,
+	HttpFoundation\ParameterBag,
 	HttpFoundation\Request,
 	HttpFoundation\Response,
-	Routing\Annotation\Route,};
+	Routing\Annotation\Route};
 use PostFinanceCheckout\Sdk\{
 	Model\RefundState,
 	Model\Transaction,
@@ -60,30 +62,37 @@ class WebHookController extends AbstractController {
 	 * @var \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\OrderMailService
 	 */
 	protected $orderMailService;
+
 	/**
 	 * @var \Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler
 	 */
 	protected $orderTransactionStateHandler;
+
 	/**
 	 * @var \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
 	 */
 	protected $paymentMethodConfigurationService;
+
 	/**
 	 * @var \PostFinanceCheckoutPayment\Core\Settings\Struct\Settings
 	 */
 	protected $settings;
+
 	/**
 	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
 	 */
 	protected $settingsService;
+
 	/**
 	 * @var \PostFinanceCheckoutPayment\Core\Api\Refund\Service\RefundService
 	 */
 	protected $refundService;
+
 	/**
 	 * @var \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService
 	 */
 	protected $transactionService;
+
 	/**
 	 * Transaction Final States
 	 *
@@ -99,26 +108,34 @@ class WebHookController extends AbstractController {
 	 *
 	 * @var array
 	 */
-	protected $transactionFailedStates                       = [
+	protected $transactionFailedStates = [
 		TransactionState::DECLINE,
 		TransactionState::FAILED,
 		TransactionState::VOIDED,
 	];
+
 	protected $postfinancecheckoutTransactionSuccessStates = [
 		TransactionState::AUTHORIZED,
 		TransactionState::COMPLETED,
 		TransactionState::FULFILL,
 	];
+
 	/**
 	 * @var \Shopware\Core\Checkout\Order\OrderEntity
 	 */
 	private $orderEntity;
 
 	/**
+	 * @var \Shopware\Core\Checkout\Order\SalesChannel\OrderService
+	 */
+	private $orderService;
+
+	/**
 	 * WebHookController constructor.
 	 *
 	 * @param \Doctrine\DBAL\Connection                                                                                   $connection
 	 * @param \Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler                       $orderTransactionStateHandler
+	 * @param \Shopware\Core\Checkout\Order\SalesChannel\OrderService                                                     $orderService
 	 * @param \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService $paymentMethodConfigurationService
 	 * @param \PostFinanceCheckoutPayment\Core\Api\Refund\Service\RefundService                                         $refundService
 	 * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\OrderMailService                                 $orderMailService
@@ -128,6 +145,7 @@ class WebHookController extends AbstractController {
 	public function __construct(
 		Connection $connection,
 		OrderTransactionStateHandler $orderTransactionStateHandler,
+		OrderService $orderService,
 		PaymentMethodConfigurationService $paymentMethodConfigurationService,
 		RefundService $refundService,
 		OrderMailService $orderMailService,
@@ -142,6 +160,7 @@ class WebHookController extends AbstractController {
 		$this->orderMailService                  = $orderMailService;
 		$this->transactionService                = $transactionService;
 		$this->settingsService                   = $settingsService;
+		$this->orderService                      = $orderService;
 	}
 
 	/**
@@ -375,7 +394,7 @@ class WebHookController extends AbstractController {
 				$this->transactionService->upsert($transaction, $context);
 				$orderTransactionId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
 				$orderTransaction   = $this->getOrderTransaction($orderId, $context);
-				$this->logger->info("OrderId: {$orderId}  Current state: {$orderTransaction->getStateMachineState()->getTechnicalName()}");
+				$this->logger->info("OrderId: {$orderId} Current state: {$orderTransaction->getStateMachineState()->getTechnicalName()}");
 				if (!in_array(
 					$orderTransaction->getStateMachineState()->getTechnicalName(),
 					$this->transactionFinalStates
@@ -395,6 +414,7 @@ class WebHookController extends AbstractController {
 							break;
 						case TransactionState::AUTHORIZED:
 							$this->orderTransactionStateHandler->process($orderTransactionId, $context);
+							$this->sendEmail($transaction, $context);
 							break;
 						default:
 							break;
@@ -410,13 +430,12 @@ class WebHookController extends AbstractController {
 			$this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		}
 
-		$this->sendEmail($transaction, $context);
 		return new JsonResponse(['data' => $callBackData->jsonSerialize()], $status);
 	}
 
 	/**
 	 * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
-	 * @param \Shopware\Core\Framework\Context                                       $context
+	 * @param \Shopware\Core\Framework\Context             $context
 	 */
 	protected function sendEmail(Transaction $transaction, Context $context): void
 	{
@@ -514,11 +533,22 @@ class WebHookController extends AbstractController {
 	 */
 	private function unholdAndCancelDelivery(string $orderId, Context $context): void
 	{
+		$order = $this->getOrderEntity($orderId, $context);
+		try {
+			$this->orderService->orderStateTransition(
+				$order->getId(),
+				StateMachineTransitionActions::ACTION_CANCEL,
+				new ParameterBag(),
+				$context
+			);
+		} catch (\Exception $exception) {
+			$this->logger->info($exception->getMessage(), $exception->getTrace());
+		}
+
 		try {
 			/**
 			 * @var OrderDeliveryStateHandler $orderDeliveryStateHandler
 			 */
-			$order                     = $this->getOrderEntity($orderId, $context);
 			$orderDeliveryStateHandler = $this->container->get(OrderDeliveryStateHandler::class);
 			$orderDeliveryId           = $order->getDeliveries()->last()->getId();
 			$orderDeliveryStateHandler->unhold($orderDeliveryId, $context);
