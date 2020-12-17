@@ -1,3 +1,6 @@
+# 1.4.1
+- Fetch active payment methods only
+
 # 1.4.0
 - Fix payment method availability rule
 - Fix email sending

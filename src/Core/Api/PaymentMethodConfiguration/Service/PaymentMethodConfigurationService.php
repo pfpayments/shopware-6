@@ -20,7 +20,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use PostFinanceCheckout\Sdk\{
 	ApiClient,
 	Model\CreationEntityState,
+	Model\CriteriaOperator,
 	Model\EntityQuery,
+	Model\EntityQueryFilter,
+	Model\EntityQueryFilterType,
 	Model\PaymentMethodConfiguration,
 	Model\RestLanguage};
 use PostFinanceCheckoutPayment\Core\{
@@ -323,7 +326,7 @@ class PaymentMethodConfigurationService {
 	}
 
 	/**
-	 * Fetch merchant payment methods from PostFinanceCheckout API
+	 * Fetch active merchant payment methods from PostFinanceCheckout API
 	 *
 	 * @return \PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration[]
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
@@ -332,11 +335,18 @@ class PaymentMethodConfigurationService {
 	 */
 	private function getPaymentMethodConfigurations(): array
 	{
-		$paymentMethodConfigurations = $this
-			->apiClient
-			->getPaymentMethodConfigurationService()
-			->search($this->getSpaceId(), new EntityQuery());
+		$entityQueryFilter = (new EntityQueryFilter())
+			->setOperator(CriteriaOperator::EQUALS)
+			->setFieldName('state')
+			->setType(EntityQueryFilterType::LEAF)
+			->setValue(CreationEntityState::ACTIVE);
 
+		$entityQuery = (new EntityQuery())->setFilter($entityQueryFilter);
+
+		$paymentMethodConfigurations = $this->apiClient->getPaymentMethodConfigurationService()->search(
+			$this->getSpaceId(),
+			$entityQuery
+		);
 
 		usort($paymentMethodConfigurations, function (PaymentMethodConfiguration $item1, PaymentMethodConfiguration $item2) {
 			return $item1->getSortOrder() <=> $item2->getSortOrder();
@@ -446,10 +456,10 @@ class PaymentMethodConfigurationService {
 		 * @var \Shopware\Core\Checkout\Payment\PaymentMethodEntity $paymentMethod
 		 */
 		$paymentMethod = $this->paymentMethodRepository->search((new Criteria([$id])), $context)->first();
-		if(!(
+		if (!(
 			is_null($paymentMethod) ||
 			is_null($paymentMethod->getAvailabilityRuleId())
-		)){
+		)) {
 			return $paymentMethod->getAvailabilityRuleId();
 		}
 

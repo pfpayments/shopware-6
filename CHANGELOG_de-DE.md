@@ -1,3 +1,6 @@
+# 1.4.1
+- Rufen Sie nur aktive Zahlungsmethoden ab
+
 # 1.4.0
 - Festlegen der Verfügbarkeitsregel für Zahlungsmethoden
 - E-Mail-Versand korrigiert
