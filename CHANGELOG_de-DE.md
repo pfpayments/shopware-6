@@ -1,3 +1,6 @@
+# 1.4.2
+- Behebung des Fehlers bei der Zahlungsmethode bei der Erstinstallation
+
 # 1.4.1
 - Rufen Sie nur aktive Zahlungsmethoden ab
 

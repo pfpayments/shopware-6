@@ -1,3 +1,6 @@
+# 1.4.2
+- Fix payment method bug on first time install
+
 # 1.4.1
 - Fetch active payment methods only
 

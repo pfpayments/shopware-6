@@ -6,7 +6,7 @@ The PostFinanceCheckout Payment plugin wraps around the PostFinanceCheckout API.
 ## Requirements
 
 - PHP 7.2 and above
-- Shopware 6.2 and above
+- Shopware 6.2.3 and above
 
 ## Installation
 
@@ -59,7 +59,7 @@ tail -f var/log/postfinancecheckout_payment*.log
 
 ## Documentation
 
-[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/1.4.1/docs/en/documentation.html)
+[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/1.4.2/docs/en/documentation.html)
 
 ## License
 

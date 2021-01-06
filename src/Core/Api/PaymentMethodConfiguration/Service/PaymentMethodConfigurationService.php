@@ -212,33 +212,38 @@ class PaymentMethodConfigurationService {
 	{
 		$data     = [];
 		$pmdata   = [];
-		$criteria = (new Criteria())
-			->addFilter(new EqualsFilter('spaceId', $this->getSpaceId()));
+		$criteria = (new Criteria())->addFilter(new EqualsFilter('spaceId', $this->getSpaceId()));
 
+		/**
+		 * @var $postFinanceCheckoutPMConfigurationRepository
+		 */
 		$postFinanceCheckoutPMConfigurationRepository = $this->container->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository');
 
 		$paymentMethodConfigurationEntities = $postFinanceCheckoutPMConfigurationRepository
 			->search($criteria, $context)
 			->getEntities();
 
-		/**
-		 * @var $paymentMethodConfigurationEntity \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity
-		 */
-		foreach ($paymentMethodConfigurationEntities as $paymentMethodConfigurationEntity) {
-			$data[] = [
-				'id'    => $paymentMethodConfigurationEntity->getId(),
-				'state' => CreationEntityState::INACTIVE,
-			];
+		if (!empty($paymentMethodConfigurationEntities)) {
 
-			$pmdata[] = [
-				'id'     => $paymentMethodConfigurationEntity->getId(),
-				'active' => false,
-			];
+			/**
+			 * @var $paymentMethodConfigurationEntity \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity
+			 */
+			foreach ($paymentMethodConfigurationEntities as $paymentMethodConfigurationEntity) {
+				$data[] = [
+					'id'    => $paymentMethodConfigurationEntity->getId(),
+					'state' => CreationEntityState::INACTIVE,
+				];
+
+				$pmdata[] = [
+					'id'     => $paymentMethodConfigurationEntity->getId(),
+					'active' => false,
+				];
+			}
+
+			$postFinanceCheckoutPMConfigurationRepository->update($data, $context);
+			$this->paymentMethodRepository->update($pmdata, $context);
 		}
 
-		$postFinanceCheckoutPMConfigurationRepository->update($data, $context);
-
-		$this->paymentMethodRepository->update($pmdata, $context);
 	}
 
 	/**
