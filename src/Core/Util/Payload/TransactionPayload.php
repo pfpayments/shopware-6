@@ -174,12 +174,20 @@ class TransactionPayload extends AbstractPayload {
 		 * @var \Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity $shopLineItem
 		 */
 		foreach ($this->transaction->getOrder()->getLineItems() as $shopLineItem) {
-			$taxes    = $this->getTaxes(
+
+			$taxes = $this->getTaxes(
 				$shopLineItem->getPrice()->getCalculatedTaxes(),
 				$this->translator->trans('postfinancecheckout.payload.taxes')
 			);
-			$uniqueId = $this->fixLength($shopLineItem->getId(), 200);
-			$sku      = $shopLineItem->getProductId() ? $this->fixLength($shopLineItem->getProductId(), 200) : $uniqueId;
+
+			$uniqueId = $shopLineItem->getId();
+			$sku      = $shopLineItem->getProductId() ? $shopLineItem->getProductId() : $uniqueId;
+			$payLoad  = $shopLineItem->getPayload();
+			if (!empty($payLoad) && !empty($payLoad['productNumber'])) {
+				$sku = $payLoad['productNumber'];
+			}
+			$sku = $this->fixLength($sku, 200);
+
 			$lineItem = (new LineItemCreate())
 				->setName($this->fixLength($shopLineItem->getLabel(), 150))
 				->setUniqueId($uniqueId)
@@ -225,6 +233,7 @@ class TransactionPayload extends AbstractPayload {
 	/**
 	 * @param \Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection $calculatedTaxes
 	 * @param string                                                          $title
+	 *
 	 * @return array
 	 * @throws \Exception
 	 */
@@ -324,6 +333,7 @@ class TransactionPayload extends AbstractPayload {
 	 * Get Adjustment Line Item
 	 *
 	 * @param \PostFinanceCheckout\Sdk\Model\LineItemCreate[] $lineItems
+	 *
 	 * @return \PostFinanceCheckout\Sdk\Model\LineItemCreate|null
 	 * @throws \Exception
 	 */
@@ -370,6 +380,7 @@ class TransactionPayload extends AbstractPayload {
 	 *
 	 * @param \Shopware\Core\Checkout\Customer\CustomerEntity                                  $customer
 	 * @param \Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity $customerAddressEntity
+	 *
 	 * @return \PostFinanceCheckout\Sdk\Model\AddressCreate
 	 * @throws \Exception
 	 */
@@ -460,6 +471,7 @@ class TransactionPayload extends AbstractPayload {
 
 	/**
 	 * @param string $id
+	 *
 	 * @return \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity
 	 */
 	protected function getPaymentConfiguration(string $id): PaymentMethodConfigurationEntity
@@ -475,6 +487,7 @@ class TransactionPayload extends AbstractPayload {
 	 * Get failure URL
 	 *
 	 * @param string $orderId
+	 *
 	 * @return string
 	 */
 	protected function getFailUrl(string $orderId): string

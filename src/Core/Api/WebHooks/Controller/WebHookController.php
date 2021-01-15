@@ -259,33 +259,40 @@ class WebHookController extends AbstractController {
 									  ->read($callBackData->getSpaceId(), $callBackData->getEntityId());
 			$orderId = $refund->getTransaction()->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
 
-			$this->executeLocked($orderId, $context, function () use ($orderId, $refund, $context) {
+			if(!empty($orderId)) {
 
-				$this->refundService->upsert($refund, $context);
+				$this->executeLocked($orderId, $context, function () use ($orderId, $refund, $context) {
 
-				$orderTransactionId = $refund->getTransaction()->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
-				$orderTransaction   = $this->getOrderTransaction($orderId, $context);
-				if (
-					in_array(
-						$orderTransaction->getStateMachineState()->getTechnicalName(),
-						[
-							OrderTransactionStates::STATE_PAID,
-							OrderTransactionStates::STATE_PARTIALLY_PAID,
-						]
-					) &&
-					($refund->getState() == RefundState::SUCCESSFUL)
-				) {
-					if ($refund->getAmount() == $orderTransaction->getAmount()->getTotalPrice()) {
-						$this->orderTransactionStateHandler->refund($orderTransactionId, $context);
-					} else {
-						if ($refund->getAmount() < $orderTransaction->getAmount()->getTotalPrice()) {
-							$this->orderTransactionStateHandler->refundPartially($orderTransactionId, $context);
+					$this->refundService->upsert($refund, $context);
+
+					$orderTransactionId = $refund->getTransaction()->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
+					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
+					if (
+						in_array(
+							$orderTransaction->getStateMachineState()->getTechnicalName(),
+							[
+								OrderTransactionStates::STATE_PAID,
+								OrderTransactionStates::STATE_PARTIALLY_PAID,
+							]
+						) &&
+						($refund->getState() == RefundState::SUCCESSFUL)
+					) {
+						if ($refund->getAmount() == $orderTransaction->getAmount()->getTotalPrice()) {
+							$this->orderTransactionStateHandler->refund($orderTransactionId, $context);
+						} else {
+							if ($refund->getAmount() < $orderTransaction->getAmount()->getTotalPrice()) {
+								$this->orderTransactionStateHandler->refundPartially($orderTransactionId, $context);
+							}
 						}
 					}
-				}
 
-			});
+				});
+			}
+
 			$status = Response::HTTP_OK;
+		} catch (OrderNotFoundException $exception) {
+			$status = Response::HTTP_OK;
+			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		} catch (IllegalTransitionException $exception) {
 			$status = Response::HTTP_OK;
 			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
@@ -315,8 +322,13 @@ class WebHookController extends AbstractController {
 				'postfinancecheckout_lock' => date('Y-m-d H:i:s'),
 			];
 
+			$order = $this->container->get('order.repository')->search(new Criteria([$orderId]), $context)->first();
+
+			if(empty($order)){
+				throw new OrderNotFoundException($orderId);
+			}
+
 			$this->container->get('order.repository')->upsert([$data], $context);
-			$this->container->get('order.repository')->search(new Criteria([$orderId]), $context)->first();
 
 			$result = $operation();
 
@@ -389,40 +401,44 @@ class WebHookController extends AbstractController {
 										  ->getTransactionService()
 										  ->read($callBackData->getSpaceId(), $callBackData->getEntityId());
 			$orderId     = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
-
-			$this->executeLocked($orderId, $context, function () use ($orderId, $transaction, $context) {
-				$this->transactionService->upsert($transaction, $context);
-				$orderTransactionId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
-				$orderTransaction   = $this->getOrderTransaction($orderId, $context);
-				$this->logger->info("OrderId: {$orderId} Current state: {$orderTransaction->getStateMachineState()->getTechnicalName()}");
-				if (!in_array(
-					$orderTransaction->getStateMachineState()->getTechnicalName(),
-					$this->transactionFinalStates
-				)) {
-					switch ($transaction->getState()) {
-						case TransactionState::FAILED:
-							$this->orderTransactionStateHandler->fail($orderTransactionId, $context);
-							$this->unholdAndCancelDelivery($orderId, $context);
-							break;
-						case TransactionState::DECLINE:
-						case TransactionState::VOIDED:
-							$this->orderTransactionStateHandler->cancel($orderTransactionId, $context);
-							$this->unholdAndCancelDelivery($orderId, $context);
-							break;
-						case TransactionState::FULFILL:
-							$this->unholdDelivery($orderId, $context);
-							break;
-						case TransactionState::AUTHORIZED:
-							$this->orderTransactionStateHandler->process($orderTransactionId, $context);
-							$this->sendEmail($transaction, $context);
-							break;
-						default:
-							break;
+			if(!empty($orderId)) {
+				$this->executeLocked($orderId, $context, function () use ($orderId, $transaction, $context) {
+					$this->transactionService->upsert($transaction, $context);
+					$orderTransactionId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
+					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
+					$this->logger->info("OrderId: {$orderId} Current state: {$orderTransaction->getStateMachineState()->getTechnicalName()}");
+					if (!in_array(
+						$orderTransaction->getStateMachineState()->getTechnicalName(),
+						$this->transactionFinalStates
+					)) {
+						switch ($transaction->getState()) {
+							case TransactionState::FAILED:
+								$this->orderTransactionStateHandler->fail($orderTransactionId, $context);
+								$this->unholdAndCancelDelivery($orderId, $context);
+								break;
+							case TransactionState::DECLINE:
+							case TransactionState::VOIDED:
+								$this->orderTransactionStateHandler->cancel($orderTransactionId, $context);
+								$this->unholdAndCancelDelivery($orderId, $context);
+								break;
+							case TransactionState::FULFILL:
+								$this->unholdDelivery($orderId, $context);
+								break;
+							case TransactionState::AUTHORIZED:
+								$this->orderTransactionStateHandler->process($orderTransactionId, $context);
+								$this->sendEmail($transaction, $context);
+								break;
+							default:
+								break;
+						}
 					}
-				}
 
-			});
+				});
+			}
 			$status = Response::HTTP_OK;
+		} catch (OrderNotFoundException $exception) {
+			$status = Response::HTTP_OK;
+			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		} catch (IllegalTransitionException $exception) {
 			$status = Response::HTTP_OK;
 			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
@@ -468,33 +484,37 @@ class WebHookController extends AbstractController {
 													 ->getLineItemVersion()
 													 ->getTransaction()
 													 ->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
+			if(!empty($orderId)) {
+				$this->executeLocked($orderId, $context, function () use ($orderId, $transactionInvoice, $context) {
 
-			$this->executeLocked($orderId, $context, function () use ($orderId, $transactionInvoice, $context) {
-
-				$orderTransactionId = $transactionInvoice->getCompletion()
-														 ->getLineItemVersion()
-														 ->getTransaction()
-														 ->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
-				$orderTransaction   = $this->getOrderTransaction($orderId, $context);
-				if (!in_array(
-					$orderTransaction->getStateMachineState()->getTechnicalName(),
-					$this->transactionFinalStates
-				)) {
-					switch ($transactionInvoice->getState()) {
-						case TransactionInvoiceState::DERECOGNIZED:
-							$this->orderTransactionStateHandler->cancel($orderTransactionId, $context);
-							break;
-						case TransactionInvoiceState::NOT_APPLICABLE:
-						case TransactionInvoiceState::PAID:
-							$this->orderTransactionStateHandler->paid($orderTransactionId, $context);
-							$this->unholdDelivery($orderId, $context);
-							break;
-						default:
-							break;
+					$orderTransactionId = $transactionInvoice->getCompletion()
+															 ->getLineItemVersion()
+															 ->getTransaction()
+															 ->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
+					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
+					if (!in_array(
+						$orderTransaction->getStateMachineState()->getTechnicalName(),
+						$this->transactionFinalStates
+					)) {
+						switch ($transactionInvoice->getState()) {
+							case TransactionInvoiceState::DERECOGNIZED:
+								$this->orderTransactionStateHandler->cancel($orderTransactionId, $context);
+								break;
+							case TransactionInvoiceState::NOT_APPLICABLE:
+							case TransactionInvoiceState::PAID:
+								$this->orderTransactionStateHandler->paid($orderTransactionId, $context);
+								$this->unholdDelivery($orderId, $context);
+								break;
+							default:
+								break;
+						}
 					}
-				}
-			});
+				});
+			}
 			$status = Response::HTTP_OK;
+		} catch (OrderNotFoundException $exception) {
+			$status = Response::HTTP_OK;
+			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		} catch (IllegalTransitionException $exception) {
 			$status = Response::HTTP_OK;
 			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());

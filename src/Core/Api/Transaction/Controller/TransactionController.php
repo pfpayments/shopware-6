@@ -55,6 +55,7 @@ class TransactionController extends AbstractController {
 
 	/**
 	 * @param \Psr\Log\LoggerInterface $logger
+	 *
 	 * @internal
 	 * @required
 	 *
@@ -67,6 +68,7 @@ class TransactionController extends AbstractController {
 	/**
 	 * @param \Symfony\Component\HttpFoundation\Request $request
 	 * @param \Shopware\Core\Framework\Context          $context
+	 *
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 * @Route(
 	 *     "/api/v{version}/_action/postfinancecheckout/transaction/get-transaction-data/",
@@ -83,18 +85,19 @@ class TransactionController extends AbstractController {
 
 		$refunds = [];
 		foreach ($refundCollection as $refundEntity) {
-			$refunds[] = $refundEntity->getData();
+			$refunds[] = $refundEntity ? $refundEntity->getData() : [];
 		}
 
 		return new JsonResponse([
 			'refunds'      => $refunds,
-			'transactions' => [$transaction->getData()],
+			'transactions' => [$transaction ? $transaction->getData() : []],
 		]);
 	}
 
 	/**
 	 * @param string $salesChannelId
 	 * @param int    $transactionId
+	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
@@ -130,6 +133,7 @@ class TransactionController extends AbstractController {
 	/**
 	 * @param string $salesChannelId
 	 * @param int    $transactionId
+	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException

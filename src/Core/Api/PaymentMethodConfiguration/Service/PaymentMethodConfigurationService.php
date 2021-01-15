@@ -210,14 +210,19 @@ class PaymentMethodConfigurationService {
 	 */
 	private function disablePaymentMethodConfigurations(Context $context): void
 	{
-		$data     = [];
-		$pmdata   = [];
+		$data                          = [];
+		$paymentMethodData             = [];
+		$salesChannelPaymentMethodData = [];
+
 		$criteria = (new Criteria())->addFilter(new EqualsFilter('spaceId', $this->getSpaceId()));
 
 		/**
 		 * @var $postFinanceCheckoutPMConfigurationRepository
 		 */
 		$postFinanceCheckoutPMConfigurationRepository = $this->container->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository');
+
+		/** @var EntityRepositoryInterface $salesChannelPaymentRepository */
+		$salesChannelPaymentRepository = $this->container->get('sales_channel_payment_method.repository');
 
 		$paymentMethodConfigurationEntities = $postFinanceCheckoutPMConfigurationRepository
 			->search($criteria, $context)
@@ -234,14 +239,24 @@ class PaymentMethodConfigurationService {
 					'state' => CreationEntityState::INACTIVE,
 				];
 
-				$pmdata[] = [
+				$paymentMethodData[] = [
 					'id'     => $paymentMethodConfigurationEntity->getId(),
 					'active' => false,
 				];
+
+				$salesChannelPaymentMethodData[] = [
+					'paymentMethodId' => $paymentMethodConfigurationEntity->getId(),
+				];
 			}
 
-			$postFinanceCheckoutPMConfigurationRepository->update($data, $context);
-			$this->paymentMethodRepository->update($pmdata, $context);
+			try {
+				$postFinanceCheckoutPMConfigurationRepository->update($data, $context);
+				$this->paymentMethodRepository->update($paymentMethodData, $context);
+				$salesChannelPaymentRepository->delete($salesChannelPaymentMethodData, $context);
+			} catch (\Exception $exception) {
+				$this->logger->critical($exception->getMessage());
+			}
+
 		}
 
 	}
@@ -488,8 +503,8 @@ class PaymentMethodConfigurationService {
 						[
 							'type'  => (new CartAmountRule())->getName(),
 							'value' => [
-								'operator' => CartAmountRule::OPERATOR_GT,
-								'amount'   => 0.00,
+								'operator' => CartAmountRule::OPERATOR_GTE,
+								'amount'   => '0.01',
 							],
 						],
 					],

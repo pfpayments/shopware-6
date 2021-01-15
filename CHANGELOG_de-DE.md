@@ -1,3 +1,7 @@
+# 1.4.3
+- Fehlende Webhook-Fehler ausschließen
+- Iframe-Ausbruch behoben
+
 # 1.4.2
 - Behebung des Fehlers bei der Zahlungsmethode bei der Erstinstallation
 
