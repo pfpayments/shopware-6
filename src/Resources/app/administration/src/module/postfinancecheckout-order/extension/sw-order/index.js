@@ -40,7 +40,9 @@ Component.override('sw-order-detail', {
 				orderCriteria.addAssociation('transactions');
 
 				orderRepository.get(this.orderId, Context.api, orderCriteria).then((order) => {
-					if (order.transactions.length <= 0 ||
+					if (
+						(order.amountTotal <= 0) ||
+						(order.transactions.length <= 0) ||
 						!order.transactions[0].paymentMethodId
 					) {
 						this.setIsPostFinanceCheckoutPayment(null);

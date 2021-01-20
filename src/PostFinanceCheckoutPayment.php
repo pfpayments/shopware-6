@@ -31,32 +31,6 @@ class PostFinanceCheckoutPayment extends Plugin {
 	use PostFinanceCheckoutPaymentPluginTrait;
 
 	/**
-	 * @param \Symfony\Component\DependencyInjection\ContainerBuilder $container
-	 * @throws \Exception
-	 */
-	public function build(ContainerBuilder $container): void
-	{
-		parent::build($container);
-		$loader    = new XmlFileLoader($container, new FileLocator(__DIR__ . '/DependencyInjection/core'));
-		$resources = [
-			'api/configuration.xml',
-			'api/order_delivery_state.xml',
-			'api/payment_method_configuration.xml',
-			'api/refund.xml',
-			'api/transaction.xml',
-			'api/webhooks.xml',
-			'storefront/account.xml',
-			'storefront/checkout.xml',
-			'checkout.xml',
-			'settings.xml',
-			'util.xml',
-		];
-		foreach ($resources as $resource) {
-			$loader->load($resource);
-		}
-	}
-
-	/**
 	 * @param \Shopware\Core\Framework\Plugin\Context\UninstallContext $uninstallContext
 	 */
 	public function uninstall(UninstallContext $uninstallContext): void

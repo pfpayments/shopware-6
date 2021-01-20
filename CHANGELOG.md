@@ -1,3 +1,8 @@
+# 2.0.0
+- Fix cart recreation on promotions
+- Remove availability rules
+- Handle orders less than or equal to zero
+
 # 1.4.3
 - Silence missing order webhook errors
 - Fix iframe breakout

@@ -6,7 +6,7 @@ use Psr\Log\LoggerInterface;
 use Shopware\Core\{
 	Checkout\Cart\Cart,
 	Checkout\Cart\Exception\OrderNotFoundException,
-	Checkout\Cart\LineItem\LineItem,
+	Checkout\Cart\LineItemFactoryRegistry,
 	Checkout\Cart\SalesChannel\CartService,
 	Checkout\Order\OrderEntity,
 	Content\Product\Exception\ProductNotFoundException,
@@ -73,24 +73,32 @@ class CheckoutController extends StorefrontController {
 	private $logger;
 
 	/**
+	 * @var \Shopware\Core\Checkout\Cart\LineItemFactoryRegistry
+	 */
+	private $lineItemFactoryRegistry;
+
+	/**
 	 * PaymentController constructor.
 	 *
+	 * @param \Shopware\Core\Checkout\Cart\LineItemFactoryRegistry                          $lineItemFactoryRegistry
 	 * @param \Shopware\Core\Checkout\Cart\SalesChannel\CartService                         $cartService
 	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService           $settingsService
 	 * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService $transactionService
 	 * @param \Shopware\Storefront\Page\GenericPageLoader                                   $genericLoader
 	 */
 	public function __construct(
+		LineItemFactoryRegistry $lineItemFactoryRegistry,
 		CartService $cartService,
 		SettingsService $settingsService,
 		TransactionService $transactionService,
 		GenericPageLoader $genericLoader
 	)
 	{
-		$this->cartService        = $cartService;
-		$this->genericLoader      = $genericLoader;
-		$this->settingsService    = $settingsService;
-		$this->transactionService = $transactionService;
+		$this->cartService             = $cartService;
+		$this->genericLoader           = $genericLoader;
+		$this->settingsService         = $settingsService;
+		$this->transactionService      = $transactionService;
+		$this->lineItemFactoryRegistry = $lineItemFactoryRegistry;
 	}
 
 	/**
@@ -321,13 +329,13 @@ class CheckoutController extends StorefrontController {
 
 		try {
 			foreach ($orderEntity->getLineItems() as $orderLineItemEntity) {
-				$lineItem = (new LineItem($orderLineItemEntity->getProductId(), $orderLineItemEntity->getType()))
-					->setStackable($orderLineItemEntity->getStackable())
-					->setReferencedId($orderLineItemEntity->getReferencedId())
-					->setQuantity($orderLineItemEntity->getQuantity())
-					->setRemovable($orderLineItemEntity->getRemovable());
-
-				$cart = $this->cartService->add($cart, $lineItem, $salesChannelContext);
+				$lineItem = $this->lineItemFactoryRegistry->create([
+					'id'           => $orderLineItemEntity->getId(),
+					'quantity'     => $orderLineItemEntity->getQuantity(),
+					'referencedId' => $orderLineItemEntity->getReferencedId(),
+					'type'         => $orderLineItemEntity->getType(),
+				], $salesChannelContext);
+				$cart     = $this->cartService->add($cart, $lineItem, $salesChannelContext);
 			}
 			$transaction = $this->getTransaction($orderId, $salesChannelContext->getContext());
 			if (!empty($transaction->getUserFailureMessage())) {

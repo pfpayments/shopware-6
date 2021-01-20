@@ -7,6 +7,7 @@
 	<services>
 		<service id="PostFinanceCheckoutPayment\Core\Checkout\PaymentHandler\PostFinanceCheckoutPaymentHandler">
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService"/>
+			<argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
 			<call method="setLogger">
 				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
 			</call>

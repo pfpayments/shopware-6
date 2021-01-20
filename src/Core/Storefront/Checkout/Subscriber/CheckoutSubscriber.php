@@ -80,11 +80,14 @@ class CheckoutSubscriber implements EventSubscriberInterface {
 	public function onMailBeforeValidate(MailBeforeValidateEvent $event): void
 	{
 		$templateData = $event->getTemplateData();
-		if (!empty($templateData['order']) && ($templateData['order'] instanceof OrderEntity)) {
-			/**
-			 * @var $order \Shopware\Core\Checkout\Order\OrderEntity
-			 */
-			$order                                      = $templateData['order'];
+		
+		/**
+		 * @var $order \Shopware\Core\Checkout\Order\OrderEntity
+		 */
+		$order = !empty($templateData['order']) && $templateData['order'] instanceof OrderEntity ? $templateData['order'] : null;
+
+		if (!empty($order) && $order->getAmountTotal() > 0){
+
 			$isPostFinanceCheckoutEmailSettingEnabled = $this->settingsService->getSettings($order->getSalesChannelId())->isEmailEnabled();
 
 			if (!$isPostFinanceCheckoutEmailSettingEnabled) { //setting is disabled

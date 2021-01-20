@@ -1,3 +1,8 @@
+# 2.0.0
+- Warenkorb-Wiederherstellung bei Werbeaktionen korrigiert
+- Verfügbarkeitsregeln entfernt
+- Verbessertes Behandeln von Aufträge kleiner oder gleich Null
+
 # 1.4.3
 - Fehlende Webhook-Fehler ausschließen
 - Iframe-Ausbruch behoben
