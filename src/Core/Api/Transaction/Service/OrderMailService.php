@@ -5,6 +5,7 @@ namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Service;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
+	Checkout\Cart\Event\CheckoutOrderPlacedEvent,
 	Checkout\Cart\Exception\OrderNotFoundException,
 	Checkout\Order\OrderEntity,
 	Content\MailTemplate\MailTemplateEntity,
@@ -13,7 +14,9 @@ use Shopware\Core\{
 	Framework\Context,
 	Framework\DataAbstractionLayer\Search\Criteria,
 	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
-	Framework\Validation\DataBag\DataBag,
+	Framework\DataAbstractionLayer\Search\Filter\NotFilter,
+	Framework\DataAbstractionLayer\Search\Filter\OrFilter,
+	Framework\Event\EventAction\EventActionCollection,
 	System\SalesChannel\SalesChannelEntity};
 use PostFinanceCheckoutPayment\Core\{
 	Api\Transaction\Entity\TransactionEntity,
@@ -74,9 +77,8 @@ class OrderMailService {
 	/**
 	 * @param string                           $orderId
 	 * @param \Shopware\Core\Framework\Context $context
-	 * @param string                           $technicalName
 	 */
-	public function send(string $orderId, Context $context, string $technicalName = MailTemplateTypes::MAILTYPE_ORDER_CONFIRM): void
+	public function send(string $orderId, Context $context): void
 	{
 		try {
 
@@ -104,9 +106,11 @@ class OrderMailService {
 				self::EMAIL_ORIGIN_IS_POSTFINANCECHECKOUT => true,
 			];
 
-			$data = $this->getData($order, $context, $technicalName);
+			$data = $this->getData($order, $context);
 
-			$this->mailService->send($data->all(), $context, $templateData);
+			foreach ($data as $datum){
+				$this->mailService->send($datum, $context, $templateData);
+			}
 			$this->markTransactionEntityConfirmationEmailAsSent($orderId, $context);
 
 
@@ -168,73 +172,83 @@ class OrderMailService {
 		return $order;
 	}
 
-	/**
-	 * @param \Shopware\Core\Checkout\Order\OrderEntity $order
-	 * @param \Shopware\Core\Framework\Context          $context
-	 *
-	 * @return mixed
-	 */
-	protected function getSalesChannel(OrderEntity $order, Context $context): SalesChannelEntity
-	{
-		$languageId           = $order->getLanguageId();
-		$salesChannelCriteria = new Criteria([$order->getSalesChannel()->getId()]);
-		$salesChannelCriteria->getAssociation('domains')
-							 ->addFilter(
-								 new EqualsFilter('languageId', $languageId)
-							 );
-		return $this->container->get('sales_channel.repository')->search($salesChannelCriteria, $context)->first();
-	}
-
 
 	/**
 	 * @param \Shopware\Core\Checkout\Order\OrderEntity $order
 	 * @param \Shopware\Core\Framework\Context          $context
-	 * @param string                                    $technicalName
 	 *
-	 * @return \Shopware\Core\Framework\Validation\DataBag\DataBag
+	 * @return array
 	 */
-	protected function getData(OrderEntity $order, Context $context, string $technicalName): DataBag
+	protected function getData(OrderEntity $order, Context $context): array
 	{
-		$mailTemplate = $this->getMailTemplate($order, $context, $technicalName, true);
-		$data         = new DataBag();
-		$data->add([
-			'recipients'     => [$order->getOrderCustomer()->getEmail() => $order->getOrderCustomer()->getFirstName() . ' ' . $order->getOrderCustomer()->getLastName(),],
-			'senderName'     => $mailTemplate->getTranslation('senderName'),
-			'salesChannelId' => $order->getSalesChannelId(),
-			'templateId'     => $mailTemplate->getId(),
-			'customFields'   => $mailTemplate->getCustomFields(),
-			'contentHtml'    => $mailTemplate->getTranslation('contentHtml'),
-			'contentPlain'   => $mailTemplate->getTranslation('contentPlain'),
-			'subject'        => $mailTemplate->getTranslation('subject'),
-		]);
+		$data = [];
+
+		/**
+		 * @var
+		 */
+		/** @var \Shopware\Core\Framework\Event\EventAction\EventActionCollection $eventActionEntities */
+		$eventActionEntities = $this->getBusinessEvents($order, $context);
+		$customerRecipient   = [
+			$order->getOrderCustomer()->getEmail() => $order->getOrderCustomer()->getFirstName() . ' ' . $order->getOrderCustomer()->getLastName(),
+		];
+
+		foreach ($eventActionEntities as $eventActionEntity) {
+
+			$eventConfig    = $eventActionEntity->getConfig();
+			$mailTemplateId = $eventConfig['mail_template_id'];
+			$recipients     = !empty($eventConfig['recipients']) ? $eventConfig['recipients'] : $customerRecipient;
+			$mailTemplate   = $this->getMailTemplateById($context, $mailTemplateId);
+
+			$data[] = [
+				'recipients'     => $recipients,
+				'senderName'     => $mailTemplate->getTranslation('senderName'),
+				'salesChannelId' => $order->getSalesChannelId(),
+				'templateId'     => $mailTemplateId,
+				'customFields'   => $mailTemplate->getCustomFields(),
+				'contentHtml'    => $mailTemplate->getTranslation('contentHtml'),
+				'contentPlain'   => $mailTemplate->getTranslation('contentPlain'),
+				'subject'        => $mailTemplate->getTranslation('subject'),
+			];
+		}
 
 		return $data;
 	}
 
+	protected function getBusinessEvents(OrderEntity $order, Context $context): EventActionCollection
+	{
+		$criteria = (new Criteria())
+			->addAssociations([
+				'rules',
+				'salesChannels',
+			])
+			->addFilter(new EqualsFilter('eventName', CheckoutOrderPlacedEvent::EVENT_NAME))
+			->addFilter(new EqualsFilter('active', true))
+			->addFilter(new NotFilter(NotFilter::CONNECTION_AND, [new EqualsFilter('config.mail_template_id', null)]))
+			->addFilter(new OrFilter([
+				new EqualsFilter('salesChannels.id', $order->getSalesChannelId()),
+				new EqualsFilter('salesChannels.id', null),
+			]));
+
+
+		/** @var EventActionCollection $events */
+		$events = $this->container->get('event_action.repository')
+								  ->search($criteria, $context)
+								  ->getEntities();
+		return $events;
+	}
+
 	/**
-	 * @param \Shopware\Core\Checkout\Order\OrderEntity $order
-	 * @param \Shopware\Core\Framework\Context          $context
-	 * @param string                                    $technicalName
-	 * @param bool                                      $filterBySalesChannelId
+	 * @param \Shopware\Core\Framework\Context $context
+	 * @param string                           $id
 	 *
 	 * @return \Shopware\Core\Content\MailTemplate\MailTemplateEntity
 	 */
-	protected function getMailTemplate(OrderEntity $order, Context $context, string $technicalName, bool $filterBySalesChannelId = true): MailTemplateEntity
+	protected function getMailTemplateById(Context $context, string $id): MailTemplateEntity
 	{
-		$criteria = (new Criteria())->addFilter(new EqualsFilter('mailTemplateType.technicalName', $technicalName))
-									->addAssociation('media.media')
-									->setLimit(1);
-
-		if ($filterBySalesChannelId && !empty($order->getSalesChannelId())) {
-			$criteria->addFilter(
-				new EqualsFilter('mail_template.salesChannels.salesChannel.id', $order->getSalesChannelId())
-			);
-		}
+		$criteria = (new Criteria([$id]))->addAssociations(['media', 'media.media', 'salesChannels', 'mailTemplateType']);
 
 		$mailTemplateEntity = $this->container->get('mail_template.repository')->search($criteria, $context)->first();
-		if (empty($mailTemplateEntity) && $filterBySalesChannelId) {
-			return $this->getMailTemplate($order, $context, $technicalName, false);
-		}
+
 		return $mailTemplateEntity;
 	}
 

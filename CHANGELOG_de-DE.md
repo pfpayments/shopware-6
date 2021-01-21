@@ -1,3 +1,6 @@
+# 2.1.0
+- E-Mail-Probleme behoben
+
 # 2.0.0
 - Warenkorb-Wiederherstellung bei Werbeaktionen korrigiert
 - Verfügbarkeitsregeln entfernt

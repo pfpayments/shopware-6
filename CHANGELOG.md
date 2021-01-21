@@ -1,3 +1,6 @@
+# 2.1.0
+- Fix email issues
+
 # 2.0.0
 - Fix cart recreation on promotions
 - Remove availability rules
