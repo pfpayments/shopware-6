@@ -186,14 +186,15 @@ class TransactionPayload extends AbstractPayload {
 			if (!empty($payLoad) && !empty($payLoad['productNumber'])) {
 				$sku = $payLoad['productNumber'];
 			}
-			$sku = $this->fixLength($sku, 200);
+			$sku    = $this->fixLength($sku, 200);
+			$amount = $shopLineItem->getTotalPrice() ? self::round($shopLineItem->getTotalPrice()) : 0;
 
 			$lineItem = (new LineItemCreate())
 				->setName($this->fixLength($shopLineItem->getLabel(), 150))
 				->setUniqueId($uniqueId)
 				->setSku($sku)
 				->setQuantity($shopLineItem->getQuantity() ?? 1)
-				->setAmountIncludingTax($shopLineItem->getTotalPrice() ?? 0)
+				->setAmountIncludingTax($amount)
 				->setTaxes($taxes);
 
 			$productAttributes = $this->getProductAttributes($shopLineItem);
@@ -296,6 +297,7 @@ class TransactionPayload extends AbstractPayload {
 		try {
 
 			$amount = $this->transaction->getOrder()->getShippingTotal();
+			$amount = self::round($amount);
 
 			if ($amount > 0) {
 
@@ -345,7 +347,8 @@ class TransactionPayload extends AbstractPayload {
 			return $lineItem->getAmountIncludingTax();
 		}, $lineItems));
 
-		$adjustmentPrice = round($this->transaction->getOrder()->getAmountTotal(), 2) - round($lineItemPriceTotal, 2);
+		$adjustmentPrice = $this->transaction->getOrder()->getAmountTotal() - $lineItemPriceTotal;
+		$adjustmentPrice = self::round($adjustmentPrice);
 
 		if (abs($adjustmentPrice) != 0) {
 			if ($this->settings->isLineItemConsistencyEnabled()) {
@@ -363,7 +366,8 @@ class TransactionPayload extends AbstractPayload {
 					->setSku('Adjustment-Line-Item')
 					->setQuantity(1);
 				/** @noinspection PhpParamsInspection */
-				$lineItem->setAmountIncludingTax($adjustmentPrice)->setType(($adjustmentPrice > 0) ? LineItemType::FEE : LineItemType::DISCOUNT);
+				$lineItem->setAmountIncludingTax($adjustmentPrice)
+						 ->setType(($adjustmentPrice > 0) ? LineItemType::FEE : LineItemType::DISCOUNT);
 
 				if (!$lineItem->valid()) {
 					$this->logger->critical('Adjustment LineItem payload invalid:', $lineItem->listInvalidProperties());

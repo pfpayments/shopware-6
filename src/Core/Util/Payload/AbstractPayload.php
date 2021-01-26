@@ -39,4 +39,14 @@ abstract class AbstractPayload {
 		return mb_substr($string, 0, $maxLength, 'UTF-8');
 	}
 
+	/**
+	 * @param     $amount
+	 * @param int $precision
+	 *
+	 * @return float
+	 */
+	public static function round(float $amount, int $precision = 2): float {
+		return \round($amount, $precision);
+	}
+
 }

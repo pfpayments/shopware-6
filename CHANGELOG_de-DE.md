@@ -1,3 +1,7 @@
+# 2.1.1
+- Runde Beträge
+- Weiterleiten, wenn der Wagen nicht neu erstellt werden kann
+
 # 2.1.0
 - E-Mail-Probleme behoben
 

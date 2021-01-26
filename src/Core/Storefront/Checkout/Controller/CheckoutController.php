@@ -9,7 +9,6 @@ use Shopware\Core\{
 	Checkout\Cart\LineItemFactoryRegistry,
 	Checkout\Cart\SalesChannel\CartService,
 	Checkout\Order\OrderEntity,
-	Content\Product\Exception\ProductNotFoundException,
 	Framework\Context,
 	Framework\DataAbstractionLayer\Search\Criteria,
 	Framework\Routing\Annotation\RouteScope,
@@ -303,9 +302,6 @@ class CheckoutController extends StorefrontController {
 	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
 	 * @Route(
 	 *     "/postfinancecheckout/checkout/recreate-cart",
@@ -322,13 +318,18 @@ class CheckoutController extends StorefrontController {
 			throw new MissingRequestParameterException('orderId');
 		}
 
-		// Configuration
-		$this->settings = $this->settingsService->getSettings($salesChannelContext->getSalesChannel()->getId());
-
-		$orderEntity = $this->getOrder($orderId, $salesChannelContext->getContext());
-
 		try {
+			// Configuration
+			$this->settings = $this->settingsService->getSettings($salesChannelContext->getSalesChannel()->getId());
+
+			$orderEntity = $this->getOrder($orderId, $salesChannelContext->getContext());
+
+			$transaction = $this->getTransaction($orderId, $salesChannelContext->getContext());
+			if (!empty($transaction->getUserFailureMessage())) {
+				$this->addFlash('danger', $transaction->getUserFailureMessage());
+			}
 			foreach ($orderEntity->getLineItems() as $orderLineItemEntity) {
+
 				$lineItem = $this->lineItemFactoryRegistry->create([
 					'id'           => $orderLineItemEntity->getId(),
 					'quantity'     => $orderLineItemEntity->getQuantity(),
@@ -337,13 +338,11 @@ class CheckoutController extends StorefrontController {
 				], $salesChannelContext);
 				$cart     = $this->cartService->add($cart, $lineItem, $salesChannelContext);
 			}
-			$transaction = $this->getTransaction($orderId, $salesChannelContext->getContext());
-			if (!empty($transaction->getUserFailureMessage())) {
-				$this->addFlash('danger', $transaction->getUserFailureMessage());
-			}
 
-		} catch (ProductNotFoundException $exception) {
+		} catch (\Exception $exception) {
 			$this->addFlash('danger', $this->trans('error.addToCartError'));
+			$this->logger->critical($exception->getMessage());
+			return $this->redirectToRoute('frontend.home.page');
 		}
 
 		return $this->redirectToRoute('frontend.checkout.confirm.page');

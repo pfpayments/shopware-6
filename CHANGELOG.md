@@ -1,3 +1,7 @@
+# 2.1.1
+- Round amounts
+- Redirect if the cart can not be recreated
+
 # 2.1.0
 - Fix email issues
 

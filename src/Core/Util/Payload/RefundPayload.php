@@ -29,7 +29,7 @@ class RefundPayload extends AbstractPayload {
 			($amount <= floatval($transaction->getAuthorizationAmount()))
 		) {
 			$refund = (new RefundCreate())
-			->setAmount($amount)
+			->setAmount(self::round($amount))
 			->setTransaction($transaction->getId())
 			->setMerchantReference($this->fixLength($transaction->getMerchantReference(), 100))
 			->setExternalId($this->fixLength(uniqid('refund_', true), 100))
