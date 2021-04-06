@@ -10,11 +10,14 @@ use Shopware\Core\{
 	Checkout\Payment\Cart\AsyncPaymentTransactionStruct,
 	Framework\Context,
 	Framework\DataAbstractionLayer\Search\Criteria,
-	System\SalesChannel\SalesChannelContext};
+	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
+	System\SalesChannel\SalesChannelContext
+};
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use PostFinanceCheckout\Sdk\{
 	Model\Transaction,
-	Model\TransactionPending};
+	Model\TransactionPending
+};
 use PostFinanceCheckoutPayment\Core\{
 	Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
 	Api\Refund\Entity\RefundEntityCollection,
@@ -24,7 +27,8 @@ use PostFinanceCheckoutPayment\Core\{
 	Settings\Options\Integration,
 	Settings\Service\SettingsService,
 	Util\LocaleCodeProvider,
-	Util\Payload\TransactionPayload};
+	Util\Payload\TransactionPayload
+};
 
 /**
  * Class TransactionService
@@ -72,6 +76,7 @@ class TransactionService {
 
 	/**
 	 * @param \Psr\Log\LoggerInterface $logger
+	 *
 	 * @internal
 	 * @required
 	 *
@@ -89,6 +94,7 @@ class TransactionService {
 	 *
 	 * @param \Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct $transaction
 	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext             $salesChannelContext
+	 *
 	 * @return string
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
@@ -240,6 +246,7 @@ class TransactionService {
 	 *
 	 * @param String                           $orderId
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return \Shopware\Core\Checkout\Order\OrderEntity
 	 */
 	private function getOrderEntity(string $orderId, Context $context): OrderEntity
@@ -265,6 +272,7 @@ class TransactionService {
 	 *
 	 * @param string                           $orderId
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity
 	 */
 	public function getByOrderId(string $orderId, Context $context): TransactionEntity
@@ -279,6 +287,7 @@ class TransactionService {
 	 *
 	 * @param int    $transactionId
 	 * @param string $salesChannelId
+	 *
 	 * @return \PostFinanceCheckout\Sdk\Model\Transaction
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
@@ -295,14 +304,17 @@ class TransactionService {
 	 *
 	 * @param int                              $transactionId
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity|null
 	 */
 	public function getByTransactionId(int $transactionId, Context $context): ?TransactionEntity
 	{
 		return $this->container->get(TransactionEntityDefinition::ENTITY_NAME . '.repository')
-							   ->search((new Criteria())->addAssociations(['refunds']), $context)
-							   ->getEntities()
-							   ->getByTransactionId($transactionId);
+							   ->search(
+								   (new Criteria())->addFilter(new EqualsFilter('transactionId', $transactionId))
+												   ->addAssociations(['refunds']), $context
+							   )
+							   ->first();
 	}
 
 	/**
@@ -310,14 +322,16 @@ class TransactionService {
 	 *
 	 * @param int                              $transactionId
 	 * @param \Shopware\Core\Framework\Context $context
+	 *
 	 * @return \PostFinanceCheckoutPayment\Core\Api\Refund\Entity\RefundEntityCollection
 	 */
 	public function getRefundEntityCollectionByTransactionId(int $transactionId, Context $context): ?RefundEntityCollection
 	{
 		return $this->container->get(RefundEntityDefinition::ENTITY_NAME . '.repository')
-							   ->search(new Criteria(), $context)
-							   ->getEntities()
-							   ->filterByTransactionId($transactionId);
+							   ->search(
+								   (new Criteria())->addFilter(new EqualsFilter('transactionId', $transactionId)), $context
+							   )
+							   ->getEntities();
 	}
 
 }

@@ -2,26 +2,27 @@
 
 namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Entity;
 
-use Shopware\Core\{
-	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefinition,
-	Checkout\Order\OrderDefinition,
-	Checkout\Payment\PaymentMethodDefinition,
-	Framework\DataAbstractionLayer\EntityDefinition,
-	Framework\DataAbstractionLayer\Field\BoolField,
-	Framework\DataAbstractionLayer\Field\CreatedAtField,
-	Framework\DataAbstractionLayer\Field\FkField,
-	Framework\DataAbstractionLayer\Field\Flag\CascadeDelete,
-	Framework\DataAbstractionLayer\Field\Flag\PrimaryKey,
-	Framework\DataAbstractionLayer\Field\Flag\Required,
-	Framework\DataAbstractionLayer\Field\IdField,
-	Framework\DataAbstractionLayer\Field\IntField,
-	Framework\DataAbstractionLayer\Field\JsonField,
-	Framework\DataAbstractionLayer\Field\OneToManyAssociationField,
-	Framework\DataAbstractionLayer\Field\OneToOneAssociationField,
-	Framework\DataAbstractionLayer\Field\StringField,
-	Framework\DataAbstractionLayer\Field\UpdatedAtField,
-	Framework\DataAbstractionLayer\FieldCollection,
-	System\SalesChannel\SalesChannelDefinition};
+use Shopware\Core\{Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefinition,
+    Checkout\Order\OrderDefinition,
+    Checkout\Payment\PaymentMethodDefinition,
+    Framework\DataAbstractionLayer\EntityDefinition,
+    Framework\DataAbstractionLayer\Field\BoolField,
+    Framework\DataAbstractionLayer\Field\CreatedAtField,
+    Framework\DataAbstractionLayer\Field\FkField,
+    Framework\DataAbstractionLayer\Field\Flag\ApiAware,
+    Framework\DataAbstractionLayer\Field\Flag\CascadeDelete,
+    Framework\DataAbstractionLayer\Field\Flag\PrimaryKey,
+    Framework\DataAbstractionLayer\Field\Flag\Required,
+    Framework\DataAbstractionLayer\Field\IdField,
+    Framework\DataAbstractionLayer\Field\IntField,
+    Framework\DataAbstractionLayer\Field\JsonField,
+    Framework\DataAbstractionLayer\Field\OneToManyAssociationField,
+    Framework\DataAbstractionLayer\Field\OneToOneAssociationField,
+    Framework\DataAbstractionLayer\Field\ReferenceVersionField,
+    Framework\DataAbstractionLayer\Field\StringField,
+    Framework\DataAbstractionLayer\Field\UpdatedAtField,
+    Framework\DataAbstractionLayer\FieldCollection,
+    System\SalesChannel\SalesChannelDefinition};
 use PostFinanceCheckoutPayment\Core\Api\Refund\Entity\RefundEntityDefinition;
 
 /**
@@ -62,7 +63,8 @@ class TransactionEntityDefinition extends EntityDefinition {
 			new OneToOneAssociationField('orderTransaction', 'order_transaction_id', 'id', OrderTransactionDefinition::class, true),
 			(new OneToManyAssociationField('refunds', RefundEntityDefinition::class, 'transaction_id', 'transaction_id'))->addFlags(new CascadeDelete()),
 			new OneToOneAssociationField('salesChannel', 'sales_channel_id', 'id', SalesChannelDefinition::class, true),
-			new CreatedAtField(),
+            (new ReferenceVersionField(OrderDefinition::class))->addFlags(new ApiAware(), new Required()),
+            new CreatedAtField(),
 			new UpdatedAtField(),
 		]);
 	}

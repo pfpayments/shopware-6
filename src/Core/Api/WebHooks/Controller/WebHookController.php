@@ -503,7 +503,6 @@ class WebHookController extends AbstractController {
 							case TransactionInvoiceState::NOT_APPLICABLE:
 							case TransactionInvoiceState::PAID:
 								$this->orderTransactionStateHandler->paid($orderTransactionId, $context);
-								$this->unholdDelivery($orderId, $context);
 								break;
 							default:
 								break;
