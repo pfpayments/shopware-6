@@ -11,7 +11,8 @@ use Shopware\Core\{
 	Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity,
 	Checkout\Payment\Cart\AsyncPaymentTransactionStruct,
 	Framework\DataAbstractionLayer\Search\Criteria,
-	System\SalesChannel\SalesChannelContext};
+	System\SalesChannel\SalesChannelContext
+};
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use PostFinanceCheckout\Sdk\{
@@ -20,12 +21,16 @@ use PostFinanceCheckout\Sdk\{
 	Model\LineItemCreate,
 	Model\LineItemType,
 	Model\TaxCreate,
-	Model\TransactionCreate};
+	Model\TransactionCreate
+};
 use PostFinanceCheckoutPayment\Core\{
 	Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity,
 	Settings\Struct\Settings,
 	Util\Exception\InvalidPayloadException,
-	Util\LocaleCodeProvider};
+	Util\LocaleCodeProvider,
+	Util\Payload\CustomProducts\CustomProductsLineItems,
+	Util\Payload\CustomProducts\CustomProductsLineItemTypes
+};
 
 /**
  * Class TransactionPayload
@@ -33,6 +38,8 @@ use PostFinanceCheckoutPayment\Core\{
  * @package PostFinanceCheckoutPayment\Core\Util\Payload
  */
 class TransactionPayload extends AbstractPayload {
+
+    use CustomProductsLineItems;
 
 	public const ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_SPACE_ID       = 'postfinancecheckout_space_id';
 	public const ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_TRANSACTION_ID = 'postfinancecheckout_transaction_id';
@@ -170,44 +177,19 @@ class TransactionPayload extends AbstractPayload {
 		 * @var \PostFinanceCheckout\Sdk\Model\LineItemCreate[] $lineItems
 		 */
 		$lineItems = [];
+
 		/**
 		 * @var \Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity $shopLineItem
 		 */
 		foreach ($this->transaction->getOrder()->getLineItems() as $shopLineItem) {
 
-			$taxes = $this->getTaxes(
-				$shopLineItem->getPrice()->getCalculatedTaxes(),
-				$this->translator->trans('postfinancecheckout.payload.taxes')
-			);
+            if ($shopLineItem->getParentId() !== null
+                || (strpos($shopLineItem->getType(), CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) === 0)
+            ) {
+                continue;
+            }
 
-			$uniqueId = $shopLineItem->getId();
-			$sku      = $shopLineItem->getProductId() ? $shopLineItem->getProductId() : $uniqueId;
-			$payLoad  = $shopLineItem->getPayload();
-			if (!empty($payLoad) && !empty($payLoad['productNumber'])) {
-				$sku = $payLoad['productNumber'];
-			}
-			$sku    = $this->fixLength($sku, 200);
-			$amount = $shopLineItem->getTotalPrice() ? self::round($shopLineItem->getTotalPrice()) : 0;
-
-			$lineItem = (new LineItemCreate())
-				->setName($this->fixLength($shopLineItem->getLabel(), 150))
-				->setUniqueId($uniqueId)
-				->setSku($sku)
-				->setQuantity($shopLineItem->getQuantity() ?? 1)
-				->setAmountIncludingTax($amount)
-				->setTaxes($taxes);
-
-			$productAttributes = $this->getProductAttributes($shopLineItem);
-
-			if (!empty($productAttributes)) {
-				$lineItem->setAttributes($productAttributes);
-			}
-
-			if ($shopLineItem->getTotalPrice() >= 0) {
-				$lineItem->setType(LineItemType::PRODUCT);
-			} else {
-				$lineItem->setType(LineItemType::DISCOUNT);
-			}
+            $lineItem = $this->createLineItem($shopLineItem);
 
 			if (!$lineItem->valid()) {
 				$this->logger->critical('LineItem payload invalid:', $lineItem->listInvalidProperties());
@@ -216,6 +198,11 @@ class TransactionPayload extends AbstractPayload {
 
 			$lineItems[] = $lineItem;
 		}
+
+        $customProductLineItems = $this->getCustomProductLineItems();
+		if ($customProductLineItems !== null) {
+		    $lineItems = array_merge($lineItems, $customProductLineItems);
+        }
 
 		$shippingLineItem = $this->getShippingLineItem();
 		if (!is_null($shippingLineItem)) {
@@ -232,11 +219,75 @@ class TransactionPayload extends AbstractPayload {
 	}
 
 	/**
+	 *
+	 * @var \Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity $shopLineItem
+	 * @return \PostFinanceCheckout\Sdk\Model\LineItemCreate|null
+	 * @throws \Exception
+	 */
+	protected function createLineItem(OrderLineItemEntity $shopLineItem): ?LineItemCreate
+	{
+		$productAttributes = null;
+		$taxes = null;
+
+		$uniqueId = $shopLineItem->getId();
+		$sku      = $shopLineItem->getProductId() ? $shopLineItem->getProductId() : $uniqueId;
+		$payLoad  = $shopLineItem->getPayload();
+		if (!empty($payLoad) && !empty($payLoad['productNumber'])) {
+			$sku = $payLoad['productNumber'];
+		}
+		$sku    = $this->fixLength($sku, 200);
+		$amount = $shopLineItem->getTotalPrice() ? self::round($shopLineItem->getTotalPrice()) : 0;
+
+		$lineItem = (new LineItemCreate())
+			->setName($this->fixLength($shopLineItem->getLabel(), 150))
+			->setUniqueId($uniqueId)
+			->setSku($sku)
+			->setQuantity($shopLineItem->getQuantity() ?? 1)
+			->setAmountIncludingTax($amount);
+
+
+
+		if (!empty($shopLineItem->getType()) && $shopLineItem->getType() == CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
+
+			$productAttributes = $this->getCustomProductLineItemAttribute($shopLineItem);
+			$taxes = $this->getCustomProductTaxes(
+				$shopLineItem->getPrice()->getCalculatedTaxes(),
+				$this->translator->trans('postfinancecheckout.payload.taxes'),
+				$amount
+			);
+
+		}else{
+			$productAttributes = $this->getProductAttributes($shopLineItem);
+
+			$taxes = $this->getTaxes(
+				$shopLineItem->getPrice()->getCalculatedTaxes(),
+				$this->translator->trans('postfinancecheckout.payload.taxes')
+			);
+		}
+
+
+        if (!empty($productAttributes)) {
+            $lineItem->setAttributes($productAttributes);
+        }
+
+		if (!empty($taxes)) {
+			$lineItem->setTaxes($taxes);
+		}
+
+        if ($shopLineItem->getTotalPrice() >= 0) {
+            $lineItem->setType(LineItemType::PRODUCT);
+        } else {
+            $lineItem->setType(LineItemType::DISCOUNT);
+        }
+
+        return $lineItem;
+    }
+
+	/**
 	 * @param \Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection $calculatedTaxes
 	 * @param string                                                          $title
 	 *
 	 * @return array
-	 * @throws \Exception
 	 */
 	protected function getTaxes(CalculatedTaxCollection $calculatedTaxes, string $title): array
 	{

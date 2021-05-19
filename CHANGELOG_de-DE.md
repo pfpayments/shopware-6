@@ -1,3 +1,10 @@
+# 3.1.0
+- Unterstützung für Custom Products Plugin
+
+# 3.0.0
+- Korrigieren Sie die Transaktionsversionierung
+- Aktualisieren Sie das SDK
+
 # 2.1.1
 - Runde Beträge
 - Weiterleiten, wenn der Wagen nicht neu erstellt werden kann
