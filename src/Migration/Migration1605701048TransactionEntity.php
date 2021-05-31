@@ -23,29 +23,28 @@ class Migration1605701048TransactionEntity extends MigrationStep
         return 1605701048;
     }
 
-    /**
-     * update non-destructive changes
-     *
-     * @param \Doctrine\DBAL\Connection $connection
-     * @throws \Doctrine\DBAL\DBALException
-     */
+	/**
+	 * update non-destructive changes
+	 *
+	 * @param \Doctrine\DBAL\Connection $connection
+	 */
     public function update(Connection $connection): void
     {
 
         try {
-            $connection->executeUpdate('
+            $connection->executeStatement('
                 ALTER TABLE `postfinancecheckout_transaction`
                     ADD `order_version_id` binary(16) NOT NULL AFTER `transaction_id`;
             ');
 
-            $connection->executeUpdate('
+            $connection->executeStatement('
                 UPDATE `postfinancecheckout_transaction` t1
                     INNER JOIN `order` t2
                         ON t1.order_id = t2.id
                     SET t1.order_version_id = t2.version_id;
             ');
 
-            $connection->executeUpdate('
+            $connection->executeStatement('
                 ALTER TABLE `postfinancecheckout_transaction`
                     DROP FOREIGN KEY `fk.pfc_transaction.order_id`,
                     DROP FOREIGN KEY `fk.pfc_transaction.order_transaction_id`,
@@ -53,7 +52,7 @@ class Migration1605701048TransactionEntity extends MigrationStep
                     DROP FOREIGN KEY `fk.pfc_transaction.sales_channel_id`;
             ');
 
-            $connection->executeUpdate('
+            $connection->executeStatement('
                 ALTER TABLE `postfinancecheckout_transaction`
                     ADD CONSTRAINT `fk.pfc_transaction_order_id` FOREIGN KEY (`order_id`, `order_version_id`)
                         REFERENCES `order` (`id`, `version_id`) ON DELETE CASCADE ON UPDATE CASCADE,

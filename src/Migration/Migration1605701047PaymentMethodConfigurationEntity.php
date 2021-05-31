@@ -29,7 +29,7 @@ class Migration1605701047PaymentMethodConfigurationEntity extends MigrationStep 
 	 */
 	public function update(Connection $connection): void
 	{
-		$connection->executeUpdate('ALTER TABLE `postfinancecheckout_payment_method_configuration` CHANGE `payment_method_configuration_id` `payment_method_configuration_id` bigint unsigned NOT NULL AFTER `data`;');
+		$connection->executeStatement('ALTER TABLE `postfinancecheckout_payment_method_configuration` CHANGE `payment_method_configuration_id` `payment_method_configuration_id` bigint unsigned NOT NULL AFTER `data`;');
 	}
 
 	/**

@@ -29,7 +29,7 @@ class Migration1590646356RefundEntity extends MigrationStep {
 	 */
 	public function update(Connection $connection): void
 	{
-		$connection->executeUpdate('
+		$connection->executeStatement('
             CREATE TABLE IF NOT EXISTS `postfinancecheckout_refund` (
               `id` BINARY(16) NOT NULL,
               `data` JSON NOT NULL,

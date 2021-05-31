@@ -27,7 +27,7 @@ class PostFinanceCheckoutWebHookRegisterService extends ApiService {
 	registerWebHook(salesChannelId) {
 
 		const headers = this.getBasicHeaders();
-		const apiRoute = `_action/${this.getApiBasePath()}/webHook/register/${salesChannelId}`;
+		const apiRoute = `${Shopware.Context.api.apiPath}/_action/${this.getApiBasePath()}/webHook/register/${salesChannelId}`;
 
 		return this.httpClient.post(
 			apiRoute,

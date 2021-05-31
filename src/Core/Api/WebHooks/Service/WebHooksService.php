@@ -366,7 +366,7 @@ class WebHooksService {
 	{
 		return $this->router->generate(
 			'api.action.postfinancecheckout.webhook.update',
-			['version' => PlatformRequest::API_VERSION, 'salesChannelId' => $this->getSalesChannelId() ?? 'null',],
+			['salesChannelId' => $this->getSalesChannelId() ?? 'null',],
 			UrlGeneratorInterface::ABSOLUTE_URL
 		);
 	}

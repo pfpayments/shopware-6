@@ -62,7 +62,7 @@ class TransactionVoidController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
 	 * @Route(
-	 *     "/api/v{version}/_action/postfinancecheckout/transaction-void/create-transaction-void/",
+	 *     "/api/_action/postfinancecheckout/transaction-void/create-transaction-void/",
 	 *     name="api.action.postfinancecheckout.transaction-void.create-transaction-void",
 	 *     methods={"POST"}
 	 *     )

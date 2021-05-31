@@ -63,7 +63,7 @@ class TransactionCompletionController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
 	 * @Route(
-	 *     "/api/v{version}/_action/postfinancecheckout/transaction-completion/create-transaction-completion/",
+	 *     "/api/_action/postfinancecheckout/transaction-completion/create-transaction-completion/",
 	 *     name="api.action.postfinancecheckout.transaction-completion.create-transaction-completion",
 	 *     methods={"POST"}
 	 *     )

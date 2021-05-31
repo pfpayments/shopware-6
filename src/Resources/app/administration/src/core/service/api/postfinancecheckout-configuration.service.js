@@ -27,7 +27,7 @@ class PostFinanceCheckoutConfigurationService extends ApiService {
 	registerWebHooks(salesChannelId = null) {
 
 		const headers = this.getBasicHeaders();
-		const apiRoute = `_action/${this.getApiBasePath()}/configuration/register-web-hooks`;
+		const apiRoute = `${Shopware.Context.api.apiPath}/_action/${this.getApiBasePath()}/configuration/register-web-hooks`;
 
 		return this.httpClient.post(
 			apiRoute,
@@ -52,7 +52,7 @@ class PostFinanceCheckoutConfigurationService extends ApiService {
 	setPostFinanceCheckoutAsSalesChannelPaymentDefault(salesChannelId = null) {
 
 		const headers = this.getBasicHeaders();
-		const apiRoute = `_action/${this.getApiBasePath()}/configuration/set-postfinancecheckout-as-sales-channel-payment-default`;
+		const apiRoute = `${Shopware.Context.api.apiPath}/_action/${this.getApiBasePath()}/configuration/set-postfinancecheckout-as-sales-channel-payment-default`;
 
 		return this.httpClient.post(
 			apiRoute,
@@ -74,7 +74,7 @@ class PostFinanceCheckoutConfigurationService extends ApiService {
 	 */
 	synchronizePaymentMethodConfiguration(salesChannelId = null) {
 		const headers = this.getBasicHeaders();
-		const apiRoute = `_action/${this.getApiBasePath()}/configuration/synchronize-payment-method-configuration`;
+		const apiRoute = `${Shopware.Context.api.apiPath}/_action/${this.getApiBasePath()}/configuration/synchronize-payment-method-configuration`;
 
 		return this.httpClient.post(
 			apiRoute,
@@ -95,7 +95,7 @@ class PostFinanceCheckoutConfigurationService extends ApiService {
 	 */
 	installOrderDeliveryStates() {
 		const headers = this.getBasicHeaders();
-		const apiRoute = `_action/${this.getApiBasePath()}/configuration/install-order-delivery-states`;
+		const apiRoute = `${Shopware.Context.api.apiPath}/_action/${this.getApiBasePath()}/configuration/install-order-delivery-states`;
 
 		return this.httpClient.post(
 			apiRoute,

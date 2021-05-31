@@ -28,7 +28,7 @@ class PostFinanceCheckoutTransactionService extends ApiService {
 	getTransactionData(salesChannelId, transactionId) {
 
 		const headers = this.getBasicHeaders();
-		const apiRoute = `_action/${this.getApiBasePath()}/transaction/get-transaction-data/`;
+		const apiRoute = `${Shopware.Context.api.apiPath}/_action/${this.getApiBasePath()}/transaction/get-transaction-data/`;
 
 		return this.httpClient.post(
 			apiRoute,
@@ -52,20 +52,19 @@ class PostFinanceCheckoutTransactionService extends ApiService {
 	 * @param transactionId
 	 * @return {string}
 	 */
-	getInvoiceDocument(context, salesChannelId, transactionId) {
-		return `${context.apiPath}/v${context.apiVersion}/_action/${this.getApiBasePath()}/transaction/get-invoice-document/${salesChannelId}/${transactionId}`;
+	getInvoiceDocument(salesChannelId, transactionId) {
+		return `${Shopware.Context.api.apiPath}/_action/${this.getApiBasePath()}/transaction/get-invoice-document/${salesChannelId}/${transactionId}`;
 	}
 
 	/**
 	 * Download Packing slip
 	 *
-	 * @param context
 	 * @param salesChannelId
 	 * @param transactionId
 	 * @return {string}
 	 */
-	getPackingSlip(context, salesChannelId, transactionId) {
-		return `${context.apiPath}/v${context.apiVersion}/_action/${this.getApiBasePath()}/transaction/get-packing-slip/${salesChannelId}/${transactionId}`;
+	getPackingSlip(salesChannelId, transactionId) {
+		return `${Shopware.Context.api.apiPath}/_action/${this.getApiBasePath()}/transaction/get-packing-slip/${salesChannelId}/${transactionId}`;
 	}
 }
 

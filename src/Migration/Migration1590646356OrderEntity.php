@@ -25,12 +25,11 @@ class Migration1590646356OrderEntity extends MigrationStep {
 	 * update non-destructive changes
 	 *
 	 * @param \Doctrine\DBAL\Connection $connection
-	 * @throws \Doctrine\DBAL\DBALException
 	 */
 	public function update(Connection $connection): void
 	{
 		try {
-			$connection->executeUpdate('ALTER TABLE `order` ADD COLUMN `postfinancecheckout_lock` DATETIME DEFAULT NULL;');
+			$connection->executeStatement('ALTER TABLE `order` ADD COLUMN `postfinancecheckout_lock` DATETIME DEFAULT NULL;');
 		}catch (\Exception $exception){
 			echo $exception->getMessage();
 		}

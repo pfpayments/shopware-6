@@ -29,7 +29,7 @@ class PostFinanceCheckoutRefundService extends ApiService {
 	createRefund(salesChannelId, transactionId, refundableAmount) {
 
 		const headers = this.getBasicHeaders();
-		const apiRoute = `_action/${this.getApiBasePath()}/refund/create-refund/`;
+		const apiRoute = `${Shopware.Context.api.apiPath}/_action/${this.getApiBasePath()}/refund/create-refund/`;
 
 		return this.httpClient.post(
 			apiRoute,

@@ -86,7 +86,7 @@ class ConfigurationController extends AbstractController {
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 *
 	 * @Route(
-	 *     "/api/v{version}/_action/postfinancecheckout/configuration/set-postfinancecheckout-as-sales-channel-payment-default",
+	 *     "/api/_action/postfinancecheckout/configuration/set-postfinancecheckout-as-sales-channel-payment-default",
 	 *     name="api.action.postfinancecheckout.configuration.set-postfinancecheckout-as-sales-channel-payment-default",
 	 *     methods={"POST"}
 	 *     )
@@ -110,7 +110,7 @@ class ConfigurationController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
 	 * @Route(
-	 *     "/api/v{version}/_action/postfinancecheckout/configuration/register-web-hooks",
+	 *     "/api/_action/postfinancecheckout/configuration/register-web-hooks",
 	 *     name="api.action.postfinancecheckout.configuration.register-web-hooks",
 	 *     methods={"POST"}
 	 *   )
@@ -133,7 +133,7 @@ class ConfigurationController extends AbstractController {
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 *
 	 * @Route(
-	 *     "/api/v{version}/_action/postfinancecheckout/configuration/synchronize-payment-method-configuration",
+	 *     "/api/_action/postfinancecheckout/configuration/synchronize-payment-method-configuration",
 	 *     name="api.action.postfinancecheckout.configuration.synchronize-payment-method-configuration",
 	 *     methods={"POST"}
 	 *   )
@@ -165,7 +165,7 @@ class ConfigurationController extends AbstractController {
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 *
 	 * @Route(
-	 *     "/api/v{version}/_action/postfinancecheckout/configuration/install-order-delivery-states",
+	 *     "/api/_action/postfinancecheckout/configuration/install-order-delivery-states",
 	 *     name="api.action.postfinancecheckout.configuration.install-order-delivery-states",
 	 *     methods={"POST"}
 	 *   )

@@ -1,3 +1,6 @@
+# 4.0.0
+- Unterstützung für Shopware 6.4
+
 # 3.1.0
 - Unterstützung für Custom Products Plugin
 

@@ -70,7 +70,7 @@ class RefundController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 * @Route(
-	 *     "/api/v{version}/_action/postfinancecheckout/refund/create-refund/",
+	 *     "/api/_action/postfinancecheckout/refund/create-refund/",
 	 *     name="api.action.postfinancecheckout.refund.create-refund",
 	 *     methods={"POST"}
 	 *     )

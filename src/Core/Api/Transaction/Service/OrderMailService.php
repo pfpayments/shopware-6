@@ -9,15 +9,13 @@ use Shopware\Core\{
 	Checkout\Cart\Exception\OrderNotFoundException,
 	Checkout\Order\OrderEntity,
 	Content\MailTemplate\MailTemplateEntity,
-	Content\MailTemplate\MailTemplateTypes,
-	Content\MailTemplate\Service\MailServiceInterface,
+	Content\Mail\Service\AbstractMailService,
 	Framework\Context,
 	Framework\DataAbstractionLayer\Search\Criteria,
 	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
 	Framework\DataAbstractionLayer\Search\Filter\NotFilter,
 	Framework\DataAbstractionLayer\Search\Filter\OrFilter,
-	Framework\Event\EventAction\EventActionCollection,
-	System\SalesChannel\SalesChannelEntity};
+	Framework\Event\EventAction\EventActionCollection};
 use PostFinanceCheckoutPayment\Core\{
 	Api\Transaction\Entity\TransactionEntity,
 	Api\Transaction\Entity\TransactionEntityDefinition};
@@ -46,17 +44,17 @@ class OrderMailService {
 	protected $mailTemplateRepository;
 
 	/**
-	 * @var \Shopware\Core\Content\MailTemplate\Service\MailServiceInterface
+	 * @var \Shopware\Core\Content\Mail\Service\AbstractMailService
 	 */
 	protected $mailService;
 
 	/**
 	 * MailService constructor.
 	 *
-	 * @param \Psr\Container\ContainerInterface                                $container
-	 * @param \Shopware\Core\Content\MailTemplate\Service\MailServiceInterface $mailService
+	 * @param \Psr\Container\ContainerInterface                                	$container
+	 * @param \Shopware\Core\Content\Mail\Service\AbstractMailService 			$mailService
 	 */
-	public function __construct(ContainerInterface $container, MailServiceInterface $mailService)
+	public function __construct(ContainerInterface $container, AbstractMailService $mailService)
 	{
 		$this->container   = $container;
 		$this->mailService = $mailService;

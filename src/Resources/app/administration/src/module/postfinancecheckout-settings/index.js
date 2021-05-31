@@ -1,13 +1,11 @@
 /* global Shopware */
 
-import './extension/sw-plugin';
-import './extension/sw-settings-index';
+import './acl';
 import './page/postfinancecheckout-settings';
 import './component/sw-postfinancecheckout-credentials';
 import './component/sw-postfinancecheckout-options';
+import './component/sw-postfinancecheckout-settings-icon';
 import './component/sw-postfinancecheckout-storefront-options';
-import enGB from './snippet/en-GB.json';
-import deDE from './snippet/de-DE.json';
 
 const {Module} = Shopware;
 
@@ -16,22 +14,28 @@ Module.register('postfinancecheckout-settings', {
 	name: 'PostFinanceCheckout',
 	title: 'postfinancecheckout-settings.general.descriptionTextModule',
 	description: 'postfinancecheckout-settings.general.descriptionTextModule',
-	color: '#62ff80',
+	color: '#28d8ff',
 	icon: 'default-action-settings',
-
-	snippets: {
-		'de-DE': deDE,
-		'en-GB': enGB
-	},
+	version: '1.0.0',
+	targetVersion: '1.0.0',
 
 	routes: {
 		index: {
 			component: 'postfinancecheckout-settings',
 			path: 'index',
 			meta: {
-				parentPath: 'sw.settings.index'
+				parentPath: 'sw.settings.index',
+				privilege: 'postfinancecheckout.viewer'
 			}
 		}
+	},
+
+	settingsItem: {
+		group: 'plugins',
+		to: 'postfinancecheckout.settings.index',
+		iconComponent: 'sw-postfinancecheckout-settings-icon',
+		backgroundEnabled: true,
+		privilege: 'postfinancecheckout.viewer'
 	}
 
 });

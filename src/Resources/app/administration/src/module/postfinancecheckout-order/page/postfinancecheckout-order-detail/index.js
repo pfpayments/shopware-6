@@ -222,7 +222,6 @@ Component.register('postfinancecheckout-order-detail', {
 		downloadPackingSlip() {
 			window.open(
 				this.PostFinanceCheckoutTransactionService.getPackingSlip(
-					Shopware.Context.api,
 					this.transaction.metaData.salesChannelId,
 					this.transaction.id
 				),
@@ -233,7 +232,6 @@ Component.register('postfinancecheckout-order-detail', {
 		downloadInvoice() {
 			window.open(
 				this.PostFinanceCheckoutTransactionService.getInvoiceDocument(
-					Shopware.Context.api,
 					this.transaction.metaData.salesChannelId,
 					this.transaction.id
 				),

@@ -28,7 +28,7 @@ class PostFinanceCheckoutTransactionVoidService extends ApiService {
 	createTransactionVoid(salesChannelId, transactionId) {
 
 		const headers = this.getBasicHeaders();
-		const apiRoute = `_action/${this.getApiBasePath()}/transaction-void/create-transaction-void/`;
+		const apiRoute = `${Shopware.Context.api.apiPath}/_action/${this.getApiBasePath()}/transaction-void/create-transaction-void/`;
 
 		return this.httpClient.post(
 			apiRoute,

@@ -28,7 +28,7 @@ class PostFinanceCheckoutTransactionCompletionService extends ApiService {
 	createTransactionCompletion(salesChannelId, transactionId) {
 
 		const headers = this.getBasicHeaders();
-		const apiRoute = `_action/${this.getApiBasePath()}/transaction-completion/create-transaction-completion/`;
+		const apiRoute = `${Shopware.Context.api.apiPath}/_action/${this.getApiBasePath()}/transaction-completion/create-transaction-completion/`;
 
 		return this.httpClient.post(
 			apiRoute,
