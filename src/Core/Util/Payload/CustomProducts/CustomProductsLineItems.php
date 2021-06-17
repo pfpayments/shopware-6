@@ -85,8 +85,10 @@ trait CustomProductsLineItems {
 	public function getCustomProductTaxes(CalculatedTaxCollection $calculatedTaxes, string $title, $amount)
 	{
 		$taxes = [];
+		$sumOfTaxes = $this->getSumOfTaxes($calculatedTaxes);
+
 		foreach ($calculatedTaxes as $calculatedTax) {
-			$taxRate = ($calculatedTax->getTax() * 100) / $amount;
+			$taxRate = ($calculatedTax->getTax() * 100) / ($amount - $sumOfTaxes);
 			$taxRate = (float) number_format($taxRate, 8, '.', '');
 			$tax = (new TaxCreate())
 				->setRate($taxRate)
@@ -102,7 +104,6 @@ trait CustomProductsLineItems {
 
 		return $taxes;
 	}
-
 
 	/**
 	 * Extract Custom Product Attribute value
@@ -136,5 +137,19 @@ trait CustomProductsLineItems {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * @param CalculatedTaxCollection $calculatedTaxes
+	 * @return float
+	 */
+	private function getSumOfTaxes(CalculatedTaxCollection $calculatedTaxes): float
+	{
+		$sumOfTaxes = 0;
+		foreach ($calculatedTaxes as $calculatedTax) {
+			$sumOfTaxes += $calculatedTax->getTax();
+		}
+
+		return $sumOfTaxes;
 	}
 }

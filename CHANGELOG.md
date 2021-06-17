@@ -1,3 +1,6 @@
+# 4.0.1
+- Fixed tax calculation for custom products
+
 # 4.0.0
 - Support for Shopware 6.4
 
