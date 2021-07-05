@@ -15,7 +15,7 @@
     "payload": {
       "adjustmentLineItem": "Adjustment Line Item",
       "shipping": {
-        "lineItem": "Shipping Line Item",
+        "lineItem": "Shipping",
         "name": "Shipping"
       },
       "taxes": "Taxes"

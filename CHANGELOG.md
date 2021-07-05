@@ -1,3 +1,6 @@
+# 4.0.2
+- Fixed shipping line item name
+
 # 4.0.1
 - Fixed tax calculation for custom products
 

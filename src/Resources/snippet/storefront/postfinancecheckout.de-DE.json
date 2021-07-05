@@ -15,7 +15,7 @@
     "payload": {
       "adjustmentLineItem": "Anpassung Einzelposten",
       "shipping": {
-        "lineItem": "Versand-Einzelposten",
+        "lineItem": "Versand",
         "name": "Versand"
       },
       "taxes": "Steuern"

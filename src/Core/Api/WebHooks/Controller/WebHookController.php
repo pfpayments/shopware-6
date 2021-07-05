@@ -15,6 +15,7 @@ use Shopware\Core\{
 	Checkout\Order\SalesChannel\OrderService,
 	Framework\Context,
 	Framework\DataAbstractionLayer\Search\Criteria,
+	Framework\DataAbstractionLayer\Search\Sorting\FieldSorting,
 	Framework\Routing\Annotation\RouteScope,
 	System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions,
 	System\StateMachine\Exception\IllegalTransitionException};
@@ -362,7 +363,9 @@ class WebHookController extends AbstractController {
 	private function getOrderEntity(string $orderId, Context $context): OrderEntity
 	{
 		if (is_null($this->orderEntity)) {
-			$criteria = (new Criteria([$orderId]))->addAssociations(['deliveries', 'transactions',]);
+			$criteria = (new Criteria([$orderId]))
+				->addAssociations(['deliveries', 'transactions',])
+				->addSorting(new FieldSorting('createdAt'));
 
 			try {
 				$this->orderEntity = $this->container->get('order.repository')->search(

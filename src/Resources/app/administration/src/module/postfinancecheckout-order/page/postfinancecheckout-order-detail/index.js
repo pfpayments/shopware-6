@@ -167,6 +167,7 @@ Component.register('postfinancecheckout-order-detail', {
 			const orderRepository = this.repositoryFactory.create('order');
 			const orderCriteria = new Criteria(1, 1);
 			orderCriteria.addAssociation('transactions');
+			orderCriteria.getAssociation('transactions').addSorting(Criteria.sort('createdAt', 'DESC'));
 
 			orderRepository.get(this.orderId, Context.api, orderCriteria).then((order) => {
 				this.order = order;

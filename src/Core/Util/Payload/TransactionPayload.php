@@ -363,10 +363,10 @@ class TransactionPayload extends AbstractPayload {
 					->setName($this->fixLength($shippingName . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
 					->setQuantity($this->transaction->getOrder()->getShippingCosts()->getQuantity() ?? 1)
 					->setTaxes($taxes)
-					->setSku($this->fixLength($shippingName . '-Shipping-Line-Item', 200))
+					->setSku($this->fixLength($shippingName . '-Shipping', 200))
 					/** @noinspection PhpParamsInspection */
 					->setType(LineItemType::SHIPPING)
-					->setUniqueId($this->fixLength($shippingName . '-Shipping-Line-Item', 200));
+					->setUniqueId($this->fixLength($shippingName . '-Shipping', 200));
 
 				if (!$lineItem->valid()) {
 					$this->logger->critical('Shipping LineItem payload invalid:', $lineItem->listInvalidProperties());
