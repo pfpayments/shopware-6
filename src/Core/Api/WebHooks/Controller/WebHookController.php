@@ -285,6 +285,15 @@ class WebHookController extends AbstractController {
 								$this->orderTransactionStateHandler->refundPartially($orderTransactionId, $context);
 							}
 						}
+					} elseif ($orderTransaction->getStateMachineState()->getTechnicalName()
+						=== OrderTransactionStates::STATE_PARTIALLY_REFUNDED &&
+						($refund->getState() == RefundState::SUCCESSFUL)
+					) {
+						$transactionByOrderTransactionId = $this->transactionService->getByOrderTransactionId($orderTransactionId, $context);
+						$totalRefundedAmount  = $this->getTotalRefundedAmount($transactionByOrderTransactionId->getTransactionId(), $context);
+						if ($totalRefundedAmount == $orderTransaction->getAmount()->getTotalPrice()) {
+							$this->orderTransactionStateHandler->refund($orderTransactionId, $context);
+						}
 					}
 
 				});
@@ -302,6 +311,22 @@ class WebHookController extends AbstractController {
 		}
 
 		return new JsonResponse(['data' => $callBackData->jsonSerialize()], $status);
+	}
+
+	/**
+	 * @param int $transactionId
+	 * @param Context $context
+	 * @return float
+	 */
+	private function getTotalRefundedAmount(int $transactionId, Context $context): float
+	{
+		$amount = 0;
+		$refunds = $this->transactionService->getRefundEntityCollectionByTransactionId($transactionId, $context);
+		foreach ($refunds as $refund) {
+			$amount += floatval($refund->getData()['amount'] ?? 0);
+		}
+
+		return (float) (string) $amount;
 	}
 
 	/**

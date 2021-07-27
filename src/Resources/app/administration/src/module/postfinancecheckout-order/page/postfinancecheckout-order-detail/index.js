@@ -14,6 +14,7 @@ Component.register('postfinancecheckout-order-detail', {
 
 	inject: [
 		'PostFinanceCheckoutTransactionService',
+		'PostFinanceCheckoutRefundService',
 		'repositoryFactory'
 	],
 
@@ -29,12 +30,13 @@ Component.register('postfinancecheckout-order-detail', {
 			},
 			transaction: {},
 			lineItems: [],
+			refundableQuantity: 0,
+			isLoading: true,
+			orderId: '',
 			currency: '',
 			modalType: '',
-			refundAmount: 0,
-			refundableAmount: 0,
-			isLoading: true,
-			orderId: ''
+			currentLineItem: '',
+			refundLineItem: []
 		};
 	},
 
@@ -118,7 +120,12 @@ Component.register('postfinancecheckout-order-detail', {
 					property: 'taxAmount',
 					label: this.$tc('postfinancecheckout-order.lineItem.types.taxAmount'),
 					rawData: true
-				}
+				},
+				{
+					property: 'refundableQuantity',
+					rawData: true,
+					visible: false,
+				},
 			];
 		},
 
@@ -176,30 +183,45 @@ Component.register('postfinancecheckout-order-detail', {
 				this.PostFinanceCheckoutTransactionService.getTransactionData(order.salesChannelId, postfinancecheckoutTransactionId)
 					.then((PostFinanceCheckoutTransaction) => {
 						this.currency = PostFinanceCheckoutTransaction.transactions[0].currency;
+
 						PostFinanceCheckoutTransaction.transactions[0].authorized_amount = Utils.format.currency(
 							PostFinanceCheckoutTransaction.transactions[0].authorizationAmount,
 							this.currency
 						);
-						PostFinanceCheckoutTransaction.transactions[0].lineItems.forEach((lineItem) => {
-							lineItem.amountIncludingTax = Utils.format.currency(
-								lineItem.amountIncludingTax,
-								this.currency
-							);
-							lineItem.taxAmount = Utils.format.currency(
-								lineItem.taxAmount,
-								this.currency
-							);
-						});
+
 						PostFinanceCheckoutTransaction.refunds.forEach((refund) => {
 							refund.amount = Utils.format.currency(
 								refund.amount,
 								this.currency
 							);
+
+							refund.reductions.forEach((reduction) => {
+								if (this.refundLineItem[reduction.lineItemUniqueId] === undefined) {
+									this.refundLineItem[reduction.lineItemUniqueId] = reduction.quantityReduction;
+								} else {
+									this.refundLineItem[reduction.lineItemUniqueId] += reduction.quantityReduction;
+								}
+							});
 						});
+
+						PostFinanceCheckoutTransaction.transactions[0].lineItems.forEach((lineItem) => {
+							lineItem.amountIncludingTax = Utils.format.currency(
+								lineItem.amountIncludingTax,
+								this.currency
+							);
+
+							lineItem.taxAmount = Utils.format.currency(
+								lineItem.taxAmount,
+								this.currency
+							);
+
+							lineItem.refundableQuantity = parseInt(
+								parseInt(lineItem.quantity) - parseInt(this.refundLineItem[lineItem.uniqueId] || 0)
+							);
+						});
+
 						this.lineItems = PostFinanceCheckoutTransaction.transactions[0].lineItems;
 						this.transactionData = PostFinanceCheckoutTransaction;
-						this.refundAmount = Number(this.transactionData.transactions[0].amountIncludingTax);
-						this.refundableAmount = Number(this.transactionData.transactions[0].amountIncludingTax);
 						this.transaction = this.transactionData.transactions[0];
 					}).catch((errorResponse) => {
 					try {
@@ -246,15 +268,58 @@ Component.register('postfinancecheckout-order-detail', {
 				refunds: []
 			};
 			this.lineItems = [];
+			this.refundLineItem = [];
 			this.isLoading = true;
 		},
 
-		spawnModal(modalType) {
+		spawnModal(modalType, lineItemId, refundableQuantity) {
 			this.modalType = modalType;
+			this.currentLineItem = lineItemId;
+			this.refundableQuantity = refundableQuantity;
 		},
 
 		closeModal() {
 			this.modalType = '';
+		},
+
+		lineItemRefund(lineItemId) {
+			this.isLoading = true;
+			this.PostFinanceCheckoutRefundService.createRefund(
+				this.transactionData.transactions[0].metaData.salesChannelId,
+				this.transactionData.transactions[0].id,
+				0,
+				lineItemId
+			).then(() => {
+				this.createNotificationSuccess({
+					title: this.$tc('postfinancecheckout-order.refundAction.successTitle'),
+					message: this.$tc('postfinancecheckout-order.refundAction.successMessage')
+				});
+				this.isLoading = false;
+				this.$emit('modal-close');
+				this.$nextTick(() => {
+					this.$router.replace(`${this.$route.path}?hash=${Utils.createId()}`);
+				});
+			}).catch((errorResponse) => {
+				try {
+					this.createNotificationError({
+						title: errorResponse.response.data.errors[0].title,
+						message: errorResponse.response.data.errors[0].detail,
+						autoClose: false
+					});
+				} catch (e) {
+					this.createNotificationError({
+						title: errorResponse.title,
+						message: errorResponse.message,
+						autoClose: false
+					});
+				} finally {
+					this.isLoading = false;
+					this.$emit('modal-close');
+					this.$nextTick(() => {
+						this.$router.replace(`${this.$route.path}?hash=${Utils.createId()}`);
+					});
+				}
+			});
 		}
 	}
 });

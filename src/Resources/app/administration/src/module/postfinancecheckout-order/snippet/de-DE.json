@@ -6,7 +6,9 @@
 		"download-invoice": "Rechnung herunterladen",
 		"download-packing-slip": "Packzettel herunterladen",
 		"refund": "Eine neue Rückerstattung erstellen",
-		"void": "Genehmigung annullieren"
+		"void": "Genehmigung annullieren",
+	    "refund-whole-line-item": "Gesamte Werbebuchung erstatten",
+	    "refund-line-item-by-quantity": "Rückerstattung nach Menge"
 	  }
 	},
 	"captureAction": {
@@ -52,6 +54,9 @@
 	  "refundAmount": {
 		"label": "Gutschriftsbetrag"
 	  },
+	  "refundQuantity": {
+	  	"label": "Refund Menge"
+	  },
 	  "types": {
 		"amount": "Betrag",
 		"createdOn": "Erstellt am",
@@ -68,7 +73,8 @@
 		"placeholder": "Einen Betrag eingeben"
 	  },
 	  "successMessage": "Ihre Rückerstattung war erfolgreich",
-	  "successTitle": "Erfolg"
+	  "successTitle": "Erfolg",
+	  "maxAvailableItemsToRefund": "Maximal Verfügbare Artikel zum Erstatten"
 	},
 	"transactionHistory": {
 	  "cardTitle": "Einzelheiten",

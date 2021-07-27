@@ -27,11 +27,10 @@ Component.register('postfinancecheckout-order-action-refund', {
 
 	data() {
 		return {
-			currency: this.transactionData.transactions[0].currency,
-			refundAmount: 0,
-			refundableAmount: 0,
+			refundQuantity: 1,
 			transactionData: {},
 			isLoading: true,
+			currentLineItem: '',
 		};
 	},
 
@@ -48,9 +47,6 @@ Component.register('postfinancecheckout-order-action-refund', {
 	methods: {
 		createdComponent() {
 			this.isLoading = false;
-			this.currency = this.transactionData.transactions[0].currency;
-			this.refundAmount = Number(this.transactionData.transactions[0].amountIncludingTax);
-			this.refundableAmount = Number(this.transactionData.transactions[0].amountIncludingTax);
 		},
 
 		refund() {
@@ -58,7 +54,8 @@ Component.register('postfinancecheckout-order-action-refund', {
 			this.PostFinanceCheckoutRefundService.createRefund(
 				this.transactionData.transactions[0].metaData.salesChannelId,
 				this.transactionData.transactions[0].id,
-				this.refundAmount
+				this.refundQuantity,
+				this.$parent.currentLineItem
 			).then(() => {
 				this.createNotificationSuccess({
 					title: this.$tc('postfinancecheckout-order.refundAction.successTitle'),

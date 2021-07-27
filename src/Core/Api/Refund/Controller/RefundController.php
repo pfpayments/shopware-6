@@ -79,13 +79,14 @@ class RefundController extends AbstractController {
 	{
 		$salesChannelId   = $request->request->get('salesChannelId');
 		$transactionId    = $request->request->get('transactionId');
-		$refundableAmount = $request->request->get('refundableAmount');
+		$quantity         = (int) $request->request->get('quantity');
+		$lineItemId       = $request->request->get('lineItemId');
 
 		$settings  = $this->settingsService->getSettings($salesChannelId);
 		$apiClient = $settings->getApiClient();
 
 		$transaction = $apiClient->getTransactionService()->read($settings->getSpaceId(), $transactionId);
-		$this->refundService->create($transaction, $refundableAmount, $context);
+		$this->refundService->create($transaction, $context, $lineItemId, $quantity);
 
 		return new Response(null, Response::HTTP_NO_CONTENT);
 	}

@@ -1,3 +1,6 @@
+# 4.0.4
+- Line item based refunds
+
 # 4.0.3
 - Update SDK
 

@@ -5,15 +5,6 @@
 			<template #grid>
 				{% block postfinancecheckout_order_actions_section %}
 				<sw-card-section secondary slim>
-					{% block postfinancecheckout_order_transaction_refunds_action_button %}
-					<sw-button
-							variant="primary"
-							size="small"
-							:disabled="transaction.state != 'FULFILL'"
-							@click="spawnModal('refund')">
-						{{ $tc('postfinancecheckout-order.buttons.label.refund') }}
-					</sw-button>
-					{% endblock %}
 					{% block postfinancecheckout_order_transaction_completion_action_button %}
 					<sw-button
 							variant="primary"
@@ -75,8 +66,26 @@
 				<sw-data-grid
 						:dataSource="lineItems"
 						:columns="lineItemColumns"
-						:showActions="false"
+						:showActions="true"
 						:showSelection="false">
+
+					{% block postfinancecheckout_order_transaction_line_items_grid_grid_actions %}
+						<template #actions="{ item }">
+								<sw-context-menu-item
+									:disabled="transaction.state != 'FULFILL' || item.refundableQuantity != item.quantity"
+								    icon="default-money-cash"
+								    @click="lineItemRefund(item.uniqueId)">
+									{{ $tc('postfinancecheckout-order.buttons.label.refund-whole-line-item') }}
+								</sw-context-menu-item>
+
+								<sw-context-menu-item
+										:disabled="transaction.state != 'FULFILL' || item.refundableQuantity == 0"
+										icon="default-money-cash"
+										@click="spawnModal('refund', item.uniqueId, item.refundableQuantity)">
+									{{ $tc('postfinancecheckout-order.buttons.label.refund-line-item-by-quantity') }}
+								</sw-context-menu-item>
+						</template>
+					{% endblock %}
 				</sw-data-grid>
 				{% endblock %}
 			</template>

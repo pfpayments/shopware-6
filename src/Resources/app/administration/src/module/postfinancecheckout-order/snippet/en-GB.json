@@ -6,7 +6,9 @@
 		"download-invoice": "Download Invoice",
 		"download-packing-slip": "Download Packing Slip",
 		"refund": "Create a new refund",
-		"void": "Cancel authorization"
+		"void": "Cancel authorization",
+	    "refund-whole-line-item": "Refund whole line item",
+	    "refund-line-item-by-quantity": "Refund by quantity"
 	  }
 	},
 	"captureAction": {
@@ -52,6 +54,9 @@
 	  "refundAmount": {
 		"label": "Refund Amount"
 	  },
+	  "refundQuantity": {
+	  	"label": "Refund Quantity"
+	  },
 	  "types": {
 		"amount": "Amount",
 		"createdOn": "Created On",
@@ -68,7 +73,8 @@
 		"placeholder": "Enter a amount"
 	  },
 	  "successMessage": "Your refund was successful.",
-	  "successTitle": "Success"
+	  "successTitle": "Success",
+	  "maxAvailableItemsToRefund": "Maximum available items to refund"
 	},
 	"transactionHistory": {
 	  "cardTitle": "Details",

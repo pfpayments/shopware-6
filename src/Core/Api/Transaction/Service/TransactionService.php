@@ -318,6 +318,24 @@ class TransactionService {
 	}
 
 	/**
+	 * Get transaction entity by PostFinanceCheckout order transaction id
+	 *
+	 * @param string                           $transactionId
+	 * @param \Shopware\Core\Framework\Context $context
+	 *
+	 * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity|null
+	 */
+	public function getByOrderTransactionId(string $orderTransactionId, Context $context): ?TransactionEntity
+	{
+		return $this->container->get(TransactionEntityDefinition::ENTITY_NAME . '.repository')
+			->search(
+				(new Criteria())->addFilter(new EqualsFilter('orderTransactionId', $orderTransactionId))
+					->addAssociations(['refunds']), $context
+			)
+			->first();
+	}
+
+	/**
 	 * Get transaction entity by PostFinanceCheckout transaction id
 	 *
 	 * @param int                              $transactionId

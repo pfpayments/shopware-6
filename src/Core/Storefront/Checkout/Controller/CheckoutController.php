@@ -5,16 +5,21 @@ namespace PostFinanceCheckoutPayment\Core\Storefront\Checkout\Controller;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
 	Checkout\Cart\Cart,
+	Checkout\Cart\Exception\CustomerNotLoggedInException,
 	Checkout\Cart\Exception\OrderNotFoundException,
 	Checkout\Cart\LineItemFactoryRegistry,
 	Checkout\Cart\SalesChannel\CartService,
 	Checkout\Order\Aggregate\OrderLineItem\OrderLineItemCollection,
 	Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity,
 	Checkout\Order\OrderEntity,
+	Checkout\Order\SalesChannel\AbstractOrderRoute,
 	Framework\Context,
 	Framework\DataAbstractionLayer\Search\Criteria,
+	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
+	Framework\DataAbstractionLayer\Search\Sorting\FieldSorting,
 	Framework\Routing\Annotation\RouteScope,
 	Framework\Routing\Exception\MissingRequestParameterException,
+	Framework\Uuid\Exception\InvalidUuidException,
 	Framework\Validation\DataBag\RequestDataBag,
 	System\SalesChannel\SalesChannelContext
 };
@@ -26,9 +31,9 @@ use Shopware\Storefront\{
 use Symfony\Component\{
 	HttpFoundation\Request,
 	HttpFoundation\Response,
-	Routing\Annotation\Route
+	Routing\Annotation\Route,
+	Routing\Generator\UrlGeneratorInterface
 };
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use PostFinanceCheckout\Sdk\{
 	Model\Transaction,
 	Model\TransactionState
@@ -87,6 +92,11 @@ class CheckoutController extends StorefrontController {
 	private $lineItemFactoryRegistry;
 
 	/**
+	 * @var \Shopware\Core\Checkout\Order\SalesChannel\AbstractOrderRoute
+	 */
+	private $orderRoute;
+
+	/**
 	 * PaymentController constructor.
 	 *
 	 * @param \Shopware\Core\Checkout\Cart\LineItemFactoryRegistry                          $lineItemFactoryRegistry
@@ -94,13 +104,15 @@ class CheckoutController extends StorefrontController {
 	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService           $settingsService
 	 * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService $transactionService
 	 * @param \Shopware\Storefront\Page\GenericPageLoaderInterface                          $genericLoader
+	 * @param \Shopware\Core\Checkout\Order\SalesChannel\AbstractOrderRoute                 $orderRoute
 	 */
 	public function __construct(
 		LineItemFactoryRegistry $lineItemFactoryRegistry,
 		CartService $cartService,
 		SettingsService $settingsService,
 		TransactionService $transactionService,
-		GenericPageLoaderInterface $genericLoader
+		GenericPageLoaderInterface $genericLoader,
+		AbstractOrderRoute $orderRoute
 	)
 	{
 		$this->cartService             = $cartService;
@@ -108,6 +120,7 @@ class CheckoutController extends StorefrontController {
 		$this->settingsService         = $settingsService;
 		$this->transactionService      = $transactionService;
 		$this->lineItemFactoryRegistry = $lineItemFactoryRegistry;
+		$this->orderRoute = $orderRoute;
 	}
 
 	/**
@@ -268,36 +281,50 @@ class CheckoutController extends StorefrontController {
 	protected function load(Request $request, SalesChannelContext $salesChannelContext): CheckoutFinishPage
 	{
 		$page = CheckoutFinishPage::createFrom($this->genericLoader->load($request, $salesChannelContext));
-		$page->setOrder($this->getOrder($request->get('orderId'), $salesChannelContext->getContext()));
+		$page->setOrder($this->getOrder($request, $salesChannelContext));
 
 		return $page;
 	}
 
+
 	/**
-	 * @param string                           $orderId
-	 * @param \Shopware\Core\Framework\Context $context
+	 * @param \Symfony\Component\HttpFoundation\Request              $request
+	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
 	 *
 	 * @return \Shopware\Core\Checkout\Order\OrderEntity
 	 */
-	private function getOrder(string $orderId, Context $context): OrderEntity
+	private function getOrder(Request $request, SalesChannelContext $salesChannelContext): OrderEntity
 	{
-		$criteria = (new Criteria([$orderId]))->addAssociations([
-			'lineItems.cover',
-			'transactions.paymentMethod',
-			'deliveries.shippingMethod',
-		]);
+
+		$orderId = $request->get('orderId');
+		if (!$orderId) {
+			throw new MissingRequestParameterException('orderId', '/orderId');
+		}
+
+		$criteria = (new Criteria([$orderId]))
+			->addAssociation('lineItems.cover')
+			->addAssociation('transactions.paymentMethod')
+			->addAssociation('deliveries.shippingMethod');
+
+		$customer = $salesChannelContext->getCustomer();
+		if ($customer === null) {
+			$criteria = $criteria->addFilter(new EqualsFilter('order.orderCustomer.customerId', $customer->getId()));
+		}
+
+		$criteria->getAssociation('transactions')->addSorting(new FieldSorting('createdAt'));
 
 		try {
-			$order = $this->container->get('order.repository')->search(
-				$criteria,
-				$context
-			)->first();
-		} catch (\Exception $exception) {
-			$this->logger->notice($exception->getMessage());
+			$searchResult = $this->orderRoute
+				->load(new Request(), $salesChannelContext, $criteria)
+				->getOrders();
+		} catch (InvalidUuidException $e) {
 			throw new OrderNotFoundException($orderId);
 		}
 
-		if (is_null($order)) {
+		/** @var OrderEntity|null $order */
+		$order = $searchResult->get($orderId);
+
+		if (!$order) {
 			throw new OrderNotFoundException($orderId);
 		}
 
@@ -331,7 +358,7 @@ class CheckoutController extends StorefrontController {
 		try {
 			// Configuration
 			$this->settings = $this->settingsService->getSettings($salesChannelContext->getSalesChannel()->getId());
-			$orderEntity    = $this->getOrder($orderId, $salesChannelContext->getContext());
+			$orderEntity    = $this->getOrder($request, $salesChannelContext);
 
 			$transaction = $this->getTransaction($orderId, $salesChannelContext->getContext());
 			if (!empty($transaction->getUserFailureMessage())) {

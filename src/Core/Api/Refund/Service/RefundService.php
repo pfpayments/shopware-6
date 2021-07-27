@@ -76,13 +76,14 @@ class RefundService {
 	 * A redirect to the url will be performed
 	 *
 	 * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
-	 * @param float                                        $refundableAmount
+	 * @param string|null                                  $lineItemId
+	 * @param int                                          $quantity
 	 * @param \Shopware\Core\Framework\Context             $context
 	 *
 	 * @return \PostFinanceCheckout\Sdk\Model\Refund|null
 	 * @throws \Exception
 	 */
-	public function create(Transaction $transaction, float $refundableAmount, Context $context): ?Refund
+	public function create(Transaction $transaction, Context $context, ?string $lineItemId = null, int $quantity): ?Refund
 	{
 		try {
 			$transactionEntity  = $this->getTransactionEntityByTransactionId($transaction->getId(), $context);
@@ -90,7 +91,9 @@ class RefundService {
 			$apiClient          = $settings->getApiClient();
 			$refundPayloadClass = new RefundPayload();
 			$refundPayloadClass->setLogger($this->logger);
-			$refundPayload = $refundPayloadClass->get($transaction, $refundableAmount);
+
+			$refundPayload = $refundPayloadClass->get($transaction, $lineItemId, $quantity);
+
 			if (!is_null($refundPayload)) {
 				$refund = $apiClient->getRefundService()->refund($settings->getSpaceId(), $refundPayload);
 				$this->upsert($refund, $context);
