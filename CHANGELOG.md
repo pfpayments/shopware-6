@@ -1,3 +1,6 @@
+# 4.0.5
+- Fixed plugin uninstall action
+
 # 4.0.4
 - Line item based refunds
 

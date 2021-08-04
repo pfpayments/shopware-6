@@ -1,3 +1,6 @@
+# 4.0.5
+- Deinstallation Aktion des Plugins behoben
+
 # 4.0.4
 - Erstattungen von Werbebuchungen
 
