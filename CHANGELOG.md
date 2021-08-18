@@ -1,3 +1,6 @@
+# 4.0.6
+- Fix for delivery state change error
+
 # 4.0.5
 - Fixed plugin uninstall action
 

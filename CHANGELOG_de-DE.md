@@ -1,3 +1,6 @@
+# 4.0.6
+- Fehler beim Ändern des Lieferstatus behoben
+
 # 4.0.5
 - Deinstallation Aktion des Plugins behoben
 

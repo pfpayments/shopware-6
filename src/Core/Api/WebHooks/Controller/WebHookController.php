@@ -8,6 +8,7 @@ use Doctrine\DBAL\{
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
 	Checkout\Cart\Exception\OrderNotFoundException,
+	Checkout\Order\Aggregate\OrderDelivery\OrderDeliveryEntity,
 	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity,
 	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler,
 	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates,
@@ -531,6 +532,7 @@ class WebHookController extends AbstractController {
 							case TransactionInvoiceState::NOT_APPLICABLE:
 							case TransactionInvoiceState::PAID:
 								$this->orderTransactionStateHandler->paid($orderTransactionId, $context);
+								$this->unholdDelivery($orderTransactionId, $context);
 								break;
 							default:
 								break;
@@ -564,9 +566,16 @@ class WebHookController extends AbstractController {
 			/**
 			 * @var OrderDeliveryStateHandler $orderDeliveryStateHandler
 			 */
-			$order                     = $this->getOrderEntity($orderId, $context);
+			$order = $this->getOrderEntity($orderId, $context);
+			/**
+			 * @var OrderDeliveryEntity $orderDelivery
+			 */
+			$orderDelivery = $order->getDeliveries()->last();
+			if ($orderDelivery->getStateMachineState()->getTechnicalName() !== OrderDeliveryStateHandler::STATE_HOLD){
+				return;
+			}
 			$orderDeliveryStateHandler = $this->container->get(OrderDeliveryStateHandler::class);
-			$orderDeliveryStateHandler->unhold($order->getDeliveries()->last()->getId(), $context);
+			$orderDeliveryStateHandler->unhold($orderDelivery->getId(), $context);
 		} catch (\Exception $exception) {
 			$this->logger->info($exception->getMessage(), $exception->getTrace());
 		}
@@ -597,12 +606,18 @@ class WebHookController extends AbstractController {
 			 * @var OrderDeliveryStateHandler $orderDeliveryStateHandler
 			 */
 			$orderDeliveryStateHandler = $this->container->get(OrderDeliveryStateHandler::class);
-			$orderDeliveryId           = $order->getDeliveries()->last()->getId();
+			/**
+			 * @var OrderDeliveryEntity $orderDelivery
+			 */
+			$orderDelivery = $order->getDeliveries()->last();
+			if ($orderDelivery->getStateMachineState()->getTechnicalName() !== OrderDeliveryStateHandler::STATE_HOLD){
+				return;
+			}
+			$orderDeliveryId = $orderDelivery->getId();
 			$orderDeliveryStateHandler->unhold($orderDeliveryId, $context);
 			$orderDeliveryStateHandler->cancel($orderDeliveryId, $context);
 		} catch (\Exception $exception) {
 			$this->logger->info($exception->getMessage(), $exception->getTrace());
 		}
 	}
-
 }
