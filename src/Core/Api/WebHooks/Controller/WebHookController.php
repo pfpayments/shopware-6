@@ -340,8 +340,8 @@ class WebHookController extends AbstractController {
 	 */
 	private function executeLocked(string $orderId, Context $context, callable $operation)
 	{
-		$this->connection->setTransactionIsolation(TransactionIsolationLevel::READ_COMMITTED);
-		$this->connection->beginTransaction();
+		//$this->connection->setTransactionIsolation(TransactionIsolationLevel::READ_COMMITTED);
+		//$this->connection->beginTransaction();
 		try {
 
 			$data = [
@@ -359,10 +359,10 @@ class WebHookController extends AbstractController {
 
 			$result = $operation();
 
-			$this->connection->commit();
+			//$this->connection->commit();
 			return $result;
 		} catch (\Exception $exception) {
-			$this->connection->rollBack();
+			//$this->connection->rollBack();
 			throw $exception;
 		}
 	}

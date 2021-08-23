@@ -1,3 +1,6 @@
+# 4.0.7
+- Fix Transaction Rollback error on unsupported languages
+
 # 4.0.6
 - Fix for delivery state change error
 

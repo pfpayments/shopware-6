@@ -11,8 +11,8 @@
         }
     },
     "conflict": {
-        "shopware/administration": "<6.4,>=7",
-        "shopware/storefront": "<6.4,>=7"
+        "shopware/administration": "<6.4.2.1,>=7",
+        "shopware/storefront": "<6.4.2.1,>=7"
     },
     "description": "PostFinanceCheckout integration for Shopware 6",
     "extra": {
@@ -54,5 +54,5 @@
         "postfinancecheckout/sdk": "3.0.1"
     },
     "type": "shopware-platform-plugin",
-    "version": "4.0.6"
+    "version": "4.0.7"
 }

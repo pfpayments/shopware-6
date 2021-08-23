@@ -1,3 +1,6 @@
+# 4.0.7
+- Behebung des Transaktions-Rollback-Fehlers in nicht unterstützten Sprachen
+
 # 4.0.6
 - Fehler beim Ändern des Lieferstatus behoben
 
