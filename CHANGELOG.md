@@ -1,3 +1,6 @@
+# 4.0.8
+- Checkout form auto submission implemented when iFrame returns no input fields
+
 # 4.0.7
 - Fix Transaction Rollback error on unsupported languages
 

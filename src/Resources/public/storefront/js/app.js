@@ -87,6 +87,8 @@
         getIframe: function () {
             const paymentPanel = document.getElementById(PostFinanceCheckoutCheckout.payment_panel_id);
             const paymentMethodConfigurationId = paymentPanel.dataset.id;
+            const iframeContainer = document.getElementById(PostFinanceCheckoutCheckout.payment_method_iframe_id);
+
             if (!PostFinanceCheckoutCheckout.handler) { // iframe has not been loaded yet
                 // noinspection JSUnresolvedFunction
                 PostFinanceCheckoutCheckout.handler = window.IframeCheckoutHandler(paymentMethodConfigurationId);
@@ -99,15 +101,36 @@
                     let loader = document.getElementById(PostFinanceCheckoutCheckout.loader_id);
                     loader.parentNode.removeChild(loader);
                     PostFinanceCheckoutCheckout.activateLoader(false);
+                    if (this.measureIframe(iframeContainer) < 1) {
+                        PostFinanceCheckoutCheckout.handler.submit();
+                    }
                 });
                 PostFinanceCheckoutCheckout.handler.setHeightChangeCallback((height)=>{
                     if(height < 1){ // iframe has no fields
                         PostFinanceCheckoutCheckout.handler.submit();
                     }
                 });
-                const iframeContainer = document.getElementById(PostFinanceCheckoutCheckout.payment_method_iframe_id);
                 PostFinanceCheckoutCheckout.handler.create(iframeContainer);
             }
+        },
+
+        /**
+         * pixel height of first iframe or 0
+         * @param iframeContainer
+         * @return {int}
+         */
+        measureIframe: function (iframeContainer) {
+            if (iframeContainer.tagName.toLowerCase() === 'iframe') {
+                return iframeContainer.offsetHeight;
+            }
+
+            iframeContainer.childNodes.forEach( child => {
+                if (child.tagName.toLowerCase() === 'iframe') {
+                    return child.offsetHeight;
+                }
+            })
+
+            return 0;
         },
 
         /**

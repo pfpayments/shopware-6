@@ -1,3 +1,6 @@
+# 4.0.8
+- Automatische Übermittlung des Checkout-Formulars implementiert, wenn iFrame keine Eingabefelder zurückgibt
+
 # 4.0.7
 - Behebung des Transaktions-Rollback-Fehlers in nicht unterstützten Sprachen
 
