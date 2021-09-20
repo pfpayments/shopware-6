@@ -1,3 +1,6 @@
+# 4.0.9
+- Erlaube, den Zahlungsstatus als bezahlt ab Status erinnert zu markieren
+
 # 4.0.8
 - Automatische Übermittlung des Checkout-Formulars implementiert, wenn iFrame keine Eingabefelder zurückgibt
 

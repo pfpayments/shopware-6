@@ -1,3 +1,6 @@
+# 4.0.9
+- Allow to mark payment status as paid from status reminded
+
 # 4.0.8
 - Checkout form auto submission implemented when iFrame returns no input fields
 
