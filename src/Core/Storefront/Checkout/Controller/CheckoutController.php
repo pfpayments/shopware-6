@@ -359,6 +359,10 @@ class CheckoutController extends StorefrontController {
 			// Configuration
 			$this->settings = $this->settingsService->getSettings($salesChannelContext->getSalesChannel()->getId());
 			$orderEntity    = $this->getOrder($request, $salesChannelContext);
+			$lastTransaction = $orderEntity->getTransactions()->last();
+			if ($lastTransaction && !$lastTransaction->getPaymentMethod()->getAfterOrderEnabled()) {
+				return $this->redirectToRoute('frontend.home.page');
+			}
 
 			$transaction = $this->getTransaction($orderId, $salesChannelContext->getContext());
 			if (!empty($transaction->getUserFailureMessage())) {

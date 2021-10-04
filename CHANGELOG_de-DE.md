@@ -1,3 +1,6 @@
+# 4.0.10
+- Das Verhalten der Option "Zahlungsänderung nach der Kasse zulassen" behoben
+
 # 4.0.9
 - Erlaube, den Zahlungsstatus als bezahlt ab Status erinnert zu markieren
 

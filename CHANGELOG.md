@@ -1,3 +1,6 @@
+# 4.0.10
+- Fixed "Allow payment change after checkout" option behavior
+
 # 4.0.9
 - Allow to mark payment status as paid from status reminded
 
