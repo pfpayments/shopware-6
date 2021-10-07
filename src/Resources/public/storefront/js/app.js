@@ -101,9 +101,6 @@
                     let loader = document.getElementById(PostFinanceCheckoutCheckout.loader_id);
                     loader.parentNode.removeChild(loader);
                     PostFinanceCheckoutCheckout.activateLoader(false);
-                    if (this.measureIframe(iframeContainer) < 1) {
-                        PostFinanceCheckoutCheckout.handler.submit();
-                    }
                 });
                 PostFinanceCheckoutCheckout.handler.setHeightChangeCallback((height)=>{
                     if(height < 1){ // iframe has no fields
@@ -112,25 +109,6 @@
                 });
                 PostFinanceCheckoutCheckout.handler.create(iframeContainer);
             }
-        },
-
-        /**
-         * pixel height of first iframe or 0
-         * @param iframeContainer
-         * @return {int}
-         */
-        measureIframe: function (iframeContainer) {
-            if (iframeContainer.tagName.toLowerCase() === 'iframe') {
-                return iframeContainer.offsetHeight;
-            }
-
-            iframeContainer.childNodes.forEach( child => {
-                if (child.tagName.toLowerCase() === 'iframe') {
-                    return child.offsetHeight;
-                }
-            })
-
-            return 0;
         },
 
         /**

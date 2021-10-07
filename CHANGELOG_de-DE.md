@@ -1,3 +1,6 @@
+# 4.0.11
+- Automatisches Senden bei leerem iframe zurückgesetzt, da es nicht in allen Fällen richtig funktioniert
+
 # 4.0.10
 - Das Verhalten der Option "Zahlungsänderung nach der Kasse zulassen" behoben
 

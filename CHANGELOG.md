@@ -1,3 +1,6 @@
+# 4.0.11
+- Reverted auto-submit on empty iframe as it is not working properly at all cases
+
 # 4.0.10
 - Fixed "Allow payment change after checkout" option behavior
 
