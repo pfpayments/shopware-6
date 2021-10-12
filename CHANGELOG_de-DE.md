@@ -1,3 +1,9 @@
+# 4.0.13
+- Loader Chrome IOS beheben
+
+# 4.0.12
+- Implementierte Sicherheitskorrektur
+
 # 4.0.11
 - Automatisches Senden bei leerem iframe zurückgesetzt, da es nicht in allen Fällen richtig funktioniert
 

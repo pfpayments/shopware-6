@@ -63,6 +63,14 @@
             }
         },
 
+        hideLoader: function () {
+            const loader = document.getElementById(PostFinanceCheckoutCheckout.loader_id);
+            if(loader.parentNode !== null) {
+                loader.parentNode.removeChild(loader);
+            }
+            PostFinanceCheckoutCheckout.activateLoader(false);
+        },
+
         recreateCart: function (e) {
             window.location.href = PostFinanceCheckoutCheckout.cart_recreate_url;
             e.preventDefault();
@@ -93,21 +101,19 @@
                 // noinspection JSUnresolvedFunction
                 PostFinanceCheckoutCheckout.handler = window.IframeCheckoutHandler(paymentMethodConfigurationId);
                 // noinspection JSUnresolvedFunction
-                PostFinanceCheckoutCheckout.handler.setValidationCallback((validationResult) => {
+                PostFinanceCheckoutCheckout.handler.setValidationCallback(function(validationResult){
                     PostFinanceCheckoutCheckout.hideErrors();
                     PostFinanceCheckoutCheckout.validationCallBack(validationResult);
                 });
-                PostFinanceCheckoutCheckout.handler.setInitializeCallback(() => {
-                    let loader = document.getElementById(PostFinanceCheckoutCheckout.loader_id);
-                    loader.parentNode.removeChild(loader);
-                    PostFinanceCheckoutCheckout.activateLoader(false);
-                });
-                PostFinanceCheckoutCheckout.handler.setHeightChangeCallback((height)=>{
+                PostFinanceCheckoutCheckout.handler.setInitializeCallback(PostFinanceCheckoutCheckout.hideLoader());
+                PostFinanceCheckoutCheckout.handler.setHeightChangeCallback(function(height){
                     if(height < 1){ // iframe has no fields
                         PostFinanceCheckoutCheckout.handler.submit();
                     }
                 });
                 PostFinanceCheckoutCheckout.handler.create(iframeContainer);
+                setTimeout(PostFinanceCheckoutCheckout.hideLoader(), 10000);
+
             }
         },
 

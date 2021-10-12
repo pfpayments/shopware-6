@@ -1,3 +1,9 @@
+# 4.0.13
+- Loader Chrome IOS fix
+
+# 4.0.12
+- Security fix
+
 # 4.0.11
 - Reverted auto-submit on empty iframe as it is not working properly at all cases
 

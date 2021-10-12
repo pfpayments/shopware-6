@@ -58,22 +58,4 @@ class PostFinanceCheckoutPayment extends Plugin {
 		$this->disablePaymentMethods($deactivateContext->getContext());
 	}
 
-
-	/**
-	 * @param \Shopware\Core\Framework\Plugin\Context\UpdateContext $updateContext
-	 *
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
-	 */
-	public function postUpdate(UpdateContext $updateContext): void
-	{
-		parent::postUpdate($updateContext);
-		/**
-		 * @var \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService $webHooksService
-		 */
-		$webHooksService = $this->container->get(WebHooksService::class);
-		$webHooksService->install();
-	}
-
 }
