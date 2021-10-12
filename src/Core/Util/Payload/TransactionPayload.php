@@ -118,10 +118,16 @@ class TransactionPayload extends AbstractPayload {
 		$billingAddress  = $this->getAddressPayload($customer, $customer->getActiveBillingAddress());
 		$shippingAddress = $this->getAddressPayload($customer, $customer->getActiveShippingAddress());
 
+
+		$customerId = null;
+		if($customer->getGuest() === false){
+			$customerId = $customer->getCustomerNumber();
+		}
+
 		$transactionData = [
 			'currency'               => $this->salesChannelContext->getCurrency()->getIsoCode(),
 			'customer_email_address' => $billingAddress->getEmailAddress(),
-			'customer_id'            => $customer->getCustomerNumber() ?? null,
+			'customer_id'            => $customerId,
 			'language'               => $this->localeCodeProvider->getLocaleCodeFromContext($this->salesChannelContext->getContext()) ?? null,
 			'merchant_reference'     => $this->fixLength($this->transaction->getOrder()->getOrderNumber(), 100),
 			'meta_data'              => [

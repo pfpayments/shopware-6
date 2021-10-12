@@ -4,6 +4,7 @@ namespace PostFinanceCheckoutPayment\Core\Settings\Struct;
 
 use Shopware\Core\Framework\Struct\Struct;
 use PostFinanceCheckout\Sdk\ApiClient;
+use PostFinanceCheckoutPayment\Core\Util\Analytics\Analytics;
 
 /**
  * Class Settings
@@ -185,6 +186,7 @@ class Settings extends Struct {
 			$this->apiClient   = new ApiClient($this->getUserId(), $this->getApplicationKey());
 			$apiClientBasePath = getenv('POSTFINANCECHECKOUT_API_BASE_PATH') ? getenv('POSTFINANCECHECKOUT_API_BASE_PATH') : $this->apiClient->getBasePath();
 			$this->apiClient->setBasePath($apiClientBasePath);
+			Analytics::addHeaders($this->apiClient);
 		}
 		return $this->apiClient;
 	}
