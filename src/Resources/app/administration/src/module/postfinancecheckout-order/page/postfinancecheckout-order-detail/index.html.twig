@@ -27,6 +27,7 @@
 					<sw-button
 							variant="primary"
 							size="small"
+							:disabled="transaction.state == 'FAILED'"
 							@click="downloadInvoice()">
 						{{ $tc('postfinancecheckout-order.buttons.label.download-invoice') }}
 					</sw-button>
@@ -35,6 +36,7 @@
 					<sw-button
 							variant="primary"
 							size="small"
+							:disabled="transaction.state == 'FAILED'"
 							@click="downloadPackingSlip()">
 						{{ $tc('postfinancecheckout-order.buttons.label.download-packing-slip') }}
 					</sw-button>
