@@ -1,3 +1,6 @@
+# 4.0.14
+- Unterstützung für Shopware 6.4.6
+
 # 4.0.13
 - Loader Chrome IOS beheben
 
