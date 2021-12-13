@@ -1,3 +1,6 @@
+# 4.0.17
+- Einstellungen zum Importieren von Webhooks und Zahlungsmethoden korrigiert
+
 # 4.0.16
 - Einstellungen zur Steuerung der Aktualisierung von Webhooks und Zahlungsmethoden hinzugefügt
 

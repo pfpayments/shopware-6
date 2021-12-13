@@ -1,3 +1,6 @@
+# 4.0.17
+- Fixed settings to import webhooks and payment methods
+
 # 4.0.16
 - Added settings to control update of webhooks and payment methods
 

@@ -30,7 +30,7 @@ class Settings extends Struct {
 	 *
 	 * @var bool
 	 */
-	protected $emailEnabled;
+	protected $emailEnabled = true;
 
 	/**
 	 * Preferred integration
@@ -51,7 +51,7 @@ class Settings extends Struct {
 	 *
 	 * @var bool
 	 */
-	protected $storefrontInvoiceDownloadEnabled;
+	protected $storefrontInvoiceDownloadEnabled = true;
 
 	/**
 	 * Space Id
@@ -72,14 +72,14 @@ class Settings extends Struct {
 	 *
 	 * @var bool
 	 */
-	protected $webhooksUpdate;
+	protected $webhooksUpdate = true;
 
 	/**
 	 * Enable payments update
 	 *
 	 * @var bool
 	 */
-	protected $paymentsUpdate;
+	protected $paymentsUpdate = true;
 
 	/**
 	 * User id
