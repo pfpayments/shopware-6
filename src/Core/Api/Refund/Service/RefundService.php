@@ -106,12 +106,12 @@ class RefundService {
 	}
 
 	/**
-	 * Get transaction entity by Wallee transaction id
+	 * Get transaction entity by PostFinanceCheckout transaction id
 	 *
 	 * @param int                              $transactionId
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
-	 * @return \WalleePayment\Core\Api\Transaction\Entity\TransactionEntity
+	 * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity
 	 */
 	public function getTransactionEntityByTransactionId(int $transactionId, Context $context): TransactionEntity
 	{

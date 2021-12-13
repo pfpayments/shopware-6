@@ -43,6 +43,8 @@ Component.register('postfinancecheckout-settings', {
             configEmailEnabledDefaultValue: true,
             configLineItemConsistencyEnabledDefaultValue: true,
             configStorefrontInvoiceDownloadEnabledEnabledDefaultValue: true,
+            configStorefrontWebhooksUpdateEnabledDefaultValue: true,
+            configStorefrontPaymentsUpdateEnabledDefaultValue: true,
 
             ...constants
         };
@@ -89,6 +91,14 @@ Component.register('postfinancecheckout-settings', {
                         this.config[this.CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED] = this.configStorefrontInvoiceDownloadEnabledEnabledDefaultValue;
                     }
 
+                    if (!(this.CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED in this.config)) {
+                        this.config[this.CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED] = this.configStorefrontWebhooksUpdateEnabledDefaultValue;
+                    }
+
+                    if (!(this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED in this.config)) {
+                        this.config[this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED] = this.configStorefrontPaymentsUpdateEnabledDefaultValue;
+                    }
+
                 } else {
 
                     this.applicationKeyFilled = !!this.config[this.CONFIG_APPLICATION_KEY] || !!defaultConfig[this.CONFIG_APPLICATION_KEY];
@@ -110,6 +120,14 @@ Component.register('postfinancecheckout-settings', {
 
                     if (!(this.CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED in this.config) || !(this.CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED in defaultConfig)) {
                         this.config[this.CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED] = this.configStorefrontInvoiceDownloadEnabledEnabledDefaultValue;
+                    }
+
+                    if (!(this.CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED in this.config) || !(this.CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED in defaultConfig)) {
+                        this.config[this.CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED] = this.configStorefrontWebhooksUpdateEnabledDefaultValue;
+                    }
+
+                    if (!(this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED in this.config) || !(this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED in defaultConfig)) {
+                        this.config[this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED] = this.configStorefrontPaymentsUpdateEnabledDefaultValue;
                     }
                 }
             },
@@ -143,6 +161,10 @@ Component.register('postfinancecheckout-settings', {
         },
 
         registerWebHooks() {
+            if (this.config[this.CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED] === false) {
+                return false;
+            }
+
             this.PostFinanceCheckoutConfigurationService.registerWebHooks(this.$refs.configComponent.selectedSalesChannelId)
                 .then(() => {
                     this.createNotificationSuccess({
@@ -159,6 +181,10 @@ Component.register('postfinancecheckout-settings', {
         },
 
         synchronizePaymentMethodConfiguration() {
+            if (this.config[this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED] === false) {
+                return false;
+            }
+
             this.PostFinanceCheckoutConfigurationService.synchronizePaymentMethodConfiguration(this.$refs.configComponent.selectedSalesChannelId)
                 .then(() => {
                     this.createNotificationSuccess({

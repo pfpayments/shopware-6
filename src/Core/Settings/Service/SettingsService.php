@@ -27,6 +27,8 @@ class SettingsService {
 	public const CONFIG_SPACE_VIEW_ID                       = 'spaceViewId';
 	public const CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED = 'storefrontInvoiceDownloadEnabled';
 	public const CONFIG_USER_ID                             = 'userId';
+	public const CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED  = 'storefrontWebhooksUpdateEnabled';
+	public const CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED  = 'storefrontPaymentsUpdateEnabled';
 
 	/**
 	 * @var \Shopware\Core\System\SystemConfig\SystemConfigService

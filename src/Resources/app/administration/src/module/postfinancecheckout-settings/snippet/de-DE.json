@@ -66,6 +66,17 @@
 		  "tooltipText": "Wenn diese Einstellung aktiviert ist, können Ihre Kunden Auftragsrechnungen von PostFinanceCheckout herunterladen."
 		}
 	  },
+	  "advancedOptions": {
+		"cardTitle": "Erweiterte-Optionen",
+		"webhooksUpdateEnabled": {
+			"label": "Webhooks-Update",
+			"tooltipText": "Wenn diese Einstellung aktiviert ist, wird das Webhook-Update ausgelöst, wenn Sie die Einstellungen speichern"
+		},
+	    "paymentsUpdateEnabled": {
+		  "label": "Payments-Update",
+		  "tooltipText": "Wenn diese Einstellung aktiviert ist, wird die Aktualisierung der Zahlungsmethoden ausgelöst, wenn Sie die Einstellungen speichern"
+	    }
+	  },
 	  "titleError": "Fehler",
 	  "titleSuccess": "Erfolg"
 	}

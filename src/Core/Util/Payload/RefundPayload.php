@@ -3,12 +3,12 @@
 namespace PostFinanceCheckoutPayment\Core\Util\Payload;
 
 use PostFinanceCheckout\Sdk\{
+	Model\LineItem,
 	Model\RefundCreate,
 	Model\RefundType,
 	Model\Transaction,
 	Model\TransactionState};
 use PostFinanceCheckoutPayment\Core\Util\Exception\InvalidPayloadException;
-use Wallee\Sdk\Model\LineItem;
 
 /**
  * Class RefundPayload

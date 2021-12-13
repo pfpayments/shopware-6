@@ -56,6 +56,8 @@ class SettingsCommand extends Command {
 			SettingsService::CONFIG_SPACE_VIEW_ID                       => $input->getOption(SettingsService::CONFIG_SPACE_VIEW_ID),
 			SettingsService::CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED => $input->getOption(SettingsService::CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED),
 			SettingsService::CONFIG_USER_ID                             => $input->getOption(SettingsService::CONFIG_USER_ID),
+			SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED  => $input->getOption(SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED),
+			SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED  => $input->getOption(SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED),
 		]);
 		return 0;
 	}
@@ -126,6 +128,19 @@ class SettingsCommand extends Command {
 				 InputOption::VALUE_OPTIONAL,
 				 SettingsService::CONFIG_SPACE_VIEW_ID,
 				 ''
-			 );
+			 )
+			->addOption(
+				SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED,
+				SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED,
+				InputOption::VALUE_OPTIONAL,
+				SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED,
+				true
+			)			->addOption(
+				SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED,
+				SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED,
+				InputOption::VALUE_OPTIONAL,
+				SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED,
+				true
+			);
 	}
 }

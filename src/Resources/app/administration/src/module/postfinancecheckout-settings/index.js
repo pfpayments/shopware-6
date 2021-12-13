@@ -6,6 +6,7 @@ import './component/sw-postfinancecheckout-credentials';
 import './component/sw-postfinancecheckout-options';
 import './component/sw-postfinancecheckout-settings-icon';
 import './component/sw-postfinancecheckout-storefront-options';
+import './component/sw-postfinancecheckout-advanced-options';
 
 const {Module} = Shopware;
 

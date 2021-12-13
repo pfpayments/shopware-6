@@ -68,6 +68,20 @@ class Settings extends Struct {
 	protected $spaceViewId;
 
 	/**
+	 * Enable webhooks update
+	 *
+	 * @var bool
+	 */
+	protected $webhooksUpdate;
+
+	/**
+	 * Enable payments update
+	 *
+	 * @var bool
+	 */
+	protected $paymentsUpdate;
+
+	/**
 	 * User id
 	 *
 	 * @var int
@@ -173,6 +187,38 @@ class Settings extends Struct {
 	public function setSpaceViewId(int $spaceViewId): void
 	{
 		$this->spaceViewId = $spaceViewId;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isWebhooksUpdateEnabled(): bool
+	{
+		return boolval($this->webhooksUpdate);
+	}
+
+	/**
+	 * @param bool $webhooksUpdate
+	 */
+	public function setWebhooksEnabled(bool $webhooksUpdate): void
+	{
+		$this->webhooksUpdate = $webhooksUpdate;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isPaymentsUpdateEnabled(): bool
+	{
+		return boolval($this->paymentsUpdate);
+	}
+
+	/**
+	 * @param bool $paymentsUpdate
+	 */
+	public function setPaymentsEnabled(bool $paymentsUpdate): void
+	{
+		$this->paymentsUpdate = $paymentsUpdate;
 	}
 
 	/**

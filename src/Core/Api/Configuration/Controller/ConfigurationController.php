@@ -16,6 +16,7 @@ use PostFinanceCheckoutPayment\Core\{
 	Api\OrderDeliveryState\Service\OrderDeliveryStateService,
 	Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService,
 	Api\WebHooks\Service\WebHooksService,
+	Settings\Service\SettingsService,
 	Util\PaymentMethodUtil};
 
 /**
@@ -39,6 +40,11 @@ class ConfigurationController extends AbstractController {
 	protected $logger;
 
 	/**
+	 * @var \WalleePayment\Core\Settings\Service\SettingsService
+	 */
+	protected $settingsService;
+
+	/**
 	 * @var \PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil
 	 */
 	private $paymentMethodUtil;
@@ -49,22 +55,22 @@ class ConfigurationController extends AbstractController {
 	private $paymentMethodConfigurationService;
 
 	/**
-	 * ConfigurationController constructor.
-	 *
-	 * @param \PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil                                                   $paymentMethodUtil
-	 * @param \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService $paymentMethodConfigurationService
-	 * @param \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService                                     $webHooksService
+	 * @param PaymentMethodUtil $paymentMethodUtil
+	 * @param PaymentMethodConfigurationService $paymentMethodConfigurationService
+	 * @param WebHooksService $webHooksService
+	 * @param SettingsService $settingsService
 	 */
 	public function __construct(
 		PaymentMethodUtil $paymentMethodUtil,
 		PaymentMethodConfigurationService $paymentMethodConfigurationService,
-		WebHooksService $webHooksService
+		WebHooksService $webHooksService,
+		SettingsService $settingsService
 	)
 	{
 		$this->webHooksService   = $webHooksService;
 		$this->paymentMethodUtil = $paymentMethodUtil;
-
 		$this->paymentMethodConfigurationService = $paymentMethodConfigurationService;
+		$this->settingsService = $settingsService;
 	}
 
 	/**
@@ -117,6 +123,12 @@ class ConfigurationController extends AbstractController {
 	 */
 	public function registerWebHooks(Request $request): JsonResponse
 	{
+		$settings = $this->settingsService->getSettings();
+		if ($settings->isWebhooksUpdateEnabled() === false) {
+			$this->logger->info('Webhooks update disabled by settings');
+			return new JsonResponse([]);
+		}
+
 		$salesChannelId = $request->request->get('salesChannelId');
 		$salesChannelId = ($salesChannelId == 'null') ? null : $salesChannelId;
 
@@ -140,9 +152,14 @@ class ConfigurationController extends AbstractController {
 	 */
 	public function synchronizePaymentMethodConfiguration(Request $request, Context $context): JsonResponse
 	{
+		$settings = $this->settingsService->getSettings();
+		if ($settings->isPaymentsUpdateEnabled() === false) {
+			$this->logger->info('Payment methods update disabled by settings');
+			return new JsonResponse([]);
+		}
+
 		$salesChannelId = $request->request->get('salesChannelId');
 		$salesChannelId = ($salesChannelId == 'null') ? null : $salesChannelId;
-		$result         = [];
 		$status         = Response::HTTP_OK;
 		try {
 			$result = $this->paymentMethodConfigurationService->setSalesChannelId($salesChannelId)->synchronize($context);

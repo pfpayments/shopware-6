@@ -66,6 +66,17 @@
 		  "tooltipText": "If this setting is enabled your customers will be able to download order invoices from PostFinanceCheckout"
 		}
 	  },
+	  "advancedOptions": {
+		"cardTitle": "Advanced Options",
+		"webhooksUpdateEnabled": {
+			"label": "Webhooks Update",
+			"tooltipText": "If this setting is enabled webhook update will be triggered when you save settings"
+		},
+	    "paymentsUpdateEnabled": {
+		  "label": "Payments Update",
+		  "tooltipText": "If this setting is enabled payment methods update will be triggered when you save settings"
+	    }
+	  },
 	  "titleError": "Error",
 	  "titleSuccess": "Success"
 	}

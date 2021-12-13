@@ -1,3 +1,9 @@
+# 4.0.16
+- Einstellungen zur Steuerung der Aktualisierung von Webhooks und Zahlungsmethoden hinzugefügt
+
+# 4.0.15
+- Wallee/SW6-Dokumentation anpassen – wie man Rückerstattungen durchführt
+
 # 4.0.14
 - Unterstützung für Shopware 6.4.6
 

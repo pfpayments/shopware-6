@@ -1,3 +1,9 @@
+# 4.0.16
+- Added settings to control update of webhooks and payment methods
+
+# 4.0.15
+- Adjust wallee/SW6 documentation - how to do refunds
+
 # 4.0.14
 - Support for Shopware 6.4.6
 
