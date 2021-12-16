@@ -9,7 +9,7 @@
 					<sw-button
 							variant="primary"
 							size="small"
-							:disabled="transaction.state != 'AUTHORIZED'"
+							:disabled="transaction.state != 'AUTHORIZED' || isLoading"
 							@click="spawnModal('completion')">
 						{{ $tc('postfinancecheckout-order.buttons.label.completion') }}
 					</sw-button>
@@ -18,7 +18,7 @@
 					<sw-button
 							variant="primary"
 							size="small"
-							:disabled="transaction.state != 'AUTHORIZED'"
+							:disabled="transaction.state != 'AUTHORIZED' || isLoading"
 							@click="spawnModal('void')">
 						{{ $tc('postfinancecheckout-order.buttons.label.void') }}
 					</sw-button>
