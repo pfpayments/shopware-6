@@ -1,3 +1,9 @@
+# 4.0.21
+- Custom products options displayed as separate line items
+
+# 4.0.20
+- Fixed company name for shipping address
+
 # 4.0.17
 - Fixed settings to import webhooks and payment methods
 

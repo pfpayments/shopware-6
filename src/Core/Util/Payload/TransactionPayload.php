@@ -37,15 +37,16 @@ use PostFinanceCheckoutPayment\Core\{
  *
  * @package PostFinanceCheckoutPayment\Core\Util\Payload
  */
-class TransactionPayload extends AbstractPayload {
+class TransactionPayload extends AbstractPayload
+{
 
-    use CustomProductsLineItems;
+	use CustomProductsLineItems;
 
-	public const ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_SPACE_ID       = 'postfinancecheckout_space_id';
+	public const ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_SPACE_ID = 'postfinancecheckout_space_id';
 	public const ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_TRANSACTION_ID = 'postfinancecheckout_transaction_id';
 
-	public const POSTFINANCECHECKOUT_METADATA_SALES_CHANNEL_ID     = 'salesChannelId';
-	public const POSTFINANCECHECKOUT_METADATA_ORDER_ID             = 'orderId';
+	public const POSTFINANCECHECKOUT_METADATA_SALES_CHANNEL_ID = 'salesChannelId';
+	public const POSTFINANCECHECKOUT_METADATA_ORDER_ID = 'orderId';
 	public const POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID = 'orderTransactionId';
 
 
@@ -82,26 +83,26 @@ class TransactionPayload extends AbstractPayload {
 	/**
 	 * TransactionPayload constructor.
 	 *
-	 * @param \Psr\Container\ContainerInterface                                  $container
-	 * @param \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider         $localeCodeProvider
-	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext             $salesChannelContext
-	 * @param \PostFinanceCheckoutPayment\Core\Settings\Struct\Settings        $settings
+	 * @param \Psr\Container\ContainerInterface $container
+	 * @param \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider $localeCodeProvider
+	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
+	 * @param \PostFinanceCheckoutPayment\Core\Settings\Struct\Settings $settings
 	 * @param \Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct $transaction
 	 */
 	public function __construct(
-		ContainerInterface $container,
-		LocaleCodeProvider $localeCodeProvider,
-		SalesChannelContext $salesChannelContext,
-		Settings $settings,
+		ContainerInterface            $container,
+		LocaleCodeProvider            $localeCodeProvider,
+		SalesChannelContext           $salesChannelContext,
+		Settings                      $settings,
 		AsyncPaymentTransactionStruct $transaction
 	)
 	{
-		$this->localeCodeProvider  = $localeCodeProvider;
+		$this->localeCodeProvider = $localeCodeProvider;
 		$this->salesChannelContext = $salesChannelContext;
-		$this->settings            = $settings;
-		$this->transaction         = $transaction;
-		$this->container           = $container;
-		$this->translator          = $this->container->get('translator');
+		$this->settings = $settings;
+		$this->transaction = $transaction;
+		$this->container = $container;
+		$this->translator = $this->container->get('translator');
 	}
 
 	/**
@@ -114,29 +115,29 @@ class TransactionPayload extends AbstractPayload {
 	{
 		$customer = $this->salesChannelContext->getCustomer();
 
-		$lineItems       = $this->getLineItems();
-		$billingAddress  = $this->getAddressPayload($customer, $customer->getActiveBillingAddress());
+		$lineItems = $this->getLineItems();
+		$billingAddress = $this->getAddressPayload($customer, $customer->getActiveBillingAddress());
 		$shippingAddress = $this->getAddressPayload($customer, $customer->getActiveShippingAddress());
 
 
 		$customerId = null;
-		if($customer->getGuest() === false){
+		if ($customer->getGuest() === false) {
 			$customerId = $customer->getCustomerNumber();
 		}
 
 		$transactionData = [
-			'currency'               => $this->salesChannelContext->getCurrency()->getIsoCode(),
+			'currency' => $this->salesChannelContext->getCurrency()->getIsoCode(),
 			'customer_email_address' => $billingAddress->getEmailAddress(),
-			'customer_id'            => $customerId,
-			'language'               => $this->localeCodeProvider->getLocaleCodeFromContext($this->salesChannelContext->getContext()) ?? null,
-			'merchant_reference'     => $this->fixLength($this->transaction->getOrder()->getOrderNumber(), 100),
-			'meta_data'              => [
-				self::POSTFINANCECHECKOUT_METADATA_ORDER_ID             => $this->transaction->getOrder()->getId(),
+			'customer_id' => $customerId,
+			'language' => $this->localeCodeProvider->getLocaleCodeFromContext($this->salesChannelContext->getContext()) ?? null,
+			'merchant_reference' => $this->fixLength($this->transaction->getOrder()->getOrderNumber(), 100),
+			'meta_data' => [
+				self::POSTFINANCECHECKOUT_METADATA_ORDER_ID => $this->transaction->getOrder()->getId(),
 				self::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID => $this->transaction->getOrderTransaction()->getId(),
-				self::POSTFINANCECHECKOUT_METADATA_SALES_CHANNEL_ID     => $this->salesChannelContext->getSalesChannel()->getId(),
+				self::POSTFINANCECHECKOUT_METADATA_SALES_CHANNEL_ID => $this->salesChannelContext->getSalesChannel()->getId(),
 			],
-			'shipping_method'        => $this->salesChannelContext->getShippingMethod()->getName() ? $this->fixLength($this->salesChannelContext->getShippingMethod()->getName(), 200) : null,
-			'space_view_id'          => $this->settings->getSpaceViewId() ?? null,
+			'shipping_method' => $this->salesChannelContext->getShippingMethod()->getName() ? $this->fixLength($this->salesChannelContext->getShippingMethod()->getName(), 200) : null,
+			'space_view_id' => $this->settings->getSpaceViewId() ?? null,
 		];
 
 		$transactionPayload = (new TransactionCreate())
@@ -159,9 +160,9 @@ class TransactionPayload extends AbstractPayload {
 		$transactionPayload->setAllowedPaymentMethodConfigurations([$paymentConfiguration->getPaymentMethodConfigurationId()]);
 
 		$successUrl = $this->transaction->getReturnUrl() . '&status=paid';
-		$failedUrl  = $this->getFailUrl($this->transaction->getOrder()->getId()) . '&status=fail';
+		$failedUrl = $this->getFailUrl($this->transaction->getOrder()->getId()) . '&status=fail';
 		$transactionPayload->setSuccessUrl($successUrl)
-						   ->setFailedUrl($failedUrl);
+			->setFailedUrl($failedUrl);
 
 		if (!$transactionPayload->valid()) {
 			$this->logger->critical('Transaction payload invalid:', $transactionPayload->listInvalidProperties());
@@ -180,7 +181,7 @@ class TransactionPayload extends AbstractPayload {
 	protected function getLineItems(): array
 	{
 		/**
-		 * @var \PostFinanceCheckout\Sdk\Model\LineItemCreate[] $lineItems
+		 * @var \Wallee\Sdk\Model\LineItemCreate[] $lineItems
 		 */
 		$lineItems = [];
 
@@ -189,13 +190,17 @@ class TransactionPayload extends AbstractPayload {
 		 */
 		foreach ($this->transaction->getOrder()->getLineItems() as $shopLineItem) {
 
-            if ($shopLineItem->getParentId() !== null
-                || (strpos($shopLineItem->getType(), CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) === 0)
-            ) {
-                continue;
-            }
+			if ($shopLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
+				continue;
+			}
 
-            $lineItem = $this->createLineItem($shopLineItem);
+			if ($shopLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS_OPTION) {
+				$customProductOptionParentLabel = $this->getCustomProductOptionLabel($shopLineItem->getParentId());
+				$label = $customProductOptionParentLabel . ': ' . $shopLineItem->getLabel();
+				$shopLineItem->setLabel($label);
+			}
+
+			$lineItem = $this->createLineItem($shopLineItem);
 
 			if (!$lineItem->valid()) {
 				$this->logger->critical('LineItem payload invalid:', $lineItem->listInvalidProperties());
@@ -205,10 +210,13 @@ class TransactionPayload extends AbstractPayload {
 			$lineItems[] = $lineItem;
 		}
 
-        $customProductLineItems = $this->getCustomProductLineItems();
-		if ($customProductLineItems !== null) {
-		    $lineItems = array_merge($lineItems, $customProductLineItems);
-        }
+		usort($lineItems, function ($shopLineItem1, $shopLineItem2) {
+			if ($shopLineItem1->getName() == $shopLineItem2->getName()) {
+				return 0;
+			}
+
+			return ($shopLineItem1->getName() < $shopLineItem2->getName()) ? -1 : 1;
+		});
 
 		$shippingLineItem = $this->getShippingLineItem();
 		if (!is_null($shippingLineItem)) {
@@ -221,14 +229,29 @@ class TransactionPayload extends AbstractPayload {
 		}
 
 		return $lineItems;
+	}
 
+	/**
+	 * @param string $lineItemParentId
+	 * @return string
+	 */
+	protected function getCustomProductOptionLabel(string $lineItemParentId): string {
+		$label = '';
+		foreach ($this->transaction->getOrder()->getLineItems() as $shopLineItem) {
+			if ($shopLineItem->getParentId() === $lineItemParentId && $shopLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_PRODUCT) {
+				$label = $shopLineItem->getLabel();
+				break;
+			}
+		}
+
+		return $label;
 	}
 
 	/**
 	 *
-	 * @var \Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity $shopLineItem
 	 * @return \PostFinanceCheckout\Sdk\Model\LineItemCreate|null
 	 * @throws \Exception
+	 * @var \Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity $shopLineItem
 	 */
 	protected function createLineItem(OrderLineItemEntity $shopLineItem): ?LineItemCreate
 	{
@@ -236,12 +259,12 @@ class TransactionPayload extends AbstractPayload {
 		$taxes = null;
 
 		$uniqueId = $shopLineItem->getId();
-		$sku      = $shopLineItem->getProductId() ? $shopLineItem->getProductId() : $uniqueId;
-		$payLoad  = $shopLineItem->getPayload();
+		$sku = $shopLineItem->getProductId() ? $shopLineItem->getProductId() : $uniqueId;
+		$payLoad = $shopLineItem->getPayload();
 		if (!empty($payLoad) && !empty($payLoad['productNumber'])) {
 			$sku = $payLoad['productNumber'];
 		}
-		$sku    = $this->fixLength($sku, 200);
+		$sku = $this->fixLength($sku, 200);
 		$amount = $shopLineItem->getTotalPrice() ? self::round($shopLineItem->getTotalPrice()) : 0;
 
 		$lineItem = (new LineItemCreate())
@@ -250,7 +273,6 @@ class TransactionPayload extends AbstractPayload {
 			->setSku($sku)
 			->setQuantity($shopLineItem->getQuantity() ?? 1)
 			->setAmountIncludingTax($amount);
-
 
 
 		if (!empty($shopLineItem->getType()) && $shopLineItem->getType() == CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
@@ -262,7 +284,7 @@ class TransactionPayload extends AbstractPayload {
 				$amount
 			);
 
-		}else{
+		} else {
 			$productAttributes = $this->getProductAttributes($shopLineItem);
 
 			$taxes = $this->getTaxes(
@@ -272,26 +294,26 @@ class TransactionPayload extends AbstractPayload {
 		}
 
 
-        if (!empty($productAttributes)) {
-            $lineItem->setAttributes($productAttributes);
-        }
+		if (!empty($productAttributes)) {
+			$lineItem->setAttributes($productAttributes);
+		}
 
 		if (!empty($taxes)) {
 			$lineItem->setTaxes($taxes);
 		}
 
-        if ($shopLineItem->getTotalPrice() >= 0) {
-            $lineItem->setType(LineItemType::PRODUCT);
-        } else {
-            $lineItem->setType(LineItemType::DISCOUNT);
-        }
+		if ($shopLineItem->getTotalPrice() >= 0) {
+			$lineItem->setType(LineItemType::PRODUCT);
+		} else {
+			$lineItem->setType(LineItemType::DISCOUNT);
+		}
 
-        return $lineItem;
-    }
+		return $lineItem;
+	}
 
 	/**
 	 * @param \Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection $calculatedTaxes
-	 * @param string                                                          $title
+	 * @param string $title
 	 *
 	 * @return array
 	 */
@@ -323,18 +345,18 @@ class TransactionPayload extends AbstractPayload {
 	protected function getProductAttributes(OrderLineItemEntity $shopLineItem): ?array
 	{
 		$productAttributes = [];
-		$lineItemPayload   = $shopLineItem->getPayload();
+		$lineItemPayload = $shopLineItem->getPayload();
 
 		if (is_array($lineItemPayload) && !empty($lineItemPayload['options'])) {
 			foreach ($lineItemPayload['options'] as $option) {
 
-				$label                   = $option['group'];
+				$label = $option['group'];
 				$lineItemAttributeCreate = (new LineItemAttributeCreate())
 					->setLabel($this->fixLength($label, 512))
 					->setValue($this->fixLength($option['option'], 512));
 
 				if ($lineItemAttributeCreate->valid()) {
-					$key                     = $this->fixLength('option_' . md5($label), 40);
+					$key = $this->fixLength('option_' . md5($label), 40);
 					$productAttributes[$key] = $lineItemAttributeCreate;
 				} else {
 					$this->logger->critical('LineItemAttributeCreate payload invalid:', $lineItemAttributeCreate->listInvalidProperties());
@@ -359,7 +381,7 @@ class TransactionPayload extends AbstractPayload {
 			if ($amount > 0) {
 
 				$shippingName = $this->salesChannelContext->getShippingMethod()->getName() ?? $this->translator->trans('postfinancecheckout.payload.shipping.name');
-				$taxes        = $this->getTaxes(
+				$taxes = $this->getTaxes(
 					$this->transaction->getOrder()->getShippingCosts()->getCalculatedTaxes(),
 					$shippingName
 				);
@@ -411,7 +433,7 @@ class TransactionPayload extends AbstractPayload {
 			if ($this->settings->isLineItemConsistencyEnabled()) {
 				$error = strtr('LineItems total :lineItemTotal does not add up to order total :orderTotal', [
 					':lineItemTotal' => $lineItemPriceTotal,
-					':orderTotal'    => $this->transaction->getOrder()->getAmountTotal(),
+					':orderTotal' => $this->transaction->getOrder()->getAmountTotal(),
 				]);
 				$this->logger->critical($error);
 				throw new \Exception($error);
@@ -424,7 +446,7 @@ class TransactionPayload extends AbstractPayload {
 					->setQuantity(1);
 				/** @noinspection PhpParamsInspection */
 				$lineItem->setAmountIncludingTax($adjustmentPrice)
-						 ->setType(($adjustmentPrice > 0) ? LineItemType::FEE : LineItemType::DISCOUNT);
+					->setType(($adjustmentPrice > 0) ? LineItemType::FEE : LineItemType::DISCOUNT);
 
 				if (!$lineItem->valid()) {
 					$this->logger->critical('Adjustment LineItem payload invalid:', $lineItem->listInvalidProperties());
@@ -439,7 +461,7 @@ class TransactionPayload extends AbstractPayload {
 	/**
 	 * Get address payload
 	 *
-	 * @param \Shopware\Core\Checkout\Customer\CustomerEntity                                  $customer
+	 * @param \Shopware\Core\Checkout\Customer\CustomerEntity $customer
 	 * @param \Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity $customerAddressEntity
 	 *
 	 * @return \PostFinanceCheckout\Sdk\Model\AddressCreate
@@ -473,11 +495,8 @@ class TransactionPayload extends AbstractPayload {
 		$organization_name = null;
 		if (!empty($customerAddressEntity->getCompany())) {
 			$organization_name = $customerAddressEntity->getCompany();
-		} else {
-			if (!empty($customer->getCompany())) {
-				$organization_name = $customer->getCompany();
-			}
 		}
+
 		$organization_name = !empty($organization_name) ? $this->fixLength($organization_name, 100) : null;
 
 		// Salutation
@@ -496,17 +515,17 @@ class TransactionPayload extends AbstractPayload {
 		$salutation = !empty($salutation) ? $this->fixLength($salutation, 20) : null;
 
 		$addressData = [
-			'city'              => $customerAddressEntity->getCity() ? $this->fixLength($customerAddressEntity->getCity(), 100) : null,
-			'country'           => $customerAddressEntity->getCountry() ? $customerAddressEntity->getCountry()->getIso() : null,
-			'email_address'     => $customer->getEmail() ? $this->fixLength($customer->getEmail(), 254) : null,
-			'family_name'       => $family_name,
-			'given_name'        => $given_name,
+			'city' => $customerAddressEntity->getCity() ? $this->fixLength($customerAddressEntity->getCity(), 100) : null,
+			'country' => $customerAddressEntity->getCountry() ? $customerAddressEntity->getCountry()->getIso() : null,
+			'email_address' => $customer->getEmail() ? $this->fixLength($customer->getEmail(), 254) : null,
+			'family_name' => $family_name,
+			'given_name' => $given_name,
 			'organization_name' => $organization_name,
-			'phone_number'      => $customerAddressEntity->getPhoneNumber() ? $this->fixLength($customerAddressEntity->getPhoneNumber(), 100) : null,
-			'postcode'          => $customerAddressEntity->getZipcode() ? $this->fixLength($customerAddressEntity->getZipcode(), 40) : null,
-			'postal_state'      => $customerAddressEntity->getCountryState() ? $customerAddressEntity->getCountryState()->getShortCode() : null,
-			'salutation'        => $salutation,
-			'street'            => $customerAddressEntity->getStreet() ? $this->fixLength($customerAddressEntity->getStreet(), 300) : null,
+			'phone_number' => $customerAddressEntity->getPhoneNumber() ? $this->fixLength($customerAddressEntity->getPhoneNumber(), 100) : null,
+			'postcode' => $customerAddressEntity->getZipcode() ? $this->fixLength($customerAddressEntity->getZipcode(), 40) : null,
+			'postal_state' => $customerAddressEntity->getCountryState() ? $customerAddressEntity->getCountryState()->getShortCode() : null,
+			'salutation' => $salutation,
+			'street' => $customerAddressEntity->getStreet() ? $this->fixLength($customerAddressEntity->getStreet(), 300) : null,
 		];
 
 		$addressPayload = (new AddressCreate())
@@ -540,8 +559,8 @@ class TransactionPayload extends AbstractPayload {
 		$criteria = (new Criteria([$id]));
 
 		return $this->container->get('postfinancecheckout_payment_method_configuration.repository')
-							   ->search($criteria, $this->salesChannelContext->getContext())
-							   ->getEntities()->first();
+			->search($criteria, $this->salesChannelContext->getContext())
+			->getEntities()->first();
 	}
 
 	/**

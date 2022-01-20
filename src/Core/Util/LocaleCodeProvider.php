@@ -162,6 +162,7 @@ class LocaleCodeProvider {
 		$locales[]          = $this->getDefaultLocaleCode($context);
 		$locales[]          = 'de-DE';
 		$locales[]          = 'en-GB';
+		$locales[]          = 'fr-FR';
 		$locales            = array_unique($locales);
 		return $locales;
 	}

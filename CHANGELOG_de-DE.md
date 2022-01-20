@@ -1,3 +1,9 @@
+# 4.0.21
+- Benutzerdefinierte Produktoptionen werden als separate Einzelposten angezeigt
+
+# 4.0.20
+- Fester Firmenname für Lieferadresse
+
 # 4.0.17
 - Einstellungen zum Importieren von Webhooks und Zahlungsmethoden korrigiert
 

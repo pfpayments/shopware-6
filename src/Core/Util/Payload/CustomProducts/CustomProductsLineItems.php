@@ -15,30 +15,6 @@ use PostFinanceCheckoutPayment\Core\Util\Exception\InvalidPayloadException;
 trait CustomProductsLineItems {
 
 	/**
-	 * Get custom product line items
-	 *
-	 * @return array
-	 */
-	protected function getCustomProductLineItems(): ?array
-	{
-		$lineItems = [];
-		$shopLineItems = $this->transaction->getOrder()->getLineItems();
-		$customProductParentLineItems = $shopLineItems->filterByType(CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS);
-		$customProducts               = $shopLineItems->filterByType(CustomProductsLineItemTypes::LINE_ITEM_TYPE_PRODUCT);
-
-		/**
-		 * @var \Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity $customProductParentLineItem
-		 */
-		foreach ($customProductParentLineItems as $customProductParentLineItem) {
-			$customProduct = $customProducts->filterByProperty('parentId', $customProductParentLineItem->getId());
-			$customProductParentLineItem->setLabel($customProduct->first()->getLabel());
-			$lineItems[] = $this->createLineItem($customProductParentLineItem);
-		}
-
-		return $lineItems;
-	}
-
-	/**
 	 * Get Custom Product attributes
 	 *
 	 * @param \Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity $shopLineItem

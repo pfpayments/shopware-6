@@ -5,6 +5,7 @@ import './page/postfinancecheckout-order-detail';
 
 import deDE from './snippet/de-DE.json';
 import enGB from './snippet/en-GB.json';
+import frFR from './snippet/fr-FR.json';
 
 const {Module} = Shopware;
 
@@ -19,7 +20,8 @@ Module.register('postfinancecheckout-order', {
 
 	snippets: {
 		'de-DE': deDE,
-		'en-GB': enGB
+		'en-GB': enGB,
+		'fr-FR': frFR
 	},
 
 	routeMiddleware(next, currentRoute) {
