@@ -478,27 +478,29 @@ class CheckoutController extends StorefrontController {
 			$productOptions = $this->getCustomProductOptions($orderItems, $orderItem->getId());
 			$optionValues   = $this->getOptionValues($productOptions);
 
-			$params = new RequestDataBag([]);
-
-			if (!empty($optionValues)) {
-				$params = new RequestDataBag([
-					'customized-products-template' => new RequestDataBag([
-						'id'      => $orderItem->getReferencedId(),
-						'options' => new RequestDataBag($optionValues),
-					]),
-				]);
-			}
-
-			$request->request = new RequestDataBag([
-				'lineItems' => [
-					'quantity'     => $orderItem->getQuantity(),
-					'id'           => $product->getProductId(),
-					'type'         => CustomProductsLineItemTypes::LINE_ITEM_TYPE_PRODUCT,
-					'referencedId' => $product->getReferencedId(),
-					'stackable'    => $orderItem->getStackable(),
-					'removable'    => $orderItem->getRemovable(),
-				],
+			$params = new RequestDataBag([
+				'customized-products-template' => new RequestDataBag([
+					'id'      => $orderItem->getReferencedId(),
+					'options' => new RequestDataBag($optionValues),
+				]),
 			]);
+
+			$request->request->add(
+				[
+					'lineItems' =>
+						[
+							$product->getProductId() =>
+								[
+									'quantity' => $orderItem->getQuantity(),
+									'id'           => $product->getProductId(),
+									'type'         => CustomProductsLineItemTypes::LINE_ITEM_TYPE_PRODUCT,
+									'referencedId' => $product->getReferencedId(),
+									'stackable'    => $orderItem->getStackable(),
+									'removable'    => $orderItem->getRemovable(),
+								]
+						]
+				]
+			);
 
 			$customProductsService->add($params, $request, $salesChannelContext, $cart);
 			$cart = $this->cartService->getCart($salesChannelContext->getToken(), $salesChannelContext);

@@ -1,3 +1,9 @@
+# 4.0.23
+- Fixed cart recreate function for custom products
+
+# 4.0.22
+- Added support for French
+
 # 4.0.21
 - Custom products options displayed as separate line items
 

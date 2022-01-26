@@ -1,3 +1,9 @@
+# 4.0.23
+- Korrigierte Warenkorb-Neuerstellungsfunktion für benutzerdefinierte Produkte
+
+# 4.0.22
+- Unterstützung für Französisch hinzugefügt
+
 # 4.0.21
 - Benutzerdefinierte Produktoptionen werden als separate Einzelposten angezeigt
 
