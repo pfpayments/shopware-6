@@ -106,6 +106,41 @@ class RefundService {
 	}
 
 	/**
+	 * The pay function will be called after the customer completed the order.
+	 * Allows to process the order and store additional information.
+	 *
+	 * A redirect to the url will be performed
+	 *
+	 * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
+	 * @param float                                        $refundableAmount
+	 * @param \Shopware\Core\Framework\Context             $context
+	 *
+	 * @return \PostFinanceCheckout\Sdk\Model\Refund|null
+	 * @throws \Exception
+	 */
+	public function createRefundByAmount(Transaction $transaction, float $refundableAmount, Context $context): ?Refund
+	{
+		try {
+			$transactionEntity  = $this->getTransactionEntityByTransactionId($transaction->getId(), $context);
+			$settings           = $this->settingsService->getSettings($transactionEntity->getSalesChannel()->getId());
+			$apiClient          = $settings->getApiClient();
+			$refundPayloadClass = new RefundPayload();
+			$refundPayloadClass->setLogger($this->logger);
+
+			$refundPayload = $refundPayloadClass->getByAmount($transaction, $refundableAmount);
+
+			if (!is_null($refundPayload)) {
+				$refund = $apiClient->getRefundService()->refund($settings->getSpaceId(), $refundPayload);
+				$this->upsert($refund, $context);
+				return $refund;
+			}
+		} catch (\Exception $exception) {
+			$this->logger->critical($exception->getMessage());
+		}
+		return null;
+	}
+
+	/**
 	 * Get transaction entity by PostFinanceCheckout transaction id
 	 *
 	 * @param int                              $transactionId

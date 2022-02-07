@@ -1,3 +1,6 @@
+# 4.0.24
+- Added refunds by amount
+
 # 4.0.23
 - Fixed cart recreate function for custom products
 

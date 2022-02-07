@@ -2,6 +2,7 @@
 
 import '../../component/postfinancecheckout-order-action-completion';
 import '../../component/postfinancecheckout-order-action-refund';
+import '../../component/postfinancecheckout-order-action-refund-by-amount';
 import '../../component/postfinancecheckout-order-action-void';
 import template from './index.html.twig';
 import './index.scss';
@@ -35,6 +36,8 @@ Component.register('postfinancecheckout-order-detail', {
 			orderId: '',
 			currency: '',
 			modalType: '',
+			refundAmount: 0,
+			refundableAmount: 0,
 			currentLineItem: '',
 			refundLineItem: []
 		};
@@ -179,6 +182,8 @@ Component.register('postfinancecheckout-order-detail', {
 			orderRepository.get(this.orderId, Context.api, orderCriteria).then((order) => {
 				this.order = order;
 				this.isLoading = false;
+				var totalAmountTemp = 0;
+				var refundsAmountTemp = 0;
 				const postfinancecheckoutTransactionId = order.transactions[0].customFields.postfinancecheckout_transaction_id;
 				this.PostFinanceCheckoutTransactionService.getTransactionData(order.salesChannelId, postfinancecheckoutTransactionId)
 					.then((PostFinanceCheckoutTransaction) => {
@@ -190,6 +195,7 @@ Component.register('postfinancecheckout-order-detail', {
 						);
 
 						PostFinanceCheckoutTransaction.refunds.forEach((refund) => {
+							refundsAmountTemp = parseFloat(parseFloat(refundsAmountTemp) + parseFloat(refund.amount));
 							refund.amount = Utils.format.currency(
 								refund.amount,
 								this.currency
@@ -215,6 +221,8 @@ Component.register('postfinancecheckout-order-detail', {
 								this.currency
 							);
 
+							totalAmountTemp = parseFloat(lineItem.unitPriceIncludingTax * lineItem.quantity);
+
 							lineItem.refundableQuantity = parseInt(
 								parseInt(lineItem.quantity) - parseInt(this.refundLineItem[lineItem.uniqueId] || 0)
 							);
@@ -223,6 +231,8 @@ Component.register('postfinancecheckout-order-detail', {
 						this.lineItems = PostFinanceCheckoutTransaction.transactions[0].lineItems;
 						this.transactionData = PostFinanceCheckoutTransaction;
 						this.transaction = this.transactionData.transactions[0];
+						this.refundAmount = Number(this.transactionData.transactions[0].amountIncludingTax);
+						this.refundableAmount = parseFloat(parseFloat(totalAmountTemp) - parseFloat(refundsAmountTemp));
 					}).catch((errorResponse) => {
 					try {
 						this.createNotificationError({

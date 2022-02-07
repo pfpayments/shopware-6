@@ -1,3 +1,6 @@
+#4.0.24
+- Rückerstattungen nach Betrag hinzugefügt
+
 # 4.0.23
 - Korrigierte Warenkorb-Neuerstellungsfunktion für benutzerdefinierte Produkte
 

@@ -292,7 +292,7 @@ class WebHookController extends AbstractController {
 					) {
 						$transactionByOrderTransactionId = $this->transactionService->getByOrderTransactionId($orderTransactionId, $context);
 						$totalRefundedAmount  = $this->getTotalRefundedAmount($transactionByOrderTransactionId->getTransactionId(), $context);
-						if ($totalRefundedAmount == $orderTransaction->getAmount()->getTotalPrice()) {
+						if (floatval($orderTransaction->getAmount()->getTotalPrice()) - $totalRefundedAmount <= 0) {
 							$this->orderTransactionStateHandler->refund($orderTransactionId, $context);
 						}
 					}
