@@ -20,6 +20,7 @@ use Shopware\Core\{
 	Framework\Routing\Annotation\RouteScope,
 	System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions,
 	System\StateMachine\Exception\IllegalTransitionException};
+use Shopware\Core\Checkout\Order\OrderStates;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\{HttpFoundation\JsonResponse,
 	HttpFoundation\ParameterBag,
@@ -430,12 +431,13 @@ class WebHookController extends AbstractController {
 										  ->getTransactionService()
 										  ->read($callBackData->getSpaceId(), $callBackData->getEntityId());
 			$orderId     = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
-			if(!empty($orderId)) {
-				$this->executeLocked($orderId, $context, function () use ($orderId, $transaction, $context) {
+			if(!empty($orderId) && !$transaction->getParent()) {
+				$this->executeLocked($orderId, $context, function () use ($orderId, $transaction, $context, $callBackData) {
 					$this->transactionService->upsert($transaction, $context);
 					$orderTransactionId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
 					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
 					$this->logger->info("OrderId: {$orderId} Current state: {$orderTransaction->getStateMachineState()->getTechnicalName()}");
+
 					if (!in_array(
 						$orderTransaction->getStateMachineState()->getTechnicalName(),
 						$this->transactionFinalStates
