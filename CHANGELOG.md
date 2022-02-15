@@ -1,3 +1,10 @@
+# 4.0.26
+- Added documentation around flow builder
+
+# 4.0.25
+- Fixed transaction invoice instant payment handling.
+- Tested with v6.4.7.0
+
 # 4.0.24
 - Added refunds by amount
 

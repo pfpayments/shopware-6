@@ -1,4 +1,11 @@
-#4.0.24
+# 4.0.26
+- Dokumentation zum Flow Builder hinzugefügt
+
+# 4.0.25
+- Die Handhabung der sofortigen Zahlung von Transaktionsrechnungen wurde korrigiert.
+- Getestet mit v6.4.7.0
+
+# 4.0.24
 - Rückerstattungen nach Betrag hinzugefügt
 
 # 4.0.23
