@@ -1,3 +1,7 @@
+# 4.0.28
+- Italienische Übersetzungen hinzugefügt
+- Getestet mit SW v6.4.9.0
+
 # 4.0.26
 - Dokumentation zum Flow Builder hinzugefügt
 

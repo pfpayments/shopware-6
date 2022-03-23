@@ -1,0 +1,27 @@
+{
+  "postfinancecheckout": {
+    "account": {
+      "downloadInvoice": "Scaricare la fattura"
+    },
+    "cookie": {
+      "name": "Pagamento PostFinanceCheckout"
+    },
+    "deliveryState": {
+      "hold": "Tenere",
+      "unhold": "Aprite"
+    },
+    "payButton": "Paga",
+    "payHeader": "Ordine di pagamento",
+    "payload": {
+      "adjustmentLineItem": "Voce di aggiustamento",
+      "shipping": {
+        "lineItem": "Spedizione",
+        "name": "Spedizione"
+      },
+      "taxes": "Tasse"
+    },
+    "paymentMethod": {
+      "notAvailable": "Il metodo di pagamento non è attualmente disponibile. Si prega di scegliere un altro metodo di pagamento."
+    }
+  }
+}

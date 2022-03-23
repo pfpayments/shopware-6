@@ -21,6 +21,11 @@ use Shopware\Core\{
  */
 class LocaleCodeProvider {
 
+	public const LOCALE_GREAT_BRITAIN_ENGLISH = 'en-GB';
+	public const LOCALE_GERMANY_GERMAN = 'de-DE';
+	public const LOCALE_FRANCE_FRENCH = 'fr-FR';
+	public const LOCALE_ITALY_ITALIAN = 'it-IT';
+
 	/**
 	 * @var \Psr\Log\LoggerInterface
 	 */
@@ -70,7 +75,7 @@ class LocaleCodeProvider {
 	 */
 	public function getLocaleCodeFromContext(Context $context): string
 	{
-		$defaultLocale = 'en-GB';
+		$defaultLocale = self::LOCALE_GREAT_BRITAIN_ENGLISH;
 		$languageId    = $context->getLanguageId();
 		/** @var \Shopware\Core\System\Language\LanguageCollection $languageCollection */
 		$languageCollection = $this->languageRepository->search(
@@ -94,7 +99,7 @@ class LocaleCodeProvider {
 	 */
 	public function getDefaultLocaleCode(Context $context): string
 	{
-		$defaultLocale = 'en-GB';
+		$defaultLocale = self::LOCALE_GREAT_BRITAIN_ENGLISH;
 		$languageId    = Defaults::LANGUAGE_SYSTEM;
 		/** @var \Shopware\Core\System\Language\LanguageCollection $languageCollection */
 		$languageCollection = $this->languageRepository->search(
@@ -160,9 +165,10 @@ class LocaleCodeProvider {
 			$availableLanguages->jsonSerialize()
 		);
 		$locales[]          = $this->getDefaultLocaleCode($context);
-		$locales[]          = 'de-DE';
-		$locales[]          = 'en-GB';
-		$locales[]          = 'fr-FR';
+		$locales[]          = self::LOCALE_GERMANY_GERMAN;
+		$locales[]          = self::LOCALE_GREAT_BRITAIN_ENGLISH;
+		$locales[]          = self::LOCALE_FRANCE_FRENCH;
+		$locales[]          = self::LOCALE_ITALY_ITALIAN;
 		$locales            = array_unique($locales);
 		return $locales;
 	}
