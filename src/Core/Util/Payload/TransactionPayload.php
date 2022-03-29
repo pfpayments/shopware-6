@@ -514,6 +514,13 @@ class TransactionPayload extends AbstractPayload
 		}
 		$salutation = !empty($salutation) ? $this->fixLength($salutation, 20) : null;
 
+		$birthday = null;
+		if (!empty($customer->getBirthday())) {
+			$birthday = new \DateTime();
+			$birthday->setTimestamp($customer->getBirthday()->getTimestamp());
+			$birthday = $birthday->format('Y-m-d');
+		}
+
 		$addressData = [
 			'city' => $customerAddressEntity->getCity() ? $this->fixLength($customerAddressEntity->getCity(), 100) : null,
 			'country' => $customerAddressEntity->getCountry() ? $customerAddressEntity->getCountry()->getIso() : null,
@@ -526,6 +533,7 @@ class TransactionPayload extends AbstractPayload
 			'postal_state' => $customerAddressEntity->getCountryState() ? $customerAddressEntity->getCountryState()->getShortCode() : null,
 			'salutation' => $salutation,
 			'street' => $customerAddressEntity->getStreet() ? $this->fixLength($customerAddressEntity->getStreet(), 300) : null,
+			'birthday' => $birthday
 		];
 
 		$addressPayload = (new AddressCreate())
@@ -540,6 +548,10 @@ class TransactionPayload extends AbstractPayload
 			->setPostalState($addressData['postal_state'])
 			->setSalutation($addressData['salutation'])
 			->setStreet($addressData['street']);
+
+		if (!empty($addressData['birthday'])) {
+			$addressPayload->setDateOfBirth($addressData['birthday']);
+		}
 
 		if (!$addressPayload->valid()) {
 			$this->logger->critical('Address payload invalid:', $addressPayload->listInvalidProperties());
