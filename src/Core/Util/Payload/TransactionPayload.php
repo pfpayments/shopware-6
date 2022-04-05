@@ -140,6 +140,14 @@ class TransactionPayload extends AbstractPayload
 			'space_view_id' => $this->settings->getSpaceViewId() ?? null,
 		];
 
+		// we have to manually check for these additional fields as they might not be active
+		if (!empty($additionalAddress1 = $customer->getDefaultBillingAddress()->getAdditionalAddressLine1())) {
+			$transactionData['meta_data']['additionalAddress1'] = $additionalAddress1;
+		}
+		if (!empty($additionalAddress2 = $customer->getDefaultBillingAddress()->getAdditionalAddressLine2())) {
+			$transactionData['meta_data']['additionalAddress2'] = $additionalAddress2;
+		}
+
 		$transactionPayload = (new TransactionCreate())
 			->setAutoConfirmationEnabled(false)
 			->setBillingAddress($billingAddress)
