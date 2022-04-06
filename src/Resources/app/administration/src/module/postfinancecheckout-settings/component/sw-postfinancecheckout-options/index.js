@@ -62,6 +62,14 @@ Component.register('sw-postfinancecheckout-options', {
 			return value.length <= 0;
 		},
 
+		checkNumberFieldInheritance(value) {
+			if (typeof value !== 'number') {
+				return true;
+			}
+
+			return value.length <= 0;
+		},
+
 		checkBoolFieldInheritance(value) {
 			return typeof value !== 'boolean';
 		}

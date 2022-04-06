@@ -15,7 +15,7 @@
 							<sw-inherit-wrapper
 									v-model="actualConfigData[CONFIG_SPACE_ID]"
 									:inheritedValue="selectedSalesChannelId === null ? null : allConfigs['null'][CONFIG_SPACE_ID]"
-									:customInheritationCheckFunction="checkTextFieldInheritance">
+									:customInheritationCheckFunction="checkNumberFieldInheritance">
 								<template #content="props">
 									<sw-number-field
 											:name="CONFIG_SPACE_ID"
@@ -36,7 +36,7 @@
 							<sw-inherit-wrapper
 									v-model="actualConfigData[CONFIG_USER_ID]"
 									:inheritedValue="selectedSalesChannelId === null ? null : allConfigs['null'][CONFIG_USER_ID]"
-									:customInheritationCheckFunction="checkTextFieldInheritance">
+									:customInheritationCheckFunction="checkNumberFieldInheritance">
 								<template #content="props">
 									<sw-number-field
 											:name="CONFIG_USER_ID"
