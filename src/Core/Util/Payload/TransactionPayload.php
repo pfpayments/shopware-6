@@ -507,6 +507,12 @@ class TransactionPayload extends AbstractPayload
 
 		$organization_name = !empty($organization_name) ? $this->fixLength($organization_name, 100) : null;
 
+		// salesTaxNumber
+		$salesTaxNumber = null;
+		$vatIds = $customer->getVatIds();
+		if (!empty($vatIds)) {
+		    $salesTaxNumber = $vatIds[0];
+		}
 		// Salutation
 		$salutation = null;
 		if (!(
@@ -536,7 +542,8 @@ class TransactionPayload extends AbstractPayload
 			'family_name' => $family_name,
 			'given_name' => $given_name,
 			'organization_name' => $organization_name,
-			'phone_number' => $customerAddressEntity->getPhoneNumber() ? $this->fixLength($customerAddressEntity->getPhoneNumber(), 100) : null,
+		    	'sales_tax_number' => $salesTaxNumber,
+		    	'phone_number' => $customerAddressEntity->getPhoneNumber() ? $this->fixLength($customerAddressEntity->getPhoneNumber(), 100) : null,
 			'postcode' => $customerAddressEntity->getZipcode() ? $this->fixLength($customerAddressEntity->getZipcode(), 40) : null,
 			'postal_state' => $customerAddressEntity->getCountryState() ? $customerAddressEntity->getCountryState()->getShortCode() : null,
 			'salutation' => $salutation,
@@ -551,7 +558,8 @@ class TransactionPayload extends AbstractPayload
 			->setFamilyName($addressData['family_name'])
 			->setGivenName($addressData['given_name'])
 			->setOrganizationName($addressData['organization_name'])
-			->setPhoneNumber($addressData['phone_number'])
+		    	->setSalesTaxNumber($addressData['sales_tax_number'])
+		    	->setPhoneNumber($addressData['phone_number'])
 			->setPostCode($addressData['postcode'])
 			->setPostalState($addressData['postal_state'])
 			->setSalutation($addressData['salutation'])
