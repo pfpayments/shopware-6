@@ -36,10 +36,10 @@
             "it-IT": "https://www.postfinance.ch/checkout"
         },
         "supportLink": {
-            "de-DE": "https://www.postfinance.ch/en/business/support/written-contact/contact-form.html",
-            "en-GB": "https://www.postfinance.ch/en/business/support/written-contact/contact-form.html",
-            "fr-FR": "https://www.postfinance.ch/en/business/support/written-contact/contact-form.html",
-            "it-IT": "https://www.postfinance.ch/en/business/support/written-contact/contact-form.html"
+            "de-DE": "https://www.postfinance.ch/en/business/support.html",
+            "en-GB": "https://www.postfinance.ch/en/business/support.html",
+            "fr-FR": "https://www.postfinance.ch/en/business/support.html",
+            "it-IT": "https://www.postfinance.ch/en/business/support.html"
         },
         "shopware-plugin-class": "PostFinanceCheckoutPayment\\PostFinanceCheckoutPayment"
     },
@@ -62,5 +62,5 @@
         "postfinancecheckout/sdk": "3.0.1"
     },
     "type": "shopware-platform-plugin",
-    "version": "4.0.32"
+    "version": "4.0.33"
 }
