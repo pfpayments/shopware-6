@@ -148,6 +148,10 @@ class TransactionPayload extends AbstractPayload
 			$transactionData['meta_data']['additionalAddress2'] = $additionalAddress2;
 		}
 
+		if (!empty($this->transaction->getOrder()->getCustomerComment())) {
+			$transactionData['meta_data']['customer_comment'] = $this->transaction->getOrder()->getCustomerComment();
+		}
+
 		$transactionPayload = (new TransactionCreate())
 			->setAutoConfirmationEnabled(false)
 			->setBillingAddress($billingAddress)
