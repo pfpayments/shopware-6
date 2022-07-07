@@ -1,3 +1,6 @@
+# 4.0.36
+- Compatibility SW v6.4.13.0
+
 # 4.0.29
 - Fix to hide birthdate field if it's already provided
 - Tested against SW v6.4.9.0

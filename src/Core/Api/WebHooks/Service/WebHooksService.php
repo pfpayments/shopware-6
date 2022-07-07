@@ -66,7 +66,7 @@ class WebHooksService {
 		/**
 		 * Transaction WebHook Entity Id
 		 *
-		 * @link https://www.postfinance.ch/checkout/doc/api/webhook-entity/view/1472041829003
+		 * @link https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/doc/api/webhook-entity/view/1472041829003
 		 */
 		[
 			'id'                => '1472041829003',
@@ -86,7 +86,7 @@ class WebHooksService {
 		/**
 		 * Transaction Invoice WebHook Entity Id
 		 *
-		 * @link https://www.postfinance.ch/checkout/doc/api/webhook-entity/view/1472041816898
+		 * @link https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/doc/api/webhook-entity/view/1472041816898
 		 */
 		[
 			'id'                => '1472041816898',
@@ -101,7 +101,7 @@ class WebHooksService {
 		/**
 		 * Refund WebHook Entity Id
 		 *
-		 * @link https://www.postfinance.ch/checkout/doc/api/webhook-entity/view/1472041839405
+		 * @link https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/doc/api/webhook-entity/view/1472041839405
 		 */
 		[
 			'id'                => '1472041839405',
@@ -115,7 +115,7 @@ class WebHooksService {
 		/**
 		 * Payment Method Configuration Id
 		 *
-		 * @link https://www.postfinance.ch/checkout/doc/api/webhook-entity/view/1472041857405
+		 * @link https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/doc/api/webhook-entity/view/1472041857405
 		 */
 		[
 			'id'                => '1472041857405',

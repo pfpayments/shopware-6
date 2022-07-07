@@ -1,7 +1,7 @@
 {
     "authors": [
         {
-            "homepage": "https://www.postfinance.ch/checkout",
+            "homepage": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html",
             "name": "PostFinance Checkout"
         }
     ],
@@ -30,10 +30,10 @@
             "it-IT": "PostFinanceCheckout Prodotti per Shopware 6"
         },
         "manufacturerLink": {
-            "de-DE": "https://www.postfinance.ch/checkout",
-            "en-GB": "https://www.postfinance.ch/checkout",
-            "fr-FR": "https://www.postfinance.ch/checkout",
-            "it-IT": "https://www.postfinance.ch/checkout"
+            "de-DE": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html",
+            "en-GB": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html",
+            "fr-FR": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html",
+            "it-IT": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html"
         },
         "supportLink": {
             "de-DE": "https://www.postfinance.ch/en/business/support.html",
@@ -43,7 +43,7 @@
         },
         "shopware-plugin-class": "PostFinanceCheckoutPayment\\PostFinanceCheckoutPayment"
     },
-    "homepage": "https://www.postfinance.ch/checkout/",
+    "homepage": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/",
     "keywords": [
         "PostFinance Checkout",
         "payment",
@@ -62,5 +62,5 @@
         "postfinancecheckout/sdk": "3.0.1"
     },
     "type": "shopware-platform-plugin",
-    "version": "4.0.34"
+    "version": "4.0.35"
 }
