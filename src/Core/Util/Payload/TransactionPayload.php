@@ -144,12 +144,25 @@ class TransactionPayload extends AbstractPayload
 		if (!empty($additionalAddress1 = $customer->getDefaultBillingAddress()->getAdditionalAddressLine1())) {
 			$transactionData['meta_data']['additionalAddress1'] = $additionalAddress1;
 		}
+
 		if (!empty($additionalAddress2 = $customer->getDefaultBillingAddress()->getAdditionalAddressLine2())) {
 			$transactionData['meta_data']['additionalAddress2'] = $additionalAddress2;
 		}
 
 		if (!empty($this->transaction->getOrder()->getCustomerComment())) {
 			$transactionData['meta_data']['customer_comment'] = $this->transaction->getOrder()->getCustomerComment();
+		}
+
+		if (!empty($companyDepartment = $customer->getDefaultBillingAddress()->getDepartment())) {
+			$transactionData['meta_data']['companyDepartment'] = $companyDepartment;
+
+			$taxNumber = null;
+			$vatIds = $customer->getVatIds();
+			if (!empty($vatIds)) {
+				$taxNumber = $vatIds[0];
+			}
+
+			$transactionData['meta_data']['taxNumber'] = $taxNumber;
 		}
 
 		$transactionPayload = (new TransactionCreate())
