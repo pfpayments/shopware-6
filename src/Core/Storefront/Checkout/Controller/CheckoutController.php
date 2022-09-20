@@ -390,6 +390,11 @@ class CheckoutController extends StorefrontController {
 					'type'         => $type,
 				], $salesChannelContext);
 
+				$lineItemPayload = $orderLineItemEntity->getPayload();
+				if (!empty($lineItemPayload)) {
+					$lineItem->setPayload($lineItemPayload);
+				}
+
 				$cart = $this->cartService->add($cart, $lineItem, $salesChannelContext);
 
 			}
