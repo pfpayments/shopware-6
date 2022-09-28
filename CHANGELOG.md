@@ -1,3 +1,6 @@
+# 4.0.41
+- Sends to the payment portal a more specific version of shopware being used.
+
 # 4.0.36
 - Compatibility SW v6.4.13.0
 

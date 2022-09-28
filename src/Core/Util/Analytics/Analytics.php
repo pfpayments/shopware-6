@@ -2,6 +2,7 @@
 
 namespace PostFinanceCheckoutPayment\Core\Util\Analytics;
 
+use Composer\InstalledVersions;
 use PostFinanceCheckout\Sdk\ApiClient;
 
 /**
@@ -11,20 +12,21 @@ use PostFinanceCheckout\Sdk\ApiClient;
  */
 class Analytics {
 
-	public const SHOP_SYSTEM             = 'x-postfinancecheckout-shop-system';
-	public const SHOP_SYSTEM_VERSION     = 'x-postfinancecheckout-shop-system-version';
-	public const SHOP_SYSTEM_AND_VERSION = 'x-postfinancecheckout-shop-system-and-version';
-	public const PLUGIN_FEATURE          = 'x-postfinancecheckout-shop-plugin-feature';
+	public const SHOP_SYSTEM             = 'x-meta-shop-system';
+	public const SHOP_SYSTEM_VERSION     = 'x-meta-shop-system-version';
+	public const SHOP_SYSTEM_AND_VERSION = 'x-meta-shop-system-and-version';
 
 	/**
 	 * @return array
 	 */
 	public static function getDefaultData()
 	{
+		$shop_version = InstalledVersions::getVersion('shopware/core');
+		[$major_version, $minor_version, $rest] = explode('.', $shop_version, 3);
 		return [
 			self::SHOP_SYSTEM             => 'shopware',
-			self::SHOP_SYSTEM_VERSION     => '6',
-			self::SHOP_SYSTEM_AND_VERSION => 'shopware-6',
+			self::SHOP_SYSTEM_VERSION     => $shop_version,
+			self::SHOP_SYSTEM_AND_VERSION => 'shopware-' . $major_version . '.' . $minor_version,
 		];
 	}
 
