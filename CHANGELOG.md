@@ -1,3 +1,6 @@
+# 4.0.42
+- Rollback to remove functionality of sending version to payment portal
+
 # 4.0.41
 - Sends to the payment portal a more specific version of shopware being used.
 

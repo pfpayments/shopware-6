@@ -2,7 +2,6 @@
 
 namespace PostFinanceCheckoutPayment\Core\Util\Analytics;
 
-use Composer\InstalledVersions;
 use PostFinanceCheckout\Sdk\ApiClient;
 
 /**
@@ -21,12 +20,10 @@ class Analytics {
 	 */
 	public static function getDefaultData()
 	{
-		$shop_version = InstalledVersions::getVersion('shopware/core');
-		[$major_version, $minor_version, $rest] = explode('.', $shop_version, 3);
 		return [
 			self::SHOP_SYSTEM             => 'shopware',
-			self::SHOP_SYSTEM_VERSION     => $shop_version,
-			self::SHOP_SYSTEM_AND_VERSION => 'shopware-' . $major_version . '.' . $minor_version,
+			self::SHOP_SYSTEM_VERSION     => '6',
+			self::SHOP_SYSTEM_AND_VERSION => 'shopware-6',
 		];
 	}
 
