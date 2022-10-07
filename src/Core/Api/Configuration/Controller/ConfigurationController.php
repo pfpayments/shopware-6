@@ -40,7 +40,7 @@ class ConfigurationController extends AbstractController {
 	protected $logger;
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
+	 * @var \WalleePayment\Core\Settings\Service\SettingsService
 	 */
 	protected $settingsService;
 
