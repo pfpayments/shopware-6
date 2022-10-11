@@ -58,7 +58,7 @@ Component.register('postfinancecheckout-order-detail', {
 		relatedResourceColumns() {
 			return [
 				{
-					property: 'paymentConnectorConfiguration.name',
+					property: 'paymentMethodName',
 					label: this.$tc('postfinancecheckout-order.transactionHistory.types.payment_method'),
 					rawData: true
 				},

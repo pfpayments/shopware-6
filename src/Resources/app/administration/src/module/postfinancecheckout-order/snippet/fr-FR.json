@@ -85,7 +85,12 @@
 		"payment_method": "Mode de paiement",
 		"state": "État",
 		"transaction": "Transaction"
-	  }
+	  },
+	  "customerId": "Customer ID",
+	  "customerName": "Customer Name",
+	  "paymentMethod": "Mode de paiement",
+	  "paymentMethodBrand": "Marque du mode de paiement",
+	  "PseudoCreditCardNumber": "Pseudo numéro de carte de crédit"
 	},
 	"voidAction": {
 	  "confirm": {

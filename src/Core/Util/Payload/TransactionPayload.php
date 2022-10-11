@@ -17,6 +17,12 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use PostFinanceCheckout\Sdk\{
 	Model\AddressCreate,
+	Model\ChargeAttempt,
+	Model\CreationEntityState,
+	Model\CriteriaOperator,
+	Model\EntityQuery,
+	Model\EntityQueryFilter,
+	Model\EntityQueryFilterType,
 	Model\LineItemAttributeCreate,
 	Model\LineItemCreate,
 	Model\LineItemType,
@@ -48,6 +54,7 @@ class TransactionPayload extends AbstractPayload
 	public const POSTFINANCECHECKOUT_METADATA_SALES_CHANNEL_ID = 'salesChannelId';
 	public const POSTFINANCECHECKOUT_METADATA_ORDER_ID = 'orderId';
 	public const POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID = 'orderTransactionId';
+	public const POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME = 'customerName';
 
 
 	/**
@@ -121,8 +128,14 @@ class TransactionPayload extends AbstractPayload
 
 
 		$customerId = null;
+		$customerName = null;
 		if ($customer->getGuest() === false) {
 			$customerId = $customer->getCustomerNumber();
+			$customerName = '';
+			if ($customer->getGuest() === false) {
+				$customerId = $customer->getCustomerNumber();
+				$customerName = $customer->getSalutation()->getDisplayName() . ' ' . $customer->getFirstName() . ' ' . $customer->getLastName();
+			}
 		}
 
 		$transactionData = [
@@ -135,6 +148,7 @@ class TransactionPayload extends AbstractPayload
 				self::POSTFINANCECHECKOUT_METADATA_ORDER_ID => $this->transaction->getOrder()->getId(),
 				self::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID => $this->transaction->getOrderTransaction()->getId(),
 				self::POSTFINANCECHECKOUT_METADATA_SALES_CHANNEL_ID => $this->salesChannelContext->getSalesChannel()->getId(),
+				self::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME => $customerName,
 			],
 			'shipping_method' => $this->salesChannelContext->getShippingMethod()->getName() ? $this->fixLength($this->salesChannelContext->getShippingMethod()->getName(), 200) : null,
 			'space_view_id' => $this->settings->getSpaceViewId() ?? null,

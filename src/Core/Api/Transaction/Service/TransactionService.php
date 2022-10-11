@@ -16,8 +16,15 @@ use Shopware\Core\{
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use PostFinanceCheckout\Sdk\{
 	Model\Transaction,
-	Model\TransactionPending
+	Model\TransactionPending,
+	Model\ChargeAttempt,
+	Model\CreationEntityState,
+	Model\CriteriaOperator,
+	Model\EntityQuery,
+	Model\EntityQueryFilter,
+	Model\EntityQueryFilterType,
 };
+
 use PostFinanceCheckoutPayment\Core\{
 	Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
 	Api\Refund\Entity\RefundEntityCollection,
@@ -55,6 +62,8 @@ class TransactionService {
 	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
 	 */
 	private $settingsService;
+	
+	const PSEUDO_CODE_KEY = '1485172176673';
 
 	/**
 	 * TransactionService constructor.
@@ -144,6 +153,8 @@ class TransactionService {
 			$redirectUrl = $apiClient->getTransactionPaymentPageService()
 									 ->paymentPageUrl($settings->getSpaceId(), $createdTransaction->getId());
 		}
+		
+		
 
 		$this->upsert(
 			$createdTransaction,
@@ -151,6 +162,8 @@ class TransactionService {
 			$transaction->getOrderTransaction()->getPaymentMethodId(),
 			$transaction->getOrder()->getSalesChannelId()
 		);
+		
+		
 
 		$this->holdDelivery($transaction->getOrder()->getId(), $salesChannelContext->getContext());
 
@@ -197,13 +210,43 @@ class TransactionService {
 	{
 		try {
 
+			$transactionId = $transaction->getId();
 			$transactionMetaData = $transaction->getMetaData();
+
+			if (!$salesChannelId) {
+				$salesChannelId = $transactionMetaData['salesChannelId'] ?? '';
+			}
+
 			$orderId             = $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
 			$orderTransactionId  = $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
+			
+			$pseudoCardNumber = $this->getTransactionPseudoCardNumber($salesChannelId, $transactionId);
 
+			$dataParamValue = json_decode(strval($transaction), true);
+			$brandName = '';
+			if (isset($dataParamValue['paymentConnectorConfiguration'])) {
+				$brandName = $dataParamValue['paymentConnectorConfiguration']
+					? $dataParamValue['paymentConnectorConfiguration']['name']
+					: '';
+			}
+			$dataParamValue['brandName'] = $brandName;
+
+			$paymentMethodName = '';
+			if (isset($dataParamValue['paymentConnectorConfiguration'])) {
+				$paymentMethodName  = $dataParamValue['paymentConnectorConfiguration']
+					? $dataParamValue['paymentConnectorConfiguration']['paymentMethodConfiguration']['name']
+					: '';
+			}
+			$dataParamValue['paymentMethodName'] = $paymentMethodName;
+
+			$dataParamValue['pseudoCardNumber']  = $pseudoCardNumber;
+			$dataParamValue['customerName']  = isset($transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME])
+				? $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME]
+				: '';
+			
 			$data = [
 				'id'                 => $orderId,
-				'data'               => json_decode(strval($transaction), true),
+				'data'               => $dataParamValue,
 				'paymentMethodId'    => $paymentMethodId,
 				'orderId'            => $orderId,
 				'orderTransactionId' => $orderTransactionId,
@@ -350,6 +393,51 @@ class TransactionService {
 								   (new Criteria())->addFilter(new EqualsFilter('transactionId', $transactionId)), $context
 							   )
 							   ->getEntities();
+	}
+	
+	/**
+	 * @param int $transactionId
+	 * @return string
+	 */
+	public function getTransactionPseudoCardNumber(string $salesChannelId, int $transactionId): string
+	{
+		/** @noinspection PhpParamsInspection */
+		$entityQueryFilter = (new EntityQueryFilter())
+			->setType(EntityQueryFilterType::LEAF)
+			->setOperator(CriteriaOperator::EQUALS)
+			->setFieldName('charge.transaction')
+			->setValue($transactionId);
+		
+		$query = (new EntityQuery())->setFilter($entityQueryFilter);
+		
+		$settings  = $this->settingsService->getSettings($salesChannelId);
+		
+		/**
+		 * ChargeAttempt $chargeAttempt
+		 */
+		$chargeAttempt = $settings->getApiClient()->getChargeAttemptService()->search($settings->getSpaceId(), $query);
+		if (!$chargeAttempt) {
+			return '';
+		}
+		
+		$labels = $chargeAttempt[0]->getLabels() ?? [];
+		
+		if (empty($labels)) {
+			return '';
+		}
+		
+		$pseudoCardCode = '';
+		foreach ($labels as $label) {
+			$descriptor = $label->getDescriptor();
+			if ((string) $descriptor->getId() !== self::PSEUDO_CODE_KEY) {
+				continue;
+			}
+			
+			$pseudoCardCode = $label->getContentAsString();
+			break;
+		}
+		
+		return $pseudoCardCode;
 	}
 
 }
