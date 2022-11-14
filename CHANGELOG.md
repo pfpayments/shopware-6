@@ -1,3 +1,7 @@
+# 4.0.45
+- Add additional information of the Credit Card (Validity Date, Pseudo Credit Card number and PayID) for transaction using this Payment Method
+- Compatibility SW v6.4.17.1
+- 
 # 4.0.42
 - Rollback to remove functionality of sending version to payment portal
 

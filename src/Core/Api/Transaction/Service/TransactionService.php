@@ -64,6 +64,8 @@ class TransactionService {
 	private $settingsService;
 	
 	const PSEUDO_CODE_KEY = '1485172176673';
+	const CARD_VALIDITY_KEY = '1456765711187';
+	const PAY_ID_KEY = '1484042941549';
 
 	/**
 	 * TransactionService constructor.
@@ -219,8 +221,6 @@ class TransactionService {
 
 			$orderId             = $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
 			$orderTransactionId  = $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
-			
-			$pseudoCardNumber = $this->getTransactionPseudoCardNumber($salesChannelId, $transactionId);
 
 			$dataParamValue = json_decode(strval($transaction), true);
 			$brandName = '';
@@ -238,11 +238,33 @@ class TransactionService {
 					: '';
 			}
 			$dataParamValue['paymentMethodName'] = $paymentMethodName;
-
-			$dataParamValue['pseudoCardNumber']  = $pseudoCardNumber;
-			$dataParamValue['customerName']  = isset($transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME])
-				? $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME]
-				: '';
+            
+            $chargeAttempt = $this->getChargeAttempt($salesChannelId, $transactionId);
+            
+            if ($chargeAttempt) {
+                $pseudoCardNumber = $this->getChargeAttemptAdditionalData($chargeAttempt, self::PSEUDO_CODE_KEY);
+                $dataParamValue['pseudoCardNumber']  = $pseudoCardNumber ? $pseudoCardNumber[0] : '';
+    
+                $payId = $this->getChargeAttemptAdditionalData($chargeAttempt, self::PAY_ID_KEY);
+                $dataParamValue['payId']  = $payId ? $payId[0] : '';
+    
+                $dataParamValue['customerName']  = isset($transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME])
+                    ? $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME]
+                    : '';
+    
+    
+                $creditCardValidity = $this->getChargeAttemptAdditionalData($chargeAttempt, self::CARD_VALIDITY_KEY);
+                if (isset($creditCardValidity['cardExpireMonth']) && isset($creditCardValidity['cardExpireYear'])) {
+                    $creditCardExpireMonth = $creditCardValidity['cardExpireMonth'] ?? null;
+                    if (!empty($creditCardExpireMonth)) {
+                        $dataParamValue['cardExpireMonth'] = $creditCardExpireMonth;
+                    }
+                    $creditCardExpireYear = $creditCardValidity['cardExpireYear'] ?? null;
+                    if (!empty($creditCardExpireYear)) {
+                        $dataParamValue['cardExpireYear'] = $creditCardExpireYear;
+                    }
+                }
+            }
 			
 			$data = [
 				'id'                 => $orderId,
@@ -394,50 +416,83 @@ class TransactionService {
 							   )
 							   ->getEntities();
 	}
-	
-	/**
-	 * @param int $transactionId
-	 * @return string
-	 */
-	public function getTransactionPseudoCardNumber(string $salesChannelId, int $transactionId): string
+    
+    /**
+     * @param ChargeAttempt|null $chargeAttempt
+     * @param string $descriptorKey
+     * @return array
+     */
+    private function getChargeAttemptAdditionalData(?ChargeAttempt $chargeAttempt, string $descriptorKey): array
 	{
-		/** @noinspection PhpParamsInspection */
-		$entityQueryFilter = (new EntityQueryFilter())
-			->setType(EntityQueryFilterType::LEAF)
-			->setOperator(CriteriaOperator::EQUALS)
-			->setFieldName('charge.transaction')
-			->setValue($transactionId);
-		
-		$query = (new EntityQuery())->setFilter($entityQueryFilter);
-		
-		$settings  = $this->settingsService->getSettings($salesChannelId);
-		
-		/**
-		 * ChargeAttempt $chargeAttempt
-		 */
-		$chargeAttempt = $settings->getApiClient()->getChargeAttemptService()->search($settings->getSpaceId(), $query);
-		if (!$chargeAttempt) {
-			return '';
-		}
-		
-		$labels = $chargeAttempt[0]->getLabels() ?? [];
+        if (!$chargeAttempt) {
+            return [];
+        }
+
+		$labels = $chargeAttempt->getLabels() ?? [];
 		
 		if (empty($labels)) {
-			return '';
+			return [];
 		}
-		
-		$pseudoCardCode = '';
+  
 		foreach ($labels as $label) {
 			$descriptor = $label->getDescriptor();
-			if ((string) $descriptor->getId() !== self::PSEUDO_CODE_KEY) {
+			if ((string) $descriptor->getId() !== $descriptorKey) {
 				continue;
 			}
-			
-			$pseudoCardCode = $label->getContentAsString();
-			break;
+            
+            switch ($descriptorKey) {
+                case self::PSEUDO_CODE_KEY:
+                    return [$label->getContentAsString()];
+
+                case self::PAY_ID_KEY:
+                    return [$label->getContentAsString()];
+    
+                case self::CARD_VALIDITY_KEY:
+                    $validityYear = '';
+                    $validityMonth = '';
+                    foreach ($label->getContent() as $cardValidityItem) {
+                        if (strlen((string)$cardValidityItem) === 2) {
+                            $validityMonth = $cardValidityItem;
+                        } elseif (strlen((string)$cardValidityItem) === 4) {
+                            $validityYear = $cardValidityItem;
+                        }
+                    }
+    
+                    if (empty($validityYear) || empty($validityMonth)) {
+                        return [];
+                    }
+    
+                    return [
+                        'cardExpireMonth' => $validityMonth,
+                        'cardExpireYear' => $validityYear,
+                    ];
+            }
 		}
 		
-		return $pseudoCardCode;
+		return [];
 	}
+
+    /**
+     * @param string $salesChannelId
+     * @param int $transactionId
+     * @return ChargeAttempt|null
+     */
+    private function getChargeAttempt(string $salesChannelId, int $transactionId): ?ChargeAttempt
+    {
+        /** @noinspection PhpParamsInspection */
+        $entityQueryFilter = (new EntityQueryFilter())
+            ->setType(EntityQueryFilterType::LEAF)
+            ->setOperator(CriteriaOperator::EQUALS)
+            ->setFieldName('charge.transaction')
+            ->setValue($transactionId);
+        
+        $query = (new EntityQuery())->setFilter($entityQueryFilter);
+        
+        $settings  = $this->settingsService->getSettings($salesChannelId);
+        
+        $chargeAttempts = $settings->getApiClient()->getChargeAttemptService()->search($settings->getSpaceId(), $query);
+        
+        return $chargeAttempts ? $chargeAttempts[0] : null;
+    }
 
 }

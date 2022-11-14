@@ -70,6 +70,8 @@
 						<sw-context-menu-item v-if="item.paymentMethodName">{{ $tc('postfinancecheckout-order.transactionHistory.paymentMethod') }}: {{ item.paymentMethodName }}</sw-context-menu-item>
 						<sw-context-menu-item v-if="item.brandName">{{ $tc('postfinancecheckout-order.transactionHistory.paymentMethodBrand') }}: {{ item.brandName }}</sw-context-menu-item>
 						<sw-context-menu-item v-if="item.pseudoCardNumber">{{ $tc('postfinancecheckout-order.transactionHistory.PseudoCreditCardNumber') }}: {{ item.pseudoCardNumber }}</sw-context-menu-item>
+						<sw-context-menu-item v-if="item.pseudoCardNumber && item.cardExpireMonth && item.cardExpireYear">{{ $tc('postfinancecheckout-order.transactionHistory.CardExpire') }}: {{ item.cardExpireMonth }} / {{ item.cardExpireYear }}</sw-context-menu-item>
+						<sw-context-menu-item v-if="item.payId">PayID: {{ item.payId }}</sw-context-menu-item>
 					</template>
 				</sw-data-grid>
 				{% endblock %}

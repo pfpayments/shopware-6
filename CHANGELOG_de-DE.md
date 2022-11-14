@@ -1,3 +1,7 @@
+# 4.0.45
+- Fügen Sie zusätzliche Informationen der Kreditkarte (Gültigkeitsdatum, Pseudo-Kreditkartennummer und PayID) für Transaktionen mit dieser Zahlungsmethode hinzu
+- Getestet mit SW v6.4.17.1
+- 
 # 4.0.29
 - Korrektur zum Ausblenden des Geburtsdatumsfelds, wenn es bereits vorhanden ist
 - Getestet mit SW v6.4.9.0

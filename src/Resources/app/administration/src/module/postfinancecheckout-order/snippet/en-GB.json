@@ -90,7 +90,8 @@
 	  "customerName": "Customer Name",
 	  "paymentMethod": "Payment Method",
 	  "paymentMethodBrand": "Payment Method Brand",
-	  "PseudoCreditCardNumber": "Pseudo Credit Card Number"
+	  "PseudoCreditCardNumber": "Pseudo Credit Card Number",
+	  "CardExpire": "Card Expire"
 	},
 	"voidAction": {
 	  "confirm": {
