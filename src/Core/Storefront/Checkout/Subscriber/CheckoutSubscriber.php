@@ -5,6 +5,7 @@ namespace PostFinanceCheckoutPayment\Core\Storefront\Checkout\Subscriber;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
 	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates,
+	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection,
 	Checkout\Order\OrderEntity,
 	Content\MailTemplate\Service\Event\MailBeforeValidateEvent};
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
@@ -94,7 +95,11 @@ class CheckoutSubscriber implements EventSubscriberInterface {
 				return;
 			}
 
-			$orderTransactionLast = $order->getTransactions()->last();
+			$orderTransactions = $order->getTransactions();
+			if (!($orderTransactions instanceof OrderTransactionCollection)) {
+				return;
+			}
+			$orderTransactionLast = $orderTransactions->last();
 			if (empty($orderTransactionLast) || empty($orderTransactionLast->getPaymentMethod())) { // no payment method available
 				return;
 			}

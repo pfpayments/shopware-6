@@ -1,4 +1,14 @@
 {
+	"sw-privileges": {
+		"permissions": {
+			"parents": {
+				"postfinancecheckout": "PostFinanceCheckout brancher"
+			},
+			"postfinancecheckout": {
+				"label": "PostFinanceCheckout autorisations"
+			}
+		}
+	},
 	"postfinancecheckout-settings": {
 	  "general": {
 		"descriptionTextModule": "Paramètres de PostFinanceCheckout",

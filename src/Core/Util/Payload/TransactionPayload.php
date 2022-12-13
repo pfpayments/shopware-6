@@ -167,16 +167,18 @@ class TransactionPayload extends AbstractPayload
 			$transactionData['meta_data']['customer_comment'] = $this->transaction->getOrder()->getCustomerComment();
 		}
 
-		if (!empty($companyDepartment = $customer->getDefaultBillingAddress()->getDepartment())) {
-			$transactionData['meta_data']['companyDepartment'] = $companyDepartment;
-
-			$taxNumber = null;
-			$vatIds = $customer->getVatIds();
-			if (!empty($vatIds)) {
-				$taxNumber = $vatIds[0];
-			}
-
+		$vatIds = $customer->getVatIds();
+		if (!empty($vatIds)) {
+			$taxNumber = $vatIds[0];
 			$transactionData['meta_data']['taxNumber'] = $taxNumber;
+		}
+
+		if (!empty($companyDepartment = $customer->getDefaultBillingAddress()->getDepartment())) {
+			$transactionData['meta_data']['billingCompanyDepartment'] = $companyDepartment;
+		}
+		
+		if (!empty($companyDepartment = $customer->getDefaultShippingAddress()->getDepartment())) {
+			$transactionData['meta_data']['shippingCompanyDepartment'] = $companyDepartment;
 		}
 
 		$transactionPayload = (new TransactionCreate())
@@ -220,7 +222,7 @@ class TransactionPayload extends AbstractPayload
 	protected function getLineItems(): array
 	{
 		/**
-		 * @var \Wallee\Sdk\Model\LineItemCreate[] $lineItems
+		 * @var \PostFinanceCheckout\Sdk\Model\LineItemCreate[] $lineItems
 		 */
 		$lineItems = [];
 
@@ -465,7 +467,15 @@ class TransactionPayload extends AbstractPayload
 			return $lineItem->getAmountIncludingTax();
 		}, $lineItems));
 
-		$adjustmentPrice = $this->transaction->getOrder()->getAmountTotal() - $lineItemPriceTotal;
+		// When tax_status is set to net (via Customer group), the amount is net instead of gross.
+		$tax_status = $this->transaction->getOrder()->getTaxStatus();
+		if ($tax_status == 'net') {
+			$transactionTotal = $this->transaction->getOrder()->getAmountNet();
+		}
+		else {
+			$transactionTotal = $this->transaction->getOrder()->getAmountTotal();
+		}
+		$adjustmentPrice = $transactionTotal - $lineItemPriceTotal;
 		$adjustmentPrice = self::round($adjustmentPrice);
 
 		if (abs($adjustmentPrice) != 0) {
