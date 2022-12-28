@@ -467,16 +467,8 @@ class TransactionPayload extends AbstractPayload
 			return $lineItem->getAmountIncludingTax();
 		}, $lineItems));
 
-		// When tax_status is set to net (via Customer group), the amount is net instead of gross.
-		$tax_status = $this->transaction->getOrder()->getTaxStatus();
-		if ($tax_status == 'net') {
-			$transactionTotal = $this->transaction->getOrder()->getAmountNet();
-		}
-		else {
-			$transactionTotal = $this->transaction->getOrder()->getAmountTotal();
-		}
-		$adjustmentPrice = $transactionTotal - $lineItemPriceTotal;
-		$adjustmentPrice = self::round($adjustmentPrice);
+		$adjustmentPrice = $this->transaction->getOrder()->getAmountTotal() - $lineItemPriceTotal;
+	    	$adjustmentPrice = self::round($adjustmentPrice);
 
 		if (abs($adjustmentPrice) != 0) {
 			if ($this->settings->isLineItemConsistencyEnabled()) {
