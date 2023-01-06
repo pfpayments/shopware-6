@@ -308,6 +308,11 @@ class TransactionPayload extends AbstractPayload
 		$sku = $this->fixLength($sku, 200);
 		$amount = $shopLineItem->getTotalPrice() ? self::round($shopLineItem->getTotalPrice()) : 0;
 
+		//include Tax Excluded for Net Tax display customer group
+		if ( $this->transaction->getOrder()->getTaxStatus() === 'net' ) {
+		    $amount = self::round($amount + $shopLineItem->getPrice()->getCalculatedTaxes()->getAmount());
+		}
+
 		$lineItem = (new LineItemCreate())
 			->setName($this->fixLength($shopLineItem->getLabel(), 150))
 			->setUniqueId($uniqueId)
