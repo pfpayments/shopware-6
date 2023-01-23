@@ -164,7 +164,7 @@ class CheckoutController extends StorefrontController {
 
 		$transaction     = $this->getTransaction($orderId, $salesChannelContext->getContext());
 		$recreateCartUrl = $this->generateUrl(
-			'frontend.postfinancecheckout.checkout.recreate-cart',
+			'frontend.account.edit-order.page',
 			['orderId' => $orderId,],
 			UrlGeneratorInterface::ABSOLUTE_URL
 		);
