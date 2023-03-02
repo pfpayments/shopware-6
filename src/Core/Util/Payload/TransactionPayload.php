@@ -124,7 +124,7 @@ class TransactionPayload extends AbstractPayload
 
 		$lineItems = $this->getLineItems();
 		$billingAddress = $this->getAddressPayload($customer, $customer->getActiveBillingAddress());
-		$shippingAddress = $this->getAddressPayload($customer, $customer->getActiveShippingAddress());
+		$shippingAddress = $this->getAddressPayload($customer, $customer->getActiveShippingAddress(), false);
 
 
 		$customerId = null;
@@ -513,7 +513,7 @@ class TransactionPayload extends AbstractPayload
 	 * @return \PostFinanceCheckout\Sdk\Model\AddressCreate
 	 * @throws \Exception
 	 */
-	protected function getAddressPayload(CustomerEntity $customer, CustomerAddressEntity $customerAddressEntity): AddressCreate
+	protected function getAddressPayload(CustomerEntity $customer, CustomerAddressEntity $customerAddressEntity, bool $returnSalesTaxNumber = true): AddressCreate
 	{
 		// Family name
 		$family_name = null;
@@ -544,13 +544,16 @@ class TransactionPayload extends AbstractPayload
 		}
 
 		$organization_name = !empty($organization_name) ? $this->fixLength($organization_name, 100) : null;
-
-		// salesTaxNumber
+		
 		$salesTaxNumber = null;
-		$vatIds = $customer->getVatIds();
-		if (!empty($vatIds)) {
-		    $salesTaxNumber = $vatIds[0];
+		if ($returnSalesTaxNumber) {
+			// salesTaxNumber
+			$vatIds = $customer->getVatIds();
+			if (!empty($vatIds)) {
+				$salesTaxNumber = $vatIds[0];
+			}
 		}
+
 		// Salutation
 		$salutation = null;
 		if (!(
@@ -580,14 +583,17 @@ class TransactionPayload extends AbstractPayload
 			'family_name' => $family_name,
 			'given_name' => $given_name,
 			'organization_name' => $organization_name,
-		    	'sales_tax_number' => $salesTaxNumber,
-		    	'phone_number' => $customerAddressEntity->getPhoneNumber() ? $this->fixLength($customerAddressEntity->getPhoneNumber(), 100) : null,
+			'phone_number' => $customerAddressEntity->getPhoneNumber() ? $this->fixLength($customerAddressEntity->getPhoneNumber(), 100) : null,
 			'postcode' => $customerAddressEntity->getZipcode() ? $this->fixLength($customerAddressEntity->getZipcode(), 40) : null,
 			'postal_state' => $customerAddressEntity->getCountryState() ? $customerAddressEntity->getCountryState()->getShortCode() : null,
 			'salutation' => $salutation,
 			'street' => $customerAddressEntity->getStreet() ? $this->fixLength($customerAddressEntity->getStreet(), 300) : null,
 			'birthday' => $birthday
 		];
+		
+		if ($returnSalesTaxNumber) {
+			$addressData['sales_tax_number'] = $salesTaxNumber;
+		}
 
 		$addressPayload = (new AddressCreate())
 			->setCity($addressData['city'])
@@ -596,13 +602,16 @@ class TransactionPayload extends AbstractPayload
 			->setFamilyName($addressData['family_name'])
 			->setGivenName($addressData['given_name'])
 			->setOrganizationName($addressData['organization_name'])
-		    	->setSalesTaxNumber($addressData['sales_tax_number'])
-		    	->setPhoneNumber($addressData['phone_number'])
+			->setPhoneNumber($addressData['phone_number'])
 			->setPostCode($addressData['postcode'])
 			->setPostalState($addressData['postal_state'])
 			->setSalutation($addressData['salutation'])
 			->setStreet($addressData['street']);
-
+		
+		if ($returnSalesTaxNumber) {
+			$addressPayload->setSalesTaxNumber($addressData['sales_tax_number']);
+		}
+		
 		if (!empty($addressData['birthday'])) {
 			$addressPayload->setDateOfBirth($addressData['birthday']);
 		}

@@ -1,3 +1,10 @@
+# 4.0.50
+- Steuerinformationen wurden von der Versands- zu der Rechnungsstellung verschoben.
+- Teilweise war die Synchronisierung der Portal Daten zu SW6 unvollständig.
+- Lösen eines Fehlers: Der bezahlte Betrag im Portal wurde nicht an SW6 gemeldet.
+- Lösen eines Fehlers: Nach Wechsel der Zahlungsmethode im Checkout, wurde der Zahlungsstatus auf "bezahlt" gesetzt.
+- Lösen eines Fehlers: Beim Auflisten der Zahlungsmethoden durch den Kunden im Checkout Prozess.
+
 # 4.0.45
 - Fügen Sie zusätzliche Informationen der Kreditkarte (Gültigkeitsdatum, Pseudo-Kreditkartennummer und PayID) für Transaktionen mit dieser Zahlungsmethode hinzu
 - Getestet mit SW v6.4.17.1

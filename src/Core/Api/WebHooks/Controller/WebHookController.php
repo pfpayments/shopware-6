@@ -31,7 +31,8 @@ use PostFinanceCheckout\Sdk\{
 	Model\RefundState,
 	Model\Transaction,
 	Model\TransactionInvoiceState,
-	Model\TransactionState,};
+	Model\TransactionState,
+	Model\TransactionInvoice,};
 use PostFinanceCheckoutPayment\Core\{
 	Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
 	Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService,
@@ -132,6 +133,8 @@ class WebHookController extends AbstractController {
 	 * @var \Shopware\Core\Checkout\Order\SalesChannel\OrderService
 	 */
 	private $orderService;
+	
+	const LINE_ITEM_TYPE_FEE = 'FEE';
 
 	/**
 	 * WebHookController constructor.
@@ -372,7 +375,7 @@ class WebHookController extends AbstractController {
 	 * @param String                           $orderId
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
-	 * @return \Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity
+	 * @return OrderTransactionEntity
 	 */
 	private function getOrderTransaction(String $orderId, Context $context): OrderTransactionEntity
 	{
@@ -391,8 +394,9 @@ class WebHookController extends AbstractController {
 	{
 		if (is_null($this->orderEntity)) {
 			$criteria = (new Criteria([$orderId]))
-				->addAssociations(['deliveries', 'transactions',])
-				->addSorting(new FieldSorting('createdAt'));
+				->addAssociations(['deliveries', 'transactions']);
+			$criteria->getAssociation('transactions')
+				->addSorting(new FieldSorting('createdAt', FieldSorting::ASCENDING));
 
 			try {
 				$this->orderEntity = $this->container->get('order.repository')->search(
@@ -507,7 +511,7 @@ class WebHookController extends AbstractController {
 		try {
 			/**
 			 * @var \PostFinanceCheckout\Sdk\Model\Transaction        $transaction
-			 * @var \PostFinanceCheckout\Sdk\Model\TransactionInvoice $transactionInvoice
+			 * @var TransactionInvoice $transactionInvoice
 			 */
 			$transactionInvoice = $this->settings->getApiClient()->getTransactionInvoiceService()
 												 ->read($callBackData->getSpaceId(), $callBackData->getEntityId());
@@ -523,6 +527,8 @@ class WebHookController extends AbstractController {
 															 ->getTransaction()
 															 ->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
 					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
+					$this->updatePriceIfAdditionalItemsExist($transactionInvoice, $orderTransaction, $context);
+
 					if (!in_array(
 						$orderTransaction->getStateMachineState()->getTechnicalName(),
 						$this->transactionFinalStates
@@ -554,6 +560,28 @@ class WebHookController extends AbstractController {
 		}
 
 		return new JsonResponse(['data' => $callBackData->jsonSerialize()], $status);
+	}
+	
+	/**
+	 * Updates order table field price only if there are additional items added from portal side
+	 *
+	 * @param TransactionInvoice $transactionInvoice
+	 * @param OrderTransactionEntity $orderTransaction
+	 * @param Context $context
+	 * @return void
+	 */
+	private function updatePriceIfAdditionalItemsExist(TransactionInvoice $transactionInvoice, OrderTransactionEntity $orderTransaction, Context $context): void
+	{
+		$completionLineItems = $transactionInvoice->getCompletion()->getLineItems();
+		$lineItems = $transactionInvoice->getLineItems();
+
+		if (count($completionLineItems) !== count($lineItems)) {
+			$this->transactionService->updateOrderTotalPriceByInvoiceTotal(
+				$orderTransaction->getOrderId(),
+				$transactionInvoice->getOutstandingAmount(),
+				$context
+			);
+		}
 	}
 
 	/**

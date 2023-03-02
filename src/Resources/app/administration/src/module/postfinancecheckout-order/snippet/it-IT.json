@@ -88,6 +88,7 @@
 	  },
 	  "customerId": "Customer ID",
 	  "customerName": "Customer Name",
+	  "creditCardHolder": "Proprietario della carta di credito",
 	  "paymentMethod": "Metodo di pagamento",
 	  "paymentMethodBrand": "Metodo di pagamento Marca",
 	  "PseudoCreditCardNumber": "Numero di carta di credito pseudo",

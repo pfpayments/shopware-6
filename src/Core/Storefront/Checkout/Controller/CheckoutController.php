@@ -307,7 +307,7 @@ class CheckoutController extends StorefrontController {
 			->addAssociation('deliveries.shippingMethod');
 
 		$customer = $salesChannelContext->getCustomer();
-		if ($customer === null) {
+		if ($customer !== null) {
 			$criteria = $criteria->addFilter(new EqualsFilter('order.orderCustomer.customerId', $customer->getId()));
 		}
 

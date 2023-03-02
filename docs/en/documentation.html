@@ -22,7 +22,7 @@
 		</a>
 	</li>
 	<li>
-		<a href="https://github.com/pfpayments/shopware-6/releases/tag/4.0.49/">
+		<a href="https://github.com/pfpayments/shopware-6/releases/tag/4.0.50/">
 			Source
 		</a>
 	</li>
@@ -124,10 +124,69 @@ You also have the possibility to install the plugin using composer.  See <a href
 <img src="resource/payment-method-configuration.png" alt="payment method configuration"/>
 </div>
 </div>					</div>
+</div>					<div class="section" id="_payment_method_rules">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">4.2</span>Payment method rules					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>If you would like to restrict a payment method to certain conditions (B2B, cart amount, etc), you can create or choose a rule with the Availability Rule option in the shop backend.</p>
+</div><div class="imageblock">
+<div class="content">
+<img src="resource/payment-method-configuration-availability-rule.png" alt="payment method configuration availability rule"/>
+</div>
+</div><div class="paragraph">
+<p><strong>How to create a new Rule?</strong></p>
+</div><div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Click on “Create new rule…” in the Availability rule option and fill out the modal form with conditions, as shown below.</p>
+</li>
+</ol>
+</div><div class="imageblock">
+<div class="content">
+<img src="resource/payment-method-configuration-create-availability-rule.png" alt="payment method configuration create availability rule"/>
+</div>
+</div><div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>In this example the rule is as shown below:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Name: Payment method for B2B.</p>
+</li>
+<li>
+<p>Priority: 1 (if you wish to prioritise when using several shipping methods, please adjust the value accordingly).</p>
+</li>
+<li>
+<p>Conditions: 	Commercial customer | Yes
+Billing address: Country  | Is one of | Switzerland</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div><div class="paragraph">
+<p>You can now select the rule in the desired payment method in the item availability rule.</p>
+</div><div class="paragraph">
+<p>It is also conceivable to add a further condition to the rule above, e.g. to make the payment method additionally possible only from a certain purchase value (e.g. 250.00).</p>
+</div><div class="paragraph">
+<p>In this case, add another condition using the AND link and insert the following in the second condition.</p>
+</div><div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Select the newly created rule and save the changes to the chosen payment method.</p>
+</li>
+</ol>
+</div><div class="paragraph">
+<p>Applying this rule to a payment method will result in only those customers who meet the configured conditions.</p>
+</div>					</div>
 </div>					<div class="section" id="_customization">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">4.2</span>Customization					</h2>
+			<span class="title-number">4.3</span>Customization					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -482,8 +541,13 @@ The payment methods are only displayed if the plugin&#8217;s total calculation m
 		<span class="item-title">Setup</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
-	<a href="#_customization">
+	<a href="#_payment_method_rules">
 		<span class="item-number">4.2</span>
+		<span class="item-title">Payment method rules</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_customization">
+		<span class="item-number">4.3</span>
 		<span class="item-title">Customization</span>
 			</a>
     </li>    		    	</ul>

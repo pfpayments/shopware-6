@@ -63,6 +63,7 @@ class TransactionService {
 	 */
 	private $settingsService;
 	
+	const CARD_HOLDER_KEY = '1456765000789';
 	const PSEUDO_CODE_KEY = '1485172176673';
 	const CARD_VALIDITY_KEY = '1456765711187';
 	const PAY_ID_KEY = '1484042941549';
@@ -242,6 +243,9 @@ class TransactionService {
             $chargeAttempt = $this->getChargeAttempt($salesChannelId, $transactionId);
             
             if ($chargeAttempt) {
+				$creditCardHolder = $this->getChargeAttemptAdditionalData($chargeAttempt, self::CARD_HOLDER_KEY);
+				$dataParamValue['creditCardHolder']  = $creditCardHolder ? $creditCardHolder[0] : '';
+				
                 $pseudoCardNumber = $this->getChargeAttemptAdditionalData($chargeAttempt, self::PSEUDO_CODE_KEY);
                 $dataParamValue['pseudoCardNumber']  = $pseudoCardNumber ? $pseudoCardNumber[0] : '';
     
@@ -251,13 +255,13 @@ class TransactionService {
                 $dataParamValue['customerName']  = isset($transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME])
                     ? $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME]
                     : '';
-    
-    
+				
                 $creditCardValidity = $this->getChargeAttemptAdditionalData($chargeAttempt, self::CARD_VALIDITY_KEY);
+				
                 if (isset($creditCardValidity['cardExpireMonth']) && isset($creditCardValidity['cardExpireYear'])) {
                     $creditCardExpireMonth = $creditCardValidity['cardExpireMonth'] ?? null;
                     if (!empty($creditCardExpireMonth)) {
-                        $dataParamValue['cardExpireMonth'] = $creditCardExpireMonth;
+                        $dataParamValue['cardExpireMonth'] = sprintf("%02d", $creditCardExpireMonth);
                     }
                     $creditCardExpireYear = $creditCardValidity['cardExpireYear'] ?? null;
                     if (!empty($creditCardExpireYear)) {
@@ -416,6 +420,36 @@ class TransactionService {
 							   )
 							   ->getEntities();
 	}
+	
+	/**
+	 * @param string $orderId
+	 * @param float $invoicePaidAmount
+	 * @param Context $context
+	 * @return void
+	 */
+	public function updateOrderTotalPriceByInvoiceTotal(string $orderId, float $invoicePaidAmount, Context $context): void
+	{
+		$price = $this->getOrderEntity($orderId, $context)->getPrice();
+		
+		if ($price->getTotalPrice() === $invoicePaidAmount) {
+			return;
+		}
+		
+		$data = [
+			'id' => $orderId,
+			'price' => [
+				'netPrice' => $price->getNetPrice(),
+				'rawTotal' => $price->getRawTotal(),
+				'taxRules' => $price->getTaxRules(),
+				'taxStatus' => $price->getTaxStatus(),
+				'totalPrice' => $invoicePaidAmount,
+				'positionPrice' => $price->getPositionPrice(),
+				'calculatedTaxes' => $price->getCalculatedTaxes()
+			],
+		];
+		
+		$this->container->get('order.repository')->update([$data], $context);
+	}
     
     /**
      * @param ChargeAttempt|null $chargeAttempt
@@ -441,6 +475,9 @@ class TransactionService {
 			}
             
             switch ($descriptorKey) {
+				case self::CARD_HOLDER_KEY:
+					return [$label->getContentAsString()];
+
                 case self::PSEUDO_CODE_KEY:
                     return [$label->getContentAsString()];
 
@@ -451,7 +488,7 @@ class TransactionService {
                     $validityYear = '';
                     $validityMonth = '';
                     foreach ($label->getContent() as $cardValidityItem) {
-                        if (strlen((string)$cardValidityItem) === 2) {
+						if (strlen((string)$cardValidityItem) === 1 || strlen((string)$cardValidityItem) === 2) {
                             $validityMonth = $cardValidityItem;
                         } elseif (strlen((string)$cardValidityItem) === 4) {
                             $validityYear = $cardValidityItem;
