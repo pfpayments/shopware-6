@@ -1,3 +1,6 @@
+# 4.0.51
+- Falsches Linkformat in der Fehlermeldung.
+
 # 4.0.50
 - Steuerinformationen wurden von der Versands- zu der Rechnungsstellung verschoben.
 - Teilweise war die Synchronisierung der Portal Daten zu SW6 unvollständig.

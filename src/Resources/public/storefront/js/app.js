@@ -65,7 +65,7 @@
 
         hideLoader: function () {
             const loader = document.getElementById(PostFinanceCheckoutCheckout.loader_id);
-            if(loader.parentNode !== null) {
+            if (loader !== null && loader.parentNode !== null) {
                 loader.parentNode.removeChild(loader);
             }
             PostFinanceCheckoutCheckout.activateLoader(false);
@@ -158,11 +158,11 @@
                 alertContent.appendChild(alertList);
                 for (let index = 0; index < errors.length; index++) {
                     let alertListItem = document.createElement('li');
-                    alertListItem.textContent = errors[index];
+                    alertListItem.innerHTML = errors[index];
                     alertList.appendChild(alertListItem);
                 }
             } else {
-                alertContent.textContent = errors[0];
+                alertContent.innerHTML = errors[0];
             }
         },
 
