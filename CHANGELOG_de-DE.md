@@ -1,3 +1,6 @@
+# 4.0.52
+- Unterstützung von Shopware 6.4.20.1
+
 # 4.0.51
 - Falsches Linkformat in der Fehlermeldung.
 

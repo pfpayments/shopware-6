@@ -1,3 +1,6 @@
+# 4.0.52
+- Support of Shopware 6.4.20.1
+- 
 # 4.0.51
 - Wrong link format in error message.
 
