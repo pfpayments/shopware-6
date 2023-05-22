@@ -1,6 +1,9 @@
+# 4.0.53
+- Creation of a new column in the transaction table called erp_merchant_id
+
 # 4.0.52
 - Support of Shopware 6.4.20.1
-- 
+
 # 4.0.51
 - Wrong link format in error message.
 

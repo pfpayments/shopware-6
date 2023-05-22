@@ -67,6 +67,7 @@ class TransactionService {
 	const PSEUDO_CODE_KEY = '1485172176673';
 	const CARD_VALIDITY_KEY = '1456765711187';
 	const PAY_ID_KEY = '1484042941549';
+	const ADDITIONAL_TRANSACTION_DETAILS_ORDER_ID_KEY = '1464680013786';
 
 	/**
 	 * TransactionService constructor.
@@ -138,7 +139,7 @@ class TransactionService {
 
 		$createdTransaction = $apiClient->getTransactionService()
 										->confirm($settings->getSpaceId(), $pendingTransaction);
-
+		
 		$this->addPostFinanceCheckoutTransactionId(
 			$transaction,
 			$salesChannelContext->getContext(),
@@ -241,7 +242,8 @@ class TransactionService {
 			$dataParamValue['paymentMethodName'] = $paymentMethodName;
             
             $chargeAttempt = $this->getChargeAttempt($salesChannelId, $transactionId);
-            
+			
+            $erpMerchantId = null;
             if ($chargeAttempt) {
 				$creditCardHolder = $this->getChargeAttemptAdditionalData($chargeAttempt, self::CARD_HOLDER_KEY);
 				$dataParamValue['creditCardHolder']  = $creditCardHolder ? $creditCardHolder[0] : '';
@@ -268,10 +270,14 @@ class TransactionService {
                         $dataParamValue['cardExpireYear'] = $creditCardExpireYear;
                     }
                 }
-            }
+	
+                $erpMerchantId = $this->getChargeAttemptAdditionalData($chargeAttempt, self::ADDITIONAL_TRANSACTION_DETAILS_ORDER_ID_KEY);
+                $erpMerchantId = $erpMerchantId ? $erpMerchantId[0] : null;
+			}
 			
 			$data = [
 				'id'                 => $orderId,
+				'erpMerchantId'      => $erpMerchantId,
 				'data'               => $dataParamValue,
 				'paymentMethodId'    => $paymentMethodId,
 				'orderId'            => $orderId,
@@ -482,6 +488,9 @@ class TransactionService {
                     return [$label->getContentAsString()];
 
                 case self::PAY_ID_KEY:
+                    return [$label->getContentAsString()];
+	
+                case self::ADDITIONAL_TRANSACTION_DETAILS_ORDER_ID_KEY:
                     return [$label->getContentAsString()];
     
                 case self::CARD_VALIDITY_KEY:

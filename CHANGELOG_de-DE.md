@@ -1,3 +1,6 @@
+# 4.0.53
+- Erstellung einer neuen Spalte in der Transaktionstabelle mit dem Namen erp_merchant_id
+
 # 4.0.52
 - Unterstützung von Shopware 6.4.20.1
 

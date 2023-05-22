@@ -50,6 +50,7 @@ class TransactionEntityDefinition extends EntityDefinition {
 		return new FieldCollection([
 			(new IdField('id', 'id'))->addFlags(new PrimaryKey(), new Required()),
 			new BoolField('confirmation_email_sent', 'confirmationEmailSent'),
+			new StringField('erp_merchant_id', 'erpMerchantId'),
 			(new JsonField('data', 'data'))->addFlags(new Required()),
 			(new FkField('payment_method_id', 'paymentMethodId', PaymentMethodDefinition::class))->addFlags(new Required()),
 			(new FkField('order_id', 'orderId', OrderDefinition::class))->addFlags(new Required()),

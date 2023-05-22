@@ -24,6 +24,11 @@ class TransactionEntity extends Entity {
 	 * @var bool
 	 */
 	protected $confirmationEmailSent;
+	
+	/**
+	 * @var string
+	 */
+	protected $erpMerchantId;
 
 	/**
 	 * @var array
