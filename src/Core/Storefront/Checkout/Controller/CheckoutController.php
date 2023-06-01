@@ -19,6 +19,7 @@ use Shopware\Core\{
 	Framework\DataAbstractionLayer\Search\Sorting\FieldSorting,
 	Framework\Routing\Annotation\RouteScope,
 	Framework\Routing\Exception\MissingRequestParameterException,
+	Framework\Uuid\Uuid,
 	Framework\Uuid\Exception\InvalidUuidException,
 	Framework\Validation\DataBag\RequestDataBag,
 	System\SalesChannel\SalesChannelContext
@@ -52,7 +53,7 @@ use PostFinanceCheckoutPayment\Core\{
  *
  * @package PostFinanceCheckoutPayment\Core\Storefront\Checkout\Controller
  *
- * @RouteScope(scopes={"storefront"})
+ * @Route(defaults={"_routeScope"={"storefront"}})
  */
 class CheckoutController extends StorefrontController {
 
@@ -211,7 +212,7 @@ class CheckoutController extends StorefrontController {
 		$checkoutPageData = (new CheckoutPageData())
 			->setIntegration($this->settings->getIntegration())
 			->setJavascriptUrl($javascriptUrl)
-			->setDeviceJavascriptUrl($this->settings->getSpaceId(), $this->container->get('session')->getId())
+			->setDeviceJavascriptUrl($this->settings->getSpaceId(), Uuid::randomHex())
 			->setTransactionPossiblePaymentMethods($possiblePaymentMethods)
 			->setCheckoutUrl($this->generateUrl(
 				'frontend.postfinancecheckout.checkout.pay',

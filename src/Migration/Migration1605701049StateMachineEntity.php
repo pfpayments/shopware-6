@@ -37,7 +37,7 @@ class Migration1605701049StateMachineEntity extends MigrationStep
         try {
         	// Enable mark transaction as paid when it's on status reminded
 			$table = StateMachineDefinition::ENTITY_NAME;
-			$stateMachineId =  $connection->fetchColumn(
+			$stateMachineId =  $connection->fetchOne(
 				"SELECT id FROM `$table` WHERE `technical_name` = :technical_name",
 				[
 					'technical_name' => 'order_transaction.state',
@@ -45,7 +45,7 @@ class Migration1605701049StateMachineEntity extends MigrationStep
 			);
 
 			$table = StateMachineStateDefinition::ENTITY_NAME;
-			$remindedStateId =  $connection->fetchColumn(
+			$remindedStateId =  $connection->fetchOne(
 				"SELECT id FROM `$table` WHERE `technical_name` = :technical_name AND `state_machine_id` = :state_machine_id",
 				[
 					'technical_name' => 'reminded',
@@ -53,7 +53,7 @@ class Migration1605701049StateMachineEntity extends MigrationStep
 				]
 			);
 
-			$paidStateId =  $connection->fetchColumn(
+			$paidStateId =  $connection->fetchOne(
 				"SELECT id FROM `$table` WHERE `technical_name` = :technical_name AND `state_machine_id` = :state_machine_id",
 				[
 					'technical_name' => 'paid',

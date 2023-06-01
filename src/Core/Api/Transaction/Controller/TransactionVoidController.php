@@ -19,7 +19,7 @@ use PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService;
  *
  * @package PostFinanceCheckoutPayment\Core\Api\Transaction\Controller
  *
- * @RouteScope(scopes={"api"})
+ * @Route(defaults={"_routeScope"={"api"}})
  */
 class TransactionVoidController extends AbstractController {
 

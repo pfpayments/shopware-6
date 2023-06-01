@@ -59,8 +59,8 @@
         "php": ">=7.4",
         "shopware/core": "6.4.*",
         "shopware/storefront": "6.4.*",
-        "postfinancecheckout/sdk": "3.0.1"
+        "postfinancecheckout/sdk": "3.2.0"
     },
     "type": "shopware-platform-plugin",
-    "version": "4.0.53"
+    "version": "4.0.54"
 }

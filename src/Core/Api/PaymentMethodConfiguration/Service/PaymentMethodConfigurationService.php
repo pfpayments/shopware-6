@@ -588,7 +588,7 @@ class PaymentMethodConfigurationService {
 				'url'           => $paymentMethodConfiguration->getResolvedImageUrl(),
 				'mediaFolderId' => $id,
 			];
-			$data = $this->mediaSerializer->deserialize(new Config([], []), $mediaDefinition, $data);
+			$data = $this->mediaSerializer->deserialize(new Config([], [], []), $mediaDefinition, $data);
 			$this->container->get('media.repository')->upsert([$data], $context);
 			return $id;
 		} catch (\Exception $e) {

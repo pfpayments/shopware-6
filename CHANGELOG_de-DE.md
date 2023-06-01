@@ -1,3 +1,7 @@
+# 4.0.54
+- Unterstützung von Shopware 6.5
+- Unterstützung des neuesten PHP SDK 3.2.0
+
 # 4.0.53
 - Erstellung einer neuen Spalte in der Transaktionstabelle mit dem Namen erp_merchant_id
 

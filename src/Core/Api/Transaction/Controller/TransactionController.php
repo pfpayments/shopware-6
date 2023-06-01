@@ -22,7 +22,7 @@ use PostFinanceCheckoutPayment\{
  *
  * @package PostFinanceCheckoutPayment\Core\Api\Transaction\Controller
  *
- * @RouteScope(scopes={"api"})
+ * @Route(defaults={"_routeScope"={"api"}})
  */
 class TransactionController extends AbstractController {
 

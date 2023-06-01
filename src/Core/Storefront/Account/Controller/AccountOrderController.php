@@ -21,7 +21,7 @@ use PostFinanceCheckoutPayment\Core\{
 	Settings\Service\SettingsService};
 
 /**
- * @RouteScope(scopes={"storefront"})
+ * @Route(defaults={"_routeScope"={"storefront"}})
  */
 class AccountOrderController extends StorefrontController {
 
