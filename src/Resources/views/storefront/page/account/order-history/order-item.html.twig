@@ -1,0 +1,17 @@
+{% sw_extends '@Storefront/storefront/page/account/order-history/order-item.html.twig' %}
+{% block page_account_order_item_context_menu_content %}
+	{{ parent() }}
+	{% block postfinancecheckout_page_account_order_item_context_menu_content %}
+		{% if page.extensions.postfinancecheckoutSettings and page.extensions.postfinancecheckoutSettings.storefrontInvoiceDownloadEnabled %}
+			{% set postfinancecheckoutFormattedHandlerIdentifier = 'handler_postfinancecheckoutpayment_postfinancecheckoutpaymenthandler' %}
+			{% set orderPaymentState = order.transactions.last.stateMachineState.technicalName %}
+			{% set orderPaymentMethodFormattedHandlerIdentifier = order.transactions.last.paymentMethod.formattedHandlerIdentifier %}
+			{% if (postfinancecheckoutFormattedHandlerIdentifier == orderPaymentMethodFormattedHandlerIdentifier) and (orderPaymentState in ['paid', 'refunded']) %}
+				<a class="order-table-header-context-menu-content-link"
+				   href="{{ path('frontend.postfinancecheckout.account.order.download.invoice.document', { 'orderId': order.id }) }}">
+					{{ "postfinancecheckout.account.downloadInvoice"|trans|sw_sanitize }}
+				</a>
+			{% endif %}
+		{% endif %}
+	{% endblock %}
+{% endblock %}

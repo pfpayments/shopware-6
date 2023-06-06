@@ -1,0 +1,27 @@
+{
+  "postfinancecheckout": {
+    "account": {
+      "downloadInvoice": "Download Invoice"
+    },
+    "cookie": {
+      "name": "PostFinanceCheckout Payment"
+    },
+    "deliveryState": {
+      "hold": "Hold",
+      "unhold": "Unhold"
+    },
+    "payButton": "Pay",
+    "payHeader": "Pay order",
+    "payload": {
+      "adjustmentLineItem": "Adjustment Line Item",
+      "shipping": {
+        "lineItem": "Shipping",
+        "name": "Shipping"
+      },
+      "taxes": "Taxes"
+    },
+    "paymentMethod": {
+      "notAvailable": "Payment method is not currently available. Please choose another payment method."
+    }
+  }
+}

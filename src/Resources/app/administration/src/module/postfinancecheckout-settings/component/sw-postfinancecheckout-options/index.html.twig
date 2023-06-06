@@ -1,0 +1,97 @@
+{% block postfinancecheckout_settings_content_card_channel_config_options %}
+	<sw-card class="sw-card"
+			 :title="$tc('postfinancecheckout-settings.settingForm.options.cardTitle')">
+
+		{% block postfinancecheckout_settings_content_card_channel_config_credentials_card_container %}
+			<sw-container>
+
+				{% block postfinancecheckout_settings_content_card_channel_config_credentials_card_container_settings %}
+					<div v-if="actualConfigData" class="postfinancecheckout-settings-options-fields">
+
+						{% block postfinancecheckout_settings_content_card_channel_config_credentials_card_container_settings_space_view_id %}
+							<sw-inherit-wrapper
+									v-model="actualConfigData[CONFIG_SPACE_VIEW_ID]"
+									:inheritedValue="selectedSalesChannelId === null ? null : allConfigs['null'][CONFIG_SPACE_VIEW_ID]"
+									:customInheritationCheckFunction="checkNumberFieldInheritance">
+								<template #content="props">
+									<sw-number-field
+											:name="CONFIG_SPACE_VIEW_ID"
+											:mapInheritance="props"
+											:label="$tc('postfinancecheckout-settings.settingForm.options.spaceViewId.label')"
+											:helpText="$tc('postfinancecheckout-settings.settingForm.options.spaceViewId.tooltipText')"
+											:disabled="props.isInherited"
+											:value="props.currentValue"
+											@change="props.updateCurrentValue">
+									</sw-number-field>
+								</template>
+							</sw-inherit-wrapper>
+						{% endblock %}
+
+						{% block postfinancecheckout_settings_content_card_channel_config_credentials_card_container_settings_integration %}
+							<sw-inherit-wrapper
+									v-model="actualConfigData[CONFIG_INTEGRATION]"
+									:inheritedValue="selectedSalesChannelId === null ? null : allConfigs['null'][CONFIG_INTEGRATION]"
+									:customInheritationCheckFunction="checkTextFieldInheritance">
+								<template #content="props">
+									<sw-single-select
+											:name="CONFIG_INTEGRATION"
+											labelProperty="name"
+											valueProperty="id"
+											:options="integrationOptions"
+											:mapInheritance="props"
+											:label="$tc('postfinancecheckout-settings.settingForm.options.integration.label')"
+											:helpText="$tc('postfinancecheckout-settings.settingForm.options.integration.tooltipText')"
+											:disabled="props.isInherited"
+											:value="props.currentValue"
+											@change="props.updateCurrentValue">
+									</sw-single-select>
+								</template>
+							</sw-inherit-wrapper>
+						{% endblock %}
+
+						{% block postfinancecheckout_settings_content_card_channel_config_credentials_card_container_settings_line_item_consistency_enabled %}
+							<sw-inherit-wrapper
+									v-model="actualConfigData[CONFIG_LINE_ITEM_CONSISTENCY_ENABLED]"
+									:inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null'][CONFIG_LINE_ITEM_CONSISTENCY_ENABLED]"
+									:customInheritationCheckFunction="checkBoolFieldInheritance">
+								<template #content="props">
+									<sw-switch-field
+											:name="CONFIG_LINE_ITEM_CONSISTENCY_ENABLED"
+											bordered
+											:mapInheritance="props"
+											:label="$tc('postfinancecheckout-settings.settingForm.options.lineItemConsistencyEnabled.label')"
+											:helpText="$tc('postfinancecheckout-settings.settingForm.options.lineItemConsistencyEnabled.tooltipText')"
+											:disabled="props.isInherited"
+											:value="props.currentValue"
+											@change="props.updateCurrentValue">
+									</sw-switch-field>
+								</template>
+							</sw-inherit-wrapper>
+						{% endblock %}
+
+						{% block postfinancecheckout_settings_content_card_channel_config_credentials_card_container_settings_email_enabled %}
+							<sw-inherit-wrapper
+									v-model="actualConfigData[CONFIG_EMAIL_ENABLED]"
+									:inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null'][CONFIG_EMAIL_ENABLED]"
+									:customInheritationCheckFunction="checkBoolFieldInheritance">
+								<template #content="props">
+									<sw-switch-field
+											:name="CONFIG_EMAIL_ENABLED"
+											bordered
+											:mapInheritance="props"
+											:label="$tc('postfinancecheckout-settings.settingForm.options.emailEnabled.label')"
+											:helpText="$tc('postfinancecheckout-settings.settingForm.options.emailEnabled.tooltipText')"
+											:disabled="props.isInherited"
+											:value="props.currentValue"
+											@change="props.updateCurrentValue">
+									</sw-switch-field>
+								</template>
+							</sw-inherit-wrapper>
+						{% endblock %}
+					</div>
+				{% endblock %}
+			</sw-container>
+		{% endblock %}
+	</sw-card>
+
+{% endblock %}

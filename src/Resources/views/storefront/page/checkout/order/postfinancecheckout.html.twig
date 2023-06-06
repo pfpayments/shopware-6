@@ -1,0 +1,160 @@
+{% sw_extends '@Storefront/storefront/page/checkout/_page.html.twig' %}
+
+{% block base_header %}
+	{% sw_include '@PostFinanceCheckoutPayment/storefront/page/checkout/order/postfinancecheckout_header.html.twig' %}
+{% endblock %}
+
+{% block base_navigation %}{% endblock %}
+{% block base_body_classes %}postfinancecheckout-payment is-act-confirmpage{% endblock %}
+
+{% block page_checkout_main_content %}
+	{% block page_checkout_pay %}
+		{% block page_checkout_confirm_header %}
+            <h1 class="confirm-main-header">
+                {{ "postfinancecheckout.payHeader"|trans|sw_sanitize }}
+            </h1>
+        {% endblock %}
+
+		{# TODO: move this into a separate file #}
+		{% block page_checkout_confirm_address %}
+			<div class="row js-confirm-overview-addresses">
+				{% block page_checkout_confirm_address_shipping %}
+					{% if page.cart is defined %}
+						{% set lineItems = page.cart.lineItems %}
+					{% endif %}
+					{% if page.order is defined %}
+						{% set lineItems = page.order.lineItems %}
+					{% endif %}
+					{% if not page.isHideShippingAddress() %}
+						<div class="col-sm-6 card-col confirm-shipping-address">
+							<div class="card checkout-card">
+								<div class="card-body">
+									{% block page_checkout_confirm_address_shipping_title %}
+										<div class="card-title">
+											{{ "checkout.shippingAddressHeader"|trans|sw_sanitize }}
+										</div>
+									{% endblock %}
+
+									{% block page_checkout_confirm_address_shipping_data %}
+										<div class="confirm-address-shipping">
+											{% sw_include '@Storefront/storefront/component/address/address.html.twig' with {
+												'address': context.customer.defaultShippingAddress
+											} %}
+										</div>
+									{% endblock %}
+
+									{% block page_checkout_confirm_address_shipping_actions %}
+										<div class="card-actions" >
+											{% set addressEditorOptions = {
+												changeShipping: true,
+												addressId: context.customer.defaultShippingAddressId,
+											} %}
+										</div>
+									{% endblock %}
+								</div>
+							</div>
+						</div>
+					{% endif %}
+				{% endblock %}
+
+				{% block page_checkout_confirm_address_billing %}
+					<div class="col-sm-6 card-col confirm-billing-address">
+						<div class="card checkout-card">
+							<div class="card-body">
+								{% block page_checkout_confirm_address_billing_title %}
+									<div class="card-title">
+										{{ "checkout.billingAddressHeader"|trans|sw_sanitize }}
+									</div>
+								{% endblock %}
+
+								{% block page_checkout_confirm_address_billing_data %}
+									<div class="confirm-address-billing">
+										{% if billingAddress.id is same as(shippingAddress.id) %}
+											{% block page_checkout_confirm_address_billing_data_equal %}
+												<p>
+													{{ "checkout.addressEqualText"|trans|sw_sanitize }}
+												</p>
+											{% endblock %}
+										{% else %}
+											{% sw_include '@Storefront/storefront/component/address/address.html.twig' with {
+												'address': context.customer.defaultBillingAddress
+											} %}
+										{% endif %}
+									</div>
+								{% endblock %}
+
+								{% block page_checkout_confirm_address_billing_actions %}
+									<div class="card-actions">
+										{% set addressEditorOptions = {
+											changeBilling: true,
+											addressId: context.customer.defaultBillingAddressId,
+										} %}
+									</div>
+								{% endblock %}
+							</div>
+						</div>
+					</div>
+				{% endblock %}
+			</div>
+		{% endblock %}
+
+		{% block page_checkout_pay_order_form %}
+			<div class="row finish-info">
+				<div class="col-md-12">
+					{% sw_include '@PostFinanceCheckoutPayment/storefront/page/checkout/order/postfinancecheckout_payment.html.twig' %}
+				</div>
+			</div>
+		{% endblock %}
+
+		{% block page_checkout_pay_product_table %}
+			<div class="card checkout-product-table">
+				<div class="card-body">
+					{% block page_checkout_pay_table_header %}
+						{% sw_include '@Storefront/storefront/component/checkout/cart-header.html.twig' %}
+					{% endblock %}
+
+					{% block page_checkout_pay_items %}
+						{% for lineItem in page.order.nestedLineItems %}
+							{% block page_checkout_pay_item %}
+								{% sw_include '@Storefront/storefront/component/line-item/line-item.html.twig' %}
+							{% endblock %}
+						{% endfor %}
+					{% endblock %}
+				</div>
+			</div>
+		{% endblock %}
+	{% endblock %}
+{% endblock %}
+
+{% block page_checkout_aside_actions %}
+    <div class="checkout-aside-action">
+        <form name="confirmOrderForm" id="confirmOrderForm">
+			<input type="hidden" id="cartRecreateUrl" value="{{ page.extensions.postFinanceCheckoutData.cartRecreateUrl }}" />
+			<input type="hidden" id="checkoutUrl" value="{{ page.extensions.postFinanceCheckoutData.checkoutUrl }}" />
+			<button id="confirmFormSubmit"
+					class="btn btn-primary btn-block btn-lg"
+					form="confirmOrderForm"
+					disabled
+					type="submit">
+				{{ "postfinancecheckout.payButton"|trans|sw_sanitize }}
+			</button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block base_footer %}
+	{% sw_include '@Storefront/storefront/layout/footer/footer-minimal.html.twig' %}
+{% endblock %}
+
+{% block base_body_script %}
+	{{ parent() }}
+	{% if page.extensions.postFinanceCheckoutData %}
+		{% if page.extensions.postFinanceCheckoutData.deviceJavascriptUrl %}
+			<script src="{{ page.extensions.postFinanceCheckoutData.deviceJavascriptUrl }}" async="async"></script>
+		{% endif %}
+		{% if page.extensions.postFinanceCheckoutData.javascriptUrl %}
+			<script src="{{ page.extensions.postFinanceCheckoutData.javascriptUrl }}"></script>
+		{% endif %}
+		<script type="text/javascript" src="{{ asset('bundles/postfinancecheckoutpayment/storefront/js/app.js') }}"></script>
+	{% endif %}
+{% endblock %}

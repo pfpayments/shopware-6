@@ -1,0 +1,94 @@
+{
+  "sw-privileges": {
+	"permissions": {
+	  "parents": {
+		"postfinancecheckout": "PostFinanceCheckout brancher"
+	  },
+	  "postfinancecheckout": {
+		"label": "PostFinanceCheckout autorisations"
+	  }
+	}
+  },
+  "postfinancecheckout-settings": {
+	"general": {
+	  "descriptionTextModule": "Impostazioni PostFinanceCheckout",
+	  "mainMenuItemGeneral": "PostFinanceCheckout"
+	},
+	"header": "PostFinanceCheckout",
+	"messageNotBlank": "Questo valore non dovrebbe essere vuoto.",
+	"salesChannelCard": {
+	  "button": {
+		"description": "Fai clic su questo pulsante per impostare PostFinanceCheckout come gestore di pagamento predefinito nel SalesChannel selezionato",
+		"label": "Imposta PostFinanceCheckout come gestore di pagamento predefinito"
+	  }
+	},
+	"settingForm": {
+	  "credentials": {
+		"applicationKey": {
+		  "label": "Chiave di applicazione",
+		  "tooltipText": "La chiave dell'applicazione è usata per autenticare questo plugin con l'API PostFinanceCheckout."
+		},
+		"cardTitle": "Credenziali",
+		"spaceId": {
+		  "label": "ID spazio",
+		  "tooltipText": "L'ID dello spazio è usato per autenticare questo plugin con l'API PostFinanceCheckout."
+		},
+		"userId": {
+		  "label": "ID utente",
+		  "tooltipText": "L'ID utente è usato per autenticare questo plugin con l'API PostFinanceCheckout."
+		}
+	  },
+	  "messageSaveSuccess": "Le impostazioni di PostFinanceCheckout sono state salvate.",
+	  "messageOrderDeliveryStateError": "PostFinanceCheckout OrderDeliveryState non può essere salvato.",
+	  "messageOrderDeliveryStateUpdated": "PostFinanceCheckout OrderDeliveryState è stato aggiornato.",
+	  "messagePaymentMethodConfigurationError": "PostFinanceCheckout PaymentMethodConfiguration non può essere salvato. Per favore controlla le tue credenziali.",
+	  "messagePaymentMethodConfigurationUpdated": "PostFinanceCheckout PaymentMethodConfiguration è stato registrato.",
+	  "messageWebHookError": "PostFinanceCheckout WebHook non può essere salvato. Per favore controlla le tue credenziali.",
+	  "messageWebHookUpdated": "PostFinanceCheckout WebHook è stato aggiornato.",
+	  "options": {
+		"cardTitle": "Opzioni",
+		"emailEnabled": {
+		  "label": "Invia email di conferma dell'ordine",
+		  "tooltipText": "Se questa impostazione è abilitata i tuoi clienti riceveranno un'email dal tuo negozio quando il pagamento del loro ordine sarà autorizzato"
+		},
+		"integration": {
+		  "label": "Integrazione",
+		  "options": {
+			"iframe": "Iframe",
+			"payment_page": "Pagina di pagamento"
+		  },
+		  "tooltipText": "Integrazione"
+		},
+		"lineItemConsistencyEnabled": {
+		  "label": "Coerenza dell'elemento linea",
+		  "tooltipText": "Se questa opzione è abilitata i totali degli articoli in PostFinanceCheckoutPayment corrisponderanno sempre al totale dell'ordine Shopware"
+		},
+		"spaceViewId": {
+		  "label": "ID della vista spazio",
+		  "tooltipText": "ID della vista spaziale"
+		}
+	  },
+	  "save": "Salva",
+	  "storefrontOptions": {
+		"cardTitle": "Opzioni vetrina",
+		"invoiceDownloadEnabled": {
+		  "label": "Scaricamento fattura",
+		  "tooltipText": "Se questa impostazione è abilitata i tuoi clienti potranno scaricare le fatture degli ordini da PostFinanceCheckout"
+		}
+	  },
+	  "advancedOptions": {
+		"cardTitle": "Opzioni avanzate",
+		"webhooksUpdateEnabled": {
+			"label": "Aggiornamento webhooks",
+			"tooltipText": "Se questa impostazione è abilitata l'aggiornamento dei webhook sarà attivato quando si salvano le impostazioni"
+		},
+	    "paymentsUpdateEnabled": {
+		  "label": "Aggiornamento pagamenti",
+		  "tooltipText": "Se questa impostazione è abilitata l'aggiornamento dei metodi di pagamento verrà attivato quando si salvano le impostazioni"
+	    }
+	  },
+	  "titleError": "Errore",
+	  "titleSuccess": "Successo"
+	}
+  }
+}

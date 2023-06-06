@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+
+<container xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		   xmlns="http://symfony.com/schema/dic/services"
+		   xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+	<services>
+		<!-- Commands -->
+		<service id="PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Command\PaymentMethodConfigurationCommand">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService"/>
+			<tag name="console.command"/>
+		</service>
+
+		<service id="PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Command\PaymentMethodDefaultCommand">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil"/>
+			<tag name="console.command"/>
+		</service>
+
+		<!-- Entities -->
+		<service id="PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntityDefinition">
+			<tag name="shopware.entity.definition" entity="postfinancecheckout_payment_method_configuration"/>
+		</service>
+
+		<!-- Services -->
+		<service id="PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
+			<argument type="service" id="service_container"/>
+			<argument type="service" id="Shopware\Core\Content\ImportExport\DataAbstractionLayer\Serializer\Entity\MediaSerializer"/>
+			<argument type="service" id="Shopware\Core\Content\ImportExport\DataAbstractionLayer\Serializer\SerializerRegistry"/>
+			<call method="setLogger">
+				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
+			</call>
+		</service>
+	</services>
+</container>

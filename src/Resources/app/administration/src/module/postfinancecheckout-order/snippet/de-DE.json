@@ -1,0 +1,109 @@
+{
+  "postfinancecheckout-order": {
+	"buttons": {
+	  "label": {
+		"completion": "Abschluss",
+		"download-invoice": "Rechnung herunterladen",
+		"download-packing-slip": "Packzettel herunterladen",
+		"refund": "Eine neue Rückerstattung erstellen",
+		"void": "Genehmigung annullieren",
+	    "refund-whole-line-item": "Gesamte Werbebuchung erstatten",
+	    "refund-line-item-by-quantity": "Rückerstattung nach Menge"
+	  }
+	},
+	"captureAction": {
+	  "button": {
+		"text": "Zahlung erfassen"
+	  },
+	  "currentAmount": "Betrag",
+	  "isFinal": "Dies ist die endgültige Verbuchung",
+	  "maxAmount": "Maximaler Betrag",
+	  "successMessage": "Ihre Verbuchung war erfolgreich",
+	  "successTitle": "Erfolg"
+	},
+	"general": {
+	  "title": "Bestellungen"
+	},
+	"header": "PostFinanceCheckout Payment",
+	"lineItem": {
+	  "cardTitle": "Einzelposten",
+	  "types": {
+		"amountIncludingTax": "Betrag",
+		"name": "Name",
+		"quantity": "Anzahl",
+		"taxAmount": "Steuern",
+		"type": "Typ",
+		"uniqueId": "Eindeutige ID"
+	  }
+	},
+	"modal": {
+	  "title": {
+		"capture": "Erfassen",
+		"refund": "Neue Gutschrift",
+		"void": "Autorisierung aufheben"
+	  }
+	},
+	"paymentDetails": {
+	  "cardTitle": "Zahlung",
+	  "error": {
+		"title": "Fehler beim Abrufen von Zahlungsdetails von PostFinanceCheckout"
+	  }
+	},
+	"refund": {
+	  "cardTitle": "Gutschriften",
+	  "refundAmount": {
+		"label": "Gutschriftsbetrag"
+	  },
+	  "refundQuantity": {
+	  	"label": "Refund Menge"
+	  },
+	  "types": {
+		"amount": "Betrag",
+		"createdOn": "Erstellt am",
+		"id": "ID",
+		"state": "Staat"
+	  }
+	},
+	"refundAction": {
+	  "confirmButton": {
+		"text": "Ausführen"
+	  },
+	  "refundAmount": {
+		"label": "Betrag",
+		"placeholder": "Einen Betrag eingeben"
+	  },
+	  "successMessage": "Ihre Rückerstattung war erfolgreich",
+	  "successTitle": "Erfolg",
+	  "maxAvailableItemsToRefund": "Maximal Verfügbare Artikel zum Erstatten"
+	},
+	"transactionHistory": {
+	  "cardTitle": "Einzelheiten",
+	  "types": {
+		"authorized_amount": "Autorisierter Betrag",
+		"currency": "Währung",
+		"customer": "Kunde",
+		"payment_method": "Zahlungsweise",
+		"state": "Staat",
+		"transaction": "Transaktion"
+	  },
+	  "customerId": "Customer ID",
+	  "customerName": "Customer Name",
+	  "creditCardHolder": "Kreditkarteninhaber",
+	  "paymentMethod": "Zahlungsart",
+	  "paymentMethodBrand": "Marke der Zahlungsmethode",
+	  "PseudoCreditCardNumber": "Pseudo-Kreditkartennummer",
+	  "CardExpire": "Karte verfällt"
+	},
+	"voidAction": {
+	  "confirm": {
+		"button": {
+		  "cancel": "Nein",
+		  "confirm": "Autorisierung aufheben"
+		},
+		"message": "Wollen Sie diese Zahlung wirklich stornieren?"
+	  },
+	  "successMessage": "Die Zahlung wurde erfolgreich annulliert",
+	  "successTitle": "Erfolg"
+	}
+  }
+}

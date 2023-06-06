@@ -1,0 +1,171 @@
+{% block postfinancecheckout_order_detail %}
+<div class="postfinancecheckout-order-detail">
+	<div v-if="!isLoading">
+		<sw-card :title="$tc('postfinancecheckout-order.paymentDetails.cardTitle')">
+			<template #grid>
+				{% block postfinancecheckout_order_actions_section %}
+				<sw-card-section secondary slim>
+					{% block postfinancecheckout_order_transaction_refunds_action_button %}
+						<sw-button
+								variant="primary"
+								size="small"
+								:disabled="transaction.state != 'FULFILL' || refundableAmount <= 0"
+								@click="spawnModal('refundByAmount')">
+							{{ $tc('postfinancecheckout-order.buttons.label.refund') }}
+						</sw-button>
+					{% endblock %}
+					{% block postfinancecheckout_order_transaction_completion_action_button %}
+					<sw-button
+							variant="primary"
+							size="small"
+							:disabled="transaction.state != 'AUTHORIZED' || isLoading"
+							@click="spawnModal('completion')">
+						{{ $tc('postfinancecheckout-order.buttons.label.completion') }}
+					</sw-button>
+					{% endblock %}
+					{% block postfinancecheckout_order_transaction_void_action_button %}
+					<sw-button
+							variant="primary"
+							size="small"
+							:disabled="transaction.state != 'AUTHORIZED' || isLoading"
+							@click="spawnModal('void')">
+						{{ $tc('postfinancecheckout-order.buttons.label.void') }}
+					</sw-button>
+					{% endblock %}
+					{% block postfinancecheckout_order_transaction_download_invoice_action_button %}
+					<sw-button
+							variant="primary"
+							size="small"
+							:disabled="transaction.state != 'FULFILL'"
+							@click="downloadInvoice()">
+						{{ $tc('postfinancecheckout-order.buttons.label.download-invoice') }}
+					</sw-button>
+					{% endblock %}
+					{% block postfinancecheckout_order_transaction_download_packing_slip_action_button %}
+					<sw-button
+							variant="primary"
+							size="small"
+							:disabled="transaction.state != 'FULFILL'"
+							@click="downloadPackingSlip()">
+						{{ $tc('postfinancecheckout-order.buttons.label.download-packing-slip') }}
+					</sw-button>
+					{% endblock %}
+				</sw-card-section>
+				{% endblock %}
+			</template>
+		</sw-card>
+		{% block postfinancecheckout_order_transaction_history_card %}
+		<sw-card :title="$tc('postfinancecheckout-order.transactionHistory.cardTitle')">
+			<template #grid>
+
+				{% block postfinancecheckout_order_transaction_history_grid %}
+				<sw-data-grid :dataSource="transactionData.transactions"
+							  :columns="relatedResourceColumns"
+							  :showActions="true"
+							  :showSelection="false">
+
+					<template #actions="{ item }">
+						<sw-context-menu-item v-if="item.customerId">{{ $tc('postfinancecheckout-order.transactionHistory.customerId') }}: {{ item.customerId }}</sw-context-menu-item>
+						<sw-context-menu-item v-if="item.customerName">{{ $tc('postfinancecheckout-order.transactionHistory.customerName') }}: {{ item.customerName }}</sw-context-menu-item>
+						<sw-context-menu-item v-if="item.creditCardHolder">{{ $tc('postfinancecheckout-order.transactionHistory.creditCardHolder') }}: {{ item.creditCardHolder }}</sw-context-menu-item>
+						<sw-context-menu-item v-if="item.paymentMethodName">{{ $tc('postfinancecheckout-order.transactionHistory.paymentMethod') }}: {{ item.paymentMethodName }}</sw-context-menu-item>
+						<sw-context-menu-item v-if="item.brandName">{{ $tc('postfinancecheckout-order.transactionHistory.paymentMethodBrand') }}: {{ item.brandName }}</sw-context-menu-item>
+						<sw-context-menu-item v-if="item.pseudoCardNumber">{{ $tc('postfinancecheckout-order.transactionHistory.PseudoCreditCardNumber') }}: {{ item.pseudoCardNumber }}</sw-context-menu-item>
+						<sw-context-menu-item v-if="item.pseudoCardNumber && item.cardExpireMonth && item.cardExpireYear">{{ $tc('postfinancecheckout-order.transactionHistory.CardExpire') }}: {{ item.cardExpireMonth }} / {{ item.cardExpireYear }}</sw-context-menu-item>
+						<sw-context-menu-item v-if="item.payId">PayID: {{ item.payId }}</sw-context-menu-item>
+					</template>
+				</sw-data-grid>
+				{% endblock %}
+			</template>
+
+		</sw-card>
+		{% endblock %}
+		{% block postfinancecheckout_order_transaction_line_items_card %}
+		<sw-card :title="$tc('postfinancecheckout-order.lineItem.cardTitle')">
+			<template #grid>
+
+				{% block postfinancecheckout_order_transaction_line_items_grid %}
+				<sw-data-grid
+						:dataSource="lineItems"
+						:columns="lineItemColumns"
+						:showActions="true"
+						:showSelection="false">
+
+					{% block postfinancecheckout_order_transaction_line_items_grid_grid_actions %}
+						<template #actions="{ item }">
+								<sw-context-menu-item
+									:disabled="transaction.state != 'FULFILL' || item.refundableQuantity != item.quantity"
+								    icon="default-money-cash"
+								    @click="lineItemRefund(item.uniqueId)">
+									{{ $tc('postfinancecheckout-order.buttons.label.refund-whole-line-item') }}
+								</sw-context-menu-item>
+
+								<sw-context-menu-item
+										:disabled="transaction.state != 'FULFILL' || item.refundableQuantity == 0"
+										icon="default-money-cash"
+										@click="spawnModal('refund', item.uniqueId, item.refundableQuantity)">
+									{{ $tc('postfinancecheckout-order.buttons.label.refund-line-item-by-quantity') }}
+								</sw-context-menu-item>
+						</template>
+					{% endblock %}
+				</sw-data-grid>
+				{% endblock %}
+			</template>
+		</sw-card>
+		{% endblock %}
+		{% block postfinancecheckout_order_transaction_refunds_card %}
+		<sw-card :title="$tc('postfinancecheckout-order.refund.cardTitle')" v-if="transactionData.refunds.length > 0">
+			<template #grid>
+
+				{% block postfinancecheckout_order_transaction_refunds_grid %}
+				<sw-data-grid
+						:dataSource="transactionData.refunds"
+						:columns="refundColumns"
+						:showActions="false"
+						:showSelection="false">
+				</sw-data-grid>
+				{% endblock %}
+			</template>
+
+		</sw-card>
+		{% endblock %}
+		{% block postfinancecheckout_order_actions_modal_refund %}
+		<postfinancecheckout-order-action-refund
+				v-if="modalType === 'refund'"
+				:orderId="orderId"
+				:transactionData="transactionData"
+				:lineItems="lineItems"
+				@modal-close="closeModal">
+		</postfinancecheckout-order-action-refund>
+		{% endblock %}
+		{% block postfinancecheckout_order_actions_modal_refund_by_amount %}
+			<postfinancecheckout-order-action-refund-by-amount
+					v-if="modalType === 'refundByAmount'"
+					:orderId="orderId"
+					:transactionData="transactionData"
+					:lineItems="lineItems"
+					@modal-close="closeModal">
+			</postfinancecheckout-order-action-refund-by-amount>
+		{% endblock %}
+		{% block postfinancecheckout_order_actions_modal_completion%}
+		<postfinancecheckout-order-action-completion
+				v-if="modalType === 'completion'"
+				:orderId="orderId"
+				:transactionData="transactionData"
+				:lineItems="lineItems"
+				@modal-close="closeModal">
+		</postfinancecheckout-order-action-completion>
+		{% endblock %}
+		{% block postfinancecheckout_order_actions_modal_void %}
+		<postfinancecheckout-order-action-void
+				v-if="modalType === 'void'"
+				:orderId="orderId"
+				:transactionData="transactionData"
+				:lineItems="lineItems"
+				@modal-close="closeModal">
+		</postfinancecheckout-order-action-void>
+		{% endblock %}
+	</div>
+	<sw-loader v-if="isLoading"></sw-loader>
+</div>
+{% endblock %}
