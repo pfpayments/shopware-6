@@ -83,7 +83,7 @@ class RefundService {
 	 * @return \PostFinanceCheckout\Sdk\Model\Refund|null
 	 * @throws \Exception
 	 */
-	public function create(Transaction $transaction, Context $context, int $quantity, ?string $lineItemId = null): ?Refund
+	public function create(Transaction $transaction, Context $context, ?string $lineItemId, int $quantity): ?Refund
 	{
 		try {
 			$transactionEntity  = $this->getTransactionEntityByTransactionId($transaction->getId(), $context);

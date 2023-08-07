@@ -1,3 +1,6 @@
+# 4.0.56
+- Anpassung der Dokumentation
+
 # 4.0.54
 - Unterstützung von Shopware 6.5
 - Unterstützung des neuesten PHP SDK 3.2.0

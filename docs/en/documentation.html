@@ -22,7 +22,7 @@
 		</a>
 	</li>
 	<li>
-		<a href="https://github.com/pfpayments/shopware-6/releases/tag/5.0.0/">
+		<a href="https://github.com/pfpayments/shopware-6/releases/tag/5.0.1/">
 			Source
 		</a>
 	</li>
@@ -498,10 +498,30 @@ The payment methods are only displayed if the plugin&#8217;s total calculation m
 </div><div class="paragraph">
 <p>If you you have already made seperate channel adjustments (using the channel dropdown in the plugin settings) you will have to ensure that the emails are disabled per channel accordingly.</p>
 </div>					</div>
+</div>	<div class="chapter" id="_troubleshooting">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">10</span>Troubleshooting					</h1>
+	</div>
+	<div class="chapter-body">
+							<div class="section" id="_webhook_error_api_version_not_available">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">10.1</span>Webhook error (API version not available)					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>Webhooks communication fails because of a reply saying HTTP 404 with this or a similar error in the response:
+<code>{"errors":[{"code":"0","status":"404","title":"Not Found","detail":"Requested api version v1 not available, available versions are v2, v3."}]}</code></p>
+</div><div class="paragraph">
+<p>Solution:
+The Webhooks have to be updated. Shopware is using an API Version for all "URLs", which has to be updated in case shopware itself was updated.</p>
+</div>					</div>
+</div>			</div>
 </div>	<div class="chapter" id="_support">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">10</span>Support					</h1>
+			<span class="title-number">11</span>Support					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -652,8 +672,20 @@ The payment methods are only displayed if the plugin&#8217;s total calculation m
 		<span class="item-title">Sending emails with Flow Builder</span>
 			</a>
     </li>					<li class="nav-level-1">
-	<a href="#_support">
+	<a href="#_troubleshooting">
 		<span class="item-number">10</span>
+		<span class="item-title">Troubleshooting</span>
+			</a>
+        	<ul  class="nav">
+    		    			<li class="nav-level-2">
+	<a href="#_webhook_error_api_version_not_available">
+		<span class="item-number">10.1</span>
+		<span class="item-title">Webhook error (API version not available)</span>
+			</a>
+    </li>    		    	</ul>
+    </li>					<li class="nav-level-1">
+	<a href="#_support">
+		<span class="item-number">11</span>
 		<span class="item-title">Support</span>
 			</a>
     </li>			</ul>
