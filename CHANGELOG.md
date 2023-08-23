@@ -1,3 +1,12 @@
+# 5.0.2
+- Fix bug which happens when pressing back to shop or home clears cart.
+
+# 5.0.1
+- Adjust documentation
+
+# 5.0.0
+- Update composer file to only support 6.5
+
 # 4.0.56
 - Adjustment of the documentation
 

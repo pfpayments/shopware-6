@@ -1,3 +1,12 @@
+# 5.0.2
+- Behebung eines Fehlers, der auftritt, wenn Sie auf „Zurück zum Shop“ oder „Zuhause“ drücken, um den Warenkorb zu löschen.
+
+# 5.0.1
+- Anpassung der Dokumentation
+
+# 5.0.0
+- Aktualisieren Sie die Composer-Datei so, dass sie nur 6.5 unterstützt
+
 # 4.0.56
 - Anpassung der Dokumentation
 
