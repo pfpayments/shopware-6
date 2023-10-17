@@ -62,5 +62,5 @@
         "postfinancecheckout/sdk": "3.2.0"
     },
     "type": "shopware-platform-plugin",
-    "version": "5.0.2"
+    "version": "5.0.3"
 }

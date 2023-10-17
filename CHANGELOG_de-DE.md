@@ -1,3 +1,8 @@
+# 5.0.3
+- Unterstützung des neuesten PHP 8.2
+– Umwandeln, um die Option des Produktattributs in einen String umzuwandeln.
+- Wenn die Lieferung null ist, versuchen Sie nicht, sie zurückzuhalten.
+
 # 5.0.2
 - Behebung eines Fehlers, der auftritt, wenn Sie auf „Zurück zum Shop“ oder „Zuhause“ drücken, um den Warenkorb zu löschen.
 

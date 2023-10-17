@@ -399,7 +399,7 @@ class TransactionPayload extends AbstractPayload
 				$label = $option['group'];
 				$lineItemAttributeCreate = (new LineItemAttributeCreate())
 					->setLabel($this->fixLength($label, 512))
-					->setValue($this->fixLength($option['option'], 512));
+					->setValue($this->fixLength((string)$option['option'], 512));
 
 				if ($lineItemAttributeCreate->valid()) {
 					$key = $this->fixLength('option_' . md5($label), 40);

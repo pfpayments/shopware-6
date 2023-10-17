@@ -1,3 +1,8 @@
+# 5.0.3
+- Support of PHP 8.2
+- Cast to string the option of product attribute.
+- If delivery is null do not try to hold it.
+
 # 5.0.2
 - Fix bug which happens when pressing back to shop or home clears cart.
 
