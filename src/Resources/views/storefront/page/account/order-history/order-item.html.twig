@@ -8,7 +8,8 @@
 			{% set orderPaymentMethodFormattedHandlerIdentifier = order.transactions.last.paymentMethod.formattedHandlerIdentifier %}
 			{% if (postfinancecheckoutFormattedHandlerIdentifier == orderPaymentMethodFormattedHandlerIdentifier) and (orderPaymentState in ['paid', 'refunded']) %}
 				<a class="order-table-header-context-menu-content-link"
-				   href="{{ path('frontend.postfinancecheckout.account.order.download.invoice.document', { 'orderId': order.id }) }}">
+				   href="{{ path('frontend.postfinancecheckout.account.order.download.invoice.document', { 'orderId': order.id }) }}"
+				   title="{{ "postfinancecheckout.account.downloadInvoice"|trans|sw_sanitize }}">
 					{{ "postfinancecheckout.account.downloadInvoice"|trans|sw_sanitize }}
 				</a>
 			{% endif %}

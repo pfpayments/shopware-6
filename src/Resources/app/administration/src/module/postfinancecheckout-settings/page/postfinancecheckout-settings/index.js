@@ -23,6 +23,7 @@ Component.register('postfinancecheckout-settings', {
             config: {},
 
             isLoading: false,
+            isTesting: false,
 
             isSaveSuccessful: false,
             isShowcase: false,
@@ -61,6 +62,18 @@ Component.register('postfinancecheckout-settings', {
         return {
             title: this.$createTitle()
         };
+    },
+
+    created() {
+        // Registers a listener for the 'check-api-connection-event'.
+        // Triggered when this event is emitted.
+        this.$on('check-api-connection-event', this.onCheckApiConnection);
+    },
+
+    beforeDestroy() {
+        // Removes the listener for the 'check-api-connection-event'
+        // before the component is destroyed to prevent memory leaks.
+        this.$off('check-api-connection-event', this.onCheckApiConnection);
     },
 
     watch: {
@@ -246,5 +259,34 @@ Component.register('postfinancecheckout-settings', {
                 this.applicationKeyErrorState = messageNotBlankErrorState;
             }
         },
+
+        // Handles the 'check-api-connection-event'.
+        // Uses the provided apiConnectionData to perform API connection checks.
+        onCheckApiConnection(apiConnectionData) {
+            const { spaceId, userId, applicationKey } = apiConnectionData;
+            this.isTesting = true;
+
+            this.PostFinanceCheckoutConfigurationService.checkApiConnection(spaceId, userId, applicationKey)
+                .then((res) => {
+                    if (res.result === 200) {
+                        this.createNotificationSuccess({
+                            title: this.$tc('postfinancecheckout-settings.settingForm.credentials.alert.title'),
+                            message: this.$tc('postfinancecheckout-settings.settingForm.credentials.alert.successMessage')
+                        });
+                    } else {
+                        this.createNotificationError({
+                            title: this.$tc('postfinancecheckout-settings.settingForm.credentials.alert.title'),
+                            message: this.$tc('postfinancecheckout-settings.settingForm.credentials.alert.errorMessage')
+                        });
+                    }
+                    this.isTesting = false;
+                }).catch(() => {
+                    this.createNotificationError({
+                        title: this.$tc('postfinancecheckout-settings.settingForm.credentials.alert.title'),
+                        message: this.$tc('postfinancecheckout-settings.settingForm.credentials.alert.errorMessage')
+                    });
+                    this.isTesting = false;
+            });
+        }
     }
 });

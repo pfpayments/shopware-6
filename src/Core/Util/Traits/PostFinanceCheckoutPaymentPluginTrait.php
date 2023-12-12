@@ -105,7 +105,7 @@ trait PostFinanceCheckoutPaymentPluginTrait {
 	protected function deleteUserData(UninstallContext $uninstallContext): void
 	{
 		$connection = $this->container->get(Connection::class);
-		$query = 'ALTER TABLE `order` DROP COLUMN `postfinancecheckout_lock`;';
+		$query = 'ALTER TABLE `order` DROP COLUMN IF EXISTS `postfinancecheckout_lock`;';
 		$connection->executeStatement($query);
 	}
 }

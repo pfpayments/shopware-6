@@ -76,6 +76,15 @@
 						{% endblock %}
 					</div>
 				{% endblock %}
+
+				<sw-container columns="1fr 1fr" gap="0px 30px">
+					<sw-button-process
+							:isLoading="isTesting"
+							@click="emitCheckApiConnectionEvent">
+						{{ $tc('postfinancecheckout-settings.settingForm.credentials.button.label') }}
+					</sw-button-process>
+				</sw-container>
+
 			</sw-container>
 		{% endblock %}
 	</sw-card>

@@ -1,3 +1,6 @@
+# 5.0.4
+- Adjust documentation and release command
+
 # 5.0.3
 - Support of PHP 8.2
 - Cast to string the option of product attribute.
@@ -78,7 +81,7 @@
 - Added settings to control update of webhooks and payment methods
 
 # 4.0.15
-- Adjust wallee/SW6 documentation - how to do refunds
+- Adjust PostFinance Checkout/SW6 documentation - how to do refunds
 
 # 4.0.14
 - Support for Shopware 6.4.6

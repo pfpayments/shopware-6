@@ -43,6 +43,34 @@ class PostFinanceCheckoutConfigurationService extends ApiService {
 	}
 
 	/**
+	 * Test API connection
+	 *
+	 * @param {int|null} spaceId
+	 * @param {int|null} userId
+	 * @param {String|null} applicationId
+	 * @return {*}
+	 */
+	checkApiConnection(spaceId = null, userId = null, applicationId = null) {
+
+		const headers = this.getBasicHeaders();
+		const apiRoute = `${Shopware.Context.api.apiPath}/_action/${this.getApiBasePath()}/configuration/check-api-connection`;
+
+		return this.httpClient.post(
+			apiRoute,
+			{
+				spaceId: spaceId,
+				userId: userId,
+				applicationId: applicationId
+			},
+			{
+				headers: headers
+			}
+		).then((response) => {
+			return ApiService.handleResponse(response);
+		});
+	}
+
+	/**
 	 * Set's the default payment method to PostFinanceCheckout for the given salesChannel id.
 	 *
 	 * @param {String|null} salesChannelId

@@ -52,6 +52,10 @@ Component.register('sw-postfinancecheckout-credentials', {
             type: Boolean,
             required: true
         },
+        isTesting: {
+            type: Boolean,
+            required: false
+        },
         isShowcase: {
             type: Boolean,
             required: true
@@ -86,6 +90,18 @@ Component.register('sw-postfinancecheckout-credentials', {
 
         checkBoolFieldInheritance(value) {
             return typeof value !== 'boolean';
+        },
+
+        // Emits the 'check-api-connection-event' with the current API connection parameters.
+        // Used to trigger API connection testing from this component.
+        emitCheckApiConnectionEvent() {
+            const apiConnectionParams = {
+                spaceId: this.actualConfigData[constants.CONFIG_SPACE_ID],
+                userId: this.actualConfigData[constants.CONFIG_USER_ID],
+                applicationKey: this.actualConfigData[constants.CONFIG_APPLICATION_KEY]
+            };
+
+            this.$emit('check-api-connection-event', apiConnectionParams);
         }
     }
 });

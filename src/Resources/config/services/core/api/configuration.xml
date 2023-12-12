@@ -9,6 +9,7 @@
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Space\Service\SpaceService"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
 			<call method="setLogger">
 				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>

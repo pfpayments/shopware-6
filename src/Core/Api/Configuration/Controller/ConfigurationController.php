@@ -16,6 +16,7 @@ use PostFinanceCheckoutPayment\Core\{
 	Api\OrderDeliveryState\Service\OrderDeliveryStateService,
 	Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService,
 	Api\WebHooks\Service\WebHooksService,
+	Api\Space\Service\SpaceService,
 	Settings\Service\SettingsService,
 	Util\PaymentMethodUtil};
 
@@ -33,6 +34,11 @@ class ConfigurationController extends AbstractController {
 	 * @var \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService
 	 */
 	protected $webHooksService;
+
+	/**
+	 * @var \PostFinanceCheckoutPayment\Core\Api\Space\Service\SpaceService
+	 */
+	protected $spaceService;
 
 	/**
 	 * @var \Psr\Log\LoggerInterface
@@ -58,16 +64,19 @@ class ConfigurationController extends AbstractController {
 	 * @param PaymentMethodUtil $paymentMethodUtil
 	 * @param PaymentMethodConfigurationService $paymentMethodConfigurationService
 	 * @param WebHooksService $webHooksService
+	 * @param SpaceService $spaceService
 	 * @param SettingsService $settingsService
 	 */
 	public function __construct(
 		PaymentMethodUtil $paymentMethodUtil,
 		PaymentMethodConfigurationService $paymentMethodConfigurationService,
 		WebHooksService $webHooksService,
+		SpaceService $spaceService,
 		SettingsService $settingsService
 	)
 	{
 		$this->webHooksService   = $webHooksService;
+		$this->spaceService = $spaceService;
 		$this->paymentMethodUtil = $paymentMethodUtil;
 		$this->paymentMethodConfigurationService = $paymentMethodConfigurationService;
 		$this->settingsService = $settingsService;
@@ -135,6 +144,44 @@ class ConfigurationController extends AbstractController {
 		$result = $this->webHooksService->setSalesChannelId($salesChannelId)->install();
 
 		return new JsonResponse(['result' => $result]);
+	}
+
+	/**
+	 * Test API connection
+	 * If the API data is incorrect, an entry must appear in the event log file in the Shopware folder /var/log/
+	 * @see https://developer.shopware.com/docs/resources/guidelines/testing/store/quality-guidelines-plugins/#every-app-accessing-external-api-services
+	 *
+	 * @param \Symfony\Component\HttpFoundation\Request $request
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
+	 * @throws \PostFinanceCheckout\Sdk\ApiException
+	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
+	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 *
+	 * @Route(
+	 *     "/api/_action/postfinancecheckout/configuration/check-api-connection",
+	 *     name="api.action.postfinancecheckout.configuration.check-api-connection",
+	 *     methods={"POST"}
+	 *   )
+	 */
+	public function checkApiConnection(Request $request): JsonResponse
+	{
+		$spaceId = (int)$request->request->getInt('spaceId');
+		$userId = (int)$request->request->getInt('userId');
+		$applicationId = $request->request->get('applicationId');
+
+		$result = $this->spaceService
+			->setSpaceId($spaceId)
+			->setUserId($userId)
+			->setApplicationId($applicationId)
+			->checkSpace();
+
+		if (null === $result) {
+			$this->logger->error('API test connection was failed. Wrong credentials');
+			return new JsonResponse([['result' => 400]]);
+		}
+
+		$this->logger->info('API test connection was successfully tested.');
+		return new JsonResponse(['result' => 200]);
 	}
 
 	/**

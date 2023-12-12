@@ -36,6 +36,15 @@
 		"userId": {
 		  "label": "ID utente",
 		  "tooltipText": "L'ID utente è usato per autenticare questo plugin con l'API PostFinanceCheckout."
+		},
+		"button": {
+		  "description": "Fare clic su questo pulsante per testare l'API PostFinanceCheckout.",
+		  "label": "Test di connessione API"
+		},
+		"alert": {
+		  "title": "Test API",
+		  "successMessage": "La connessione è stata testata con successo.",
+		  "errorMessage": "La connessione è fallita. Riprovare."
 		}
 	  },
 	  "messageSaveSuccess": "Le impostazioni di PostFinanceCheckout sono state salvate.",
