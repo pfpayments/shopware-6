@@ -264,8 +264,8 @@ class PaymentMethodConfigurationService {
 	protected function disableOrphanedPaymentMethods(): void
 	{
 		try {
-			$query = "UPDATE payment_method 
-				  	  SET active=0 
+			$query = "UPDATE payment_method
+				  	  SET active=0
 				  	  WHERE handler_identifier=:handler_identifier AND id NOT IN (
 				  	  	SELECT payment_method_id FROM postfinancecheckout_payment_method_configuration
 				  	  )";
@@ -413,6 +413,22 @@ class PaymentMethodConfigurationService {
 							   ->getEntities()
 							   ->first();
 	}
+
+    /**
+     * @param int $spaceId
+     * @param Context $context
+     * @return array
+     */
+    public function getAllPaymentMethodConfigurations(int $spaceId, Context $context): array
+    {
+        $criteria = (new Criteria())->addFilter(new EqualsFilter('spaceId', $spaceId));
+
+        $configurations = $this->container->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository')
+            ->search($criteria, $context)
+            ->getEntities();
+
+        return $configurations->getElements();
+    }
 
 	/**
 	 * Update or insert Payment Method

@@ -335,7 +335,6 @@ class CheckoutController extends StorefrontController {
 	/**
 	 * Recreate Cart
 	 *
-	 * @param \Shopware\Core\Checkout\Cart\Cart                      $cart
 	 * @param \Symfony\Component\HttpFoundation\Request              $request
 	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
 	 *
@@ -348,7 +347,7 @@ class CheckoutController extends StorefrontController {
 	 *     methods={"GET"}
 	 *     )
 	 */
-	public function recreateCart(Cart $cart, Request $request, SalesChannelContext $salesChannelContext)
+	public function recreateCart(Request $request, SalesChannelContext $salesChannelContext)
 	{
 		$orderId = $request->query->get('orderId');
 
@@ -357,6 +356,9 @@ class CheckoutController extends StorefrontController {
 		}
 
 		try {
+			$this->cartService->deleteCart($salesChannelContext);
+			$cart = $this->cartService->createNew($salesChannelContext->getToken());
+
 			// Configuration
 			$this->settings = $this->settingsService->getSettings($salesChannelContext->getSalesChannel()->getId());
 			$orderEntity    = $this->getOrder($request, $salesChannelContext);

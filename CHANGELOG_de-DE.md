@@ -1,5 +1,8 @@
+# 5.0.6
+- Versionserhöhung für die Marktveröffentlichung
+
 # 5.0.5
-– Es wurde ein Problem behoben, bei dem alle Zahlungsmethoden nach der Aktivierung des Wallee-Plugins verschwanden.
+– Es wurde ein Problem behoben, bei dem alle Zahlungsmethoden nach der Aktivierung des Plugins verschwanden.
 - Es wurde ein Problem behoben, bei dem sich die Warenkorbmenge verdoppelte, wenn der Kunde einen Artikel in den Warenkorb legte, über TWINT zur Zahlung ging, die Transaktion in TWINT mit „Zahlung stornieren“ abbrach und anschliessend zurück zum Shop weitergeleitet wurde.
 
 # 5.0.4

@@ -26,6 +26,7 @@
 
 		<!-- Subscribers -->
 		<service id="PostFinanceCheckoutPayment\Core\Storefront\Checkout\Subscriber\CheckoutSubscriber">
+			<argument id="PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService" type="service"/>
 			<argument id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService" type="service"/>
 			<argument id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService" type="service"/>
 			<argument id="PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil" type="service"/>

@@ -1,5 +1,8 @@
+# 5.0.6
+- Version bump for marketplace release
+
 # 5.0.5
-- Fixed an issue where all payment methods disappeared upon activation of the Wallee plugin.
+- Fixed an issue where all payment methods disappeared upon activation of the plugin.
 - Fixed an issue where the shopping cart doubled in quantity if the customer placed an item in the shopping cart, went to payment via TWINT, cancelled the transaction in TWINT using "Cancel payment", and was then redirected back to the store.
 
 # 5.0.4
