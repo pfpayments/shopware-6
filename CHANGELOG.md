@@ -1,3 +1,6 @@
+# 5.0.7
+- Fix for refunds when a discount code is used
+
 # 5.0.6
 - Version bump for marketplace release
 

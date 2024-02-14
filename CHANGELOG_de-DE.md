@@ -1,3 +1,6 @@
+# 5.0.7
+- Fix für Rückerstattungen, wenn ein Rabattcode verwendet wird
+
 # 5.0.6
 - Versionserhöhung für die Marktveröffentlichung
 

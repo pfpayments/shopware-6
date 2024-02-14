@@ -211,6 +211,7 @@ Component.register('postfinancecheckout-order-detail', {
 						});
 
 						PostFinanceCheckoutTransaction.transactions[0].lineItems.forEach((lineItem) => {
+
 							lineItem.amountIncludingTax = Utils.format.currency(
 								lineItem.amountIncludingTax,
 								this.currency
@@ -221,7 +222,7 @@ Component.register('postfinancecheckout-order-detail', {
 								this.currency
 							);
 
-							totalAmountTemp = parseFloat(lineItem.unitPriceIncludingTax * lineItem.quantity);
+							totalAmountTemp = parseFloat(parseFloat(totalAmountTemp) + parseFloat(lineItem.unitPriceIncludingTax * lineItem.quantity));
 
 							lineItem.refundableQuantity = parseInt(
 								parseInt(lineItem.quantity) - parseInt(this.refundLineItem[lineItem.uniqueId] || 0)
