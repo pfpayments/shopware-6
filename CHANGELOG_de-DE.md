@@ -1,3 +1,6 @@
+# 6.0.0
+- Unterstützung von Shopware 6.6
+
 # 5.0.7
 - Fix für Rückerstattungen, wenn ein Rabattcode verwendet wird
 

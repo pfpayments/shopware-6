@@ -5,7 +5,7 @@ namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Controller;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
 	Framework\Context,
-	Framework\Routing\Annotation\RouteScope};
+	Framework\Log\Package};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\{
 	HttpFoundation\HeaderUtils,
@@ -22,8 +22,9 @@ use PostFinanceCheckoutPayment\{
  *
  * @package PostFinanceCheckoutPayment\Core\Api\Transaction\Controller
  *
- * @Route(defaults={"_routeScope"={"api"}})
  */
+#[Package('sales-channel')]
+#[Route(defaults: ['_routeScope' => ['api']])]
 class TransactionController extends AbstractController {
 
 	/**
@@ -70,12 +71,10 @@ class TransactionController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context          $context
 	 *
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
-	 * @Route(
-	 *     "/api/_action/postfinancecheckout/transaction/get-transaction-data/",
-	 *     name="api.action.postfinancecheckout.transaction.get-transaction-data",
-	 *     methods={"POST"}
-	 *     )
 	 */
+    #[Route("/api/_action/postfinancecheckout/transaction/get-transaction-data/",
+    	name: "api.action.postfinancecheckout.transaction.get-transaction-data",
+        methods: ['POST'])]
 	public function getTransactionData(Request $request, Context $context): JsonResponse
 	{
 		$transactionId = $request->request->get('transactionId');
@@ -103,13 +102,11 @@ class TransactionController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
-	 * @Route(
-	 *     "/api/_action/postfinancecheckout/transaction/get-invoice-document/{salesChannelId}/{transactionId}",
-	 *     name="api.action.postfinancecheckout.transaction.get-invoice-document",
-	 *     methods={"GET"},
-	 *     defaults={"csrf_protected"=false, "auth_required"=false}
-	 *     )
 	 */
+    #[Route("/api/_action/postfinancecheckout/transaction/get-invoice-document/{salesChannelId}/{transactionId}",
+    	name: "api.action.postfinancecheckout.transaction.get-invoice-document",
+        methods: ['GET'],
+        defaults: ["csrf_protected" => false, "auth_required" => false])]
 	public function getInvoiceDocument(string $salesChannelId, int $transactionId): Response
 	{
 		$settings  = $this->settingsService->getSettings($salesChannelId);
@@ -139,13 +136,11 @@ class TransactionController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
-	 * @Route(
-	 *     "/api/_action/postfinancecheckout/transaction/get-packing-slip/{salesChannelId}/{transactionId}",
-	 *     name="api.action.postfinancecheckout.transaction.get-packing-slip",
-	 *     methods={"GET"},
-	 *     defaults={"csrf_protected"=false, "auth_required"=false}
-	 *     )
 	 */
+    #[Route("/api/_action/postfinancecheckout/transaction/get-packing-slip/{salesChannelId}/{transactionId}",
+    	name: "api.action.postfinancecheckout.transaction.get-packing-slip",
+        methods: ['GET'],
+        defaults: ["csrf_protected" => false, "auth_required" => false])]
 	public function getPackingSlip(string $salesChannelId, int $transactionId): Response
 	{
 		$settings  = $this->settingsService->getSettings($salesChannelId);

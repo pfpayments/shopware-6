@@ -1,3 +1,6 @@
+# 6.0.0
+- Support for Shopware 6.6
+
 # 5.0.7
 - Fix for refunds when a discount code is used
 

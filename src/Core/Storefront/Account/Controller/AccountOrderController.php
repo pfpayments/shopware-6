@@ -6,10 +6,10 @@ use Psr\Log\LoggerInterface;
 use Shopware\Core\{
 	Checkout\Cart\Exception\CustomerNotLoggedInException,
 	Checkout\Customer\CustomerEntity,
-	Framework\Routing\Annotation\RouteScope,
 	PlatformRequest,
 	System\SalesChannel\SalesChannelContext};
 use Shopware\Storefront\Controller\StorefrontController;
+use Shopware\Core\Framework\Log\Package;
 use Symfony\Component\{
 	HttpFoundation\HeaderUtils,
 	HttpFoundation\RequestStack,
@@ -20,9 +20,8 @@ use PostFinanceCheckoutPayment\Core\{
 	Api\Transaction\Service\TransactionService,
 	Settings\Service\SettingsService};
 
-/**
- * @Route(defaults={"_routeScope"={"storefront"}})
- */
+#[Package('storefront')]
+#[Route(defaults: ['_routeScope' => ['storefront']])]
 class AccountOrderController extends StorefrontController {
 
 	/**
@@ -73,12 +72,10 @@ class AccountOrderController extends StorefrontController {
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
-	 * @Route(
-	 *     "/postfinancecheckout/account/order/download/invoice/document/{orderId}",
-	 *     name="frontend.postfinancecheckout.account.order.download.invoice.document",
-	 *     methods={"GET"}
-	 *     )
 	 */
+    #[Route("/postfinancecheckout/account/order/download/invoice/document/{orderId}",
+    	name: "frontend.postfinancecheckout.account.order.download.invoice.document",
+        methods: ['GET'])]
 	public function downloadInvoiceDocument(string $orderId, SalesChannelContext $salesChannelContext): Response
 	{
 		$customer          = $this->getLoggedInCustomer();
