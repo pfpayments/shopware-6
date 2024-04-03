@@ -574,6 +574,11 @@ class TransactionPayload extends AbstractPayload
             $birthday = $birthday->format('Y-m-d');
         }
 
+        $postalState = $customerAddressEntity?->getCountryState()?->getName() ?? '';
+        if (empty($postalState)) {
+            $postalState = $customerAddressEntity?->getCountryState()?->getShortCode() ?? '';
+        }
+
         $addressData = [
             'city' => $customerAddressEntity->getCity() ? $this->fixLength($customerAddressEntity->getCity(), 100) : null,
             'country' => $customerAddressEntity->getCountry() ? $customerAddressEntity->getCountry()->getIso() : null,
@@ -583,7 +588,7 @@ class TransactionPayload extends AbstractPayload
             'organization_name' => $organization_name,
             'phone_number' => $customerAddressEntity->getPhoneNumber() ? $this->fixLength($customerAddressEntity->getPhoneNumber(), 100) : null,
             'postcode' => $customerAddressEntity->getZipcode() ? $this->fixLength($customerAddressEntity->getZipcode(), 40) : null,
-            'postal_state' => $customerAddressEntity->getCountryState() ? $customerAddressEntity->getCountryState()->getShortCode() : null,
+            'postal_state' => $postalState,
             'salutation' => $salutation,
             'street' => $customerAddressEntity->getStreet() ? $this->fixLength($customerAddressEntity->getStreet(), 300) : null,
             'birthday' => $birthday

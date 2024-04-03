@@ -1,3 +1,8 @@
+# 5.0.8
+- Fixed checkout issues after deactivating/activating plugin
+- Fixed plugin uninstall action
+- Fixed invoice payment method email function when order is shipped
+
 # 5.0.7
 - Fix for refunds when a discount code is used
 

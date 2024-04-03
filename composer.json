@@ -18,17 +18,17 @@
     "extra": {
         "copyright": "(c) by PostFinance Checkout",
         "description": {
-            "de-DE": "PostFinanceCheckout integration f\u00fcr Shopware 6",
-            "en-GB": "PostFinanceCheckout integration for Shopware 6",
-            "fr-FR": "Int\u00e9gration de PostFinanceCheckout pour Shopware 6",
-            "it-IT": "Integrazione PostFinanceCheckout per Shopware"
-        },
-        "label": {
-            "de-DE": "PostFinanceCheckout Produkte f\u00fcr Shopware 6",
-            "en-GB": "PostFinanceCheckout Products for Shopware 6",
-            "fr-FR": "PostFinanceCheckout Produits for Shopware 6",
-            "it-IT": "PostFinanceCheckout Prodotti per Shopware 6"
-        },
+			"de-DE": "PostFinanceCheckout integration für Shopware 6",
+			"en-GB": "PostFinanceCheckout integration for Shopware 6",
+			"fr-FR": "Intégration de PostFinanceCheckout pour Shopware 6",
+			"it-IT": "Integrazione PostFinanceCheckout per Shopware"
+		},
+		"label": {
+			"de-DE": "PostFinanceCheckout Produkte für Shopware 6",
+			"en-GB": "PostFinanceCheckout Products for Shopware 6",
+			"fr-FR": "PostFinanceCheckout Produits for Shopware 6",
+			"it-IT": "PostFinanceCheckout Prodotti per Shopware 6"
+		},
         "manufacturerLink": {
             "de-DE": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html",
             "en-GB": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html",
@@ -62,5 +62,5 @@
         "postfinancecheckout/sdk": "4.0.2"
     },
     "type": "shopware-platform-plugin",
-    "version": "5.0.7"
+    "version": "5.0.8"
 }

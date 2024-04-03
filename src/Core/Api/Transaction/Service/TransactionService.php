@@ -479,7 +479,12 @@ class TransactionService
             $billingAddress->setCity($customerBillingAddress->getCity());
             $billingAddress->setCountry($customerBillingAddress->getCountry()->getIso());
             $billingAddress->setPostCode($customerBillingAddress->getZipcode());
-            $billingAddress->setPostalState($customerBillingAddress->getCountryState());
+
+            $postalState = $customerBillingAddress?->getCountryState()?->getName() ?? '';
+            if (empty($postalState)) {
+                $postalState = $customerBillingAddress?->getCountryState()?->getShortCode() ?? '';
+            }
+            $billingAddress->setPostalState($postalState);
             $billingAddress->setOrganizationName($customerBillingAddress->getCompany());
 
             $cartLineItems = $event->getPage()->getCart()->getLineItems()->getElements();
@@ -530,7 +535,13 @@ class TransactionService
         $billingAddress->setCity($customerBillingAddress->getCity());
         $billingAddress->setCountry($customerBillingAddress->getCountry()->getIso());
         $billingAddress->setPostCode($customerBillingAddress->getZipcode());
-        $billingAddress->setPostalState($customerBillingAddress->getCountryState());
+
+        $postalState = $customerBillingAddress?->getCountryState()?->getName() ?? '';
+        if (empty($postalState)) {
+            $postalState = $customerBillingAddress?->getCountryState()?->getShortCode() ?? '';
+        }
+
+        $billingAddress->setPostalState($postalState);
         $billingAddress->setOrganizationName($customerBillingAddress->getCompany());
 
         $currency = $salesChannelContext->getCurrency()->getIsoCode();

@@ -1,3 +1,8 @@
+# 5.0.8
+- Checkout-Probleme nach dem Deaktivieren/Aktivieren des Plugins behoben
+- Plugin-Deinstallationsaktion behoben
+- Die E-Mail-Funktion für die Rechnungszahlungsmethode beim Versand der Bestellung wurde korrigiert
+
 # 5.0.7
 - Fix für Rückerstattungen, wenn ein Rabattcode verwendet wird
 
