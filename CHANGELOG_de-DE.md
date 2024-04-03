@@ -1,3 +1,8 @@
+# 6.1
+- Checkout-Probleme nach dem Deaktivieren/Aktivieren des Plugins behoben
+- Plugin-Deinstallationsaktion behoben
+- Die E-Mail-Funktion für die Rechnungszahlungsmethode beim Versand der Bestellung wurde korrigiert
+
 # 6.0.0
 - Unterstützung von Shopware 6.6
 

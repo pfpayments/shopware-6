@@ -149,13 +149,6 @@ class CheckoutSubscriber implements EventSubscriberInterface
             if (!$isOrderTransactionStateOpen) { // order payment status is open or in progress
                 return;
             }
-
-            $isPostFinanceCheckoutEmail = isset($templateData[OrderMailService::EMAIL_ORIGIN_IS_POSTFINANCECHECKOUT]);
-
-            if (!$isPostFinanceCheckoutEmail) {
-                $this->logger->info('Email disabled for ', ['orderId' => $order->getId()]);
-                $event->stopPropagation();
-            }
         }
     }
 

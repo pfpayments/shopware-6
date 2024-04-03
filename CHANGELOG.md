@@ -1,3 +1,8 @@
+# 6.1
+- Fixed checkout issues after deactivating/activating plugin
+- Fixed plugin uninstall action
+- Fixed invoice payment method email function when order is shipped
+
 # 6.0.0
 - Support for Shopware 6.6
 
