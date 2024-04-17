@@ -7,7 +7,7 @@ use Doctrine\DBAL\{
 	TransactionIsolationLevel};
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
-	Checkout\Cart\Exception\OrderNotFoundException,
+	Checkout\Cart\CartException,
 	Checkout\Order\Aggregate\OrderDelivery\OrderDeliveryEntity,
 	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity,
 	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler,
@@ -23,7 +23,8 @@ use Shopware\Core\{
 use Shopware\Core\Checkout\Order\OrderStates;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Shopware\Core\Framework\Log\Package;
-use Symfony\Component\{HttpFoundation\JsonResponse,
+use Symfony\Component\{
+    HttpFoundation\JsonResponse,
 	HttpFoundation\ParameterBag,
 	HttpFoundation\Request,
 	HttpFoundation\Response,
@@ -312,7 +313,7 @@ class WebHookController extends AbstractController {
 			}
 
 			$status = Response::HTTP_OK;
-		} catch (OrderNotFoundException $exception) {
+		} catch (CartException $exception) {
 			$status = Response::HTTP_OK;
 			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		} catch (IllegalTransitionException $exception) {
@@ -363,7 +364,7 @@ class WebHookController extends AbstractController {
 			$order = $this->container->get('order.repository')->search(new Criteria([$orderId]), $context)->first();
 
 			if(empty($order)){
-				throw new OrderNotFoundException($orderId);
+				throw CartException::orderNotFound($orderId);
 			}
 
 			$this->container->get('order.repository')->upsert([$data], $context);
@@ -411,10 +412,10 @@ class WebHookController extends AbstractController {
 					$context
 				)->first();
 				if (is_null($this->orderEntity)) {
-					throw new OrderNotFoundException($orderId);
+					throw CartException::orderNotFound($orderId);
 				}
 			} catch (\Exception $e) {
-				throw new OrderNotFoundException($orderId);
+				throw CartException::orderNotFound($orderId);
 			}
 		}
 
@@ -478,7 +479,7 @@ class WebHookController extends AbstractController {
 				});
 			}
 			$status = Response::HTTP_OK;
-		} catch (OrderNotFoundException $exception) {
+		} catch (CartException $exception) {
 			$status = Response::HTTP_OK;
 			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		} catch (IllegalTransitionException $exception) {
@@ -556,7 +557,7 @@ class WebHookController extends AbstractController {
 				});
 			}
 			$status = Response::HTTP_OK;
-		} catch (OrderNotFoundException $exception) {
+		} catch (CartException $exception) {
 			$status = Response::HTTP_OK;
 			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		} catch (IllegalTransitionException $exception) {

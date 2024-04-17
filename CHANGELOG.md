@@ -1,4 +1,7 @@
-# 6.1
+# 6.1.1
+- Fixed deprecated OrderNotFoundException
+
+# 6.1.0
 - Fixed checkout issues after deactivating/activating plugin
 - Fixed plugin uninstall action
 - Fixed invoice payment method email function when order is shipped

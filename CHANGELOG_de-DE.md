@@ -1,4 +1,7 @@
-# 6.1
+# 6.1.1
+- Fixed deprecated OrderNotFoundException
+
+# 6.1.0
 - Checkout-Probleme nach dem Deaktivieren/Aktivieren des Plugins behoben
 - Plugin-Deinstallationsaktion behoben
 - Die E-Mail-Funktion für die Rechnungszahlungsmethode beim Versand der Bestellung wurde korrigiert

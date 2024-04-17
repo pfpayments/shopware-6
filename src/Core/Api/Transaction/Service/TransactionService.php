@@ -4,7 +4,8 @@ namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Service;
 
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Shopware\Core\{Checkout\Cart\Exception\OrderNotFoundException,
+use Shopware\Core\{
+    Checkout\Cart\CartException,
     Checkout\Cart\LineItem\LineItem,
     Checkout\Order\OrderEntity,
     Checkout\Payment\Cart\AsyncPaymentTransactionStruct,
@@ -15,7 +16,8 @@ use Shopware\Core\{Checkout\Cart\Exception\OrderNotFoundException,
 };
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use PostFinanceCheckout\Sdk\{Model\AddressCreate,
+use PostFinanceCheckout\Sdk\{
+    Model\AddressCreate,
     Model\ChargeAttempt,
     Model\CreationEntityState,
     Model\CriteriaOperator,
@@ -29,7 +31,8 @@ use PostFinanceCheckout\Sdk\{Model\AddressCreate,
     Model\TransactionCreate,
     Model\TransactionPending
 };
-use PostFinanceCheckoutPayment\Core\{Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
+use PostFinanceCheckoutPayment\Core\{
+    Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
     Api\Refund\Entity\RefundEntityCollection,
     Api\Refund\Entity\RefundEntityDefinition,
     Api\Transaction\Entity\TransactionEntity,
@@ -338,11 +341,11 @@ class TransactionService
                 $context
             )->first();
             if (is_null($order)) {
-                throw new OrderNotFoundException($orderId);
+                throw CartException::orderNotFound($orderId);
             }
             return $order;
         } catch (\Exception $e) {
-            throw new OrderNotFoundException($orderId);
+            throw CartException::orderNotFound($orderId);
         }
 
     }
