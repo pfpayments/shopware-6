@@ -5,7 +5,8 @@ namespace PostFinanceCheckoutPayment\Core\Storefront\Checkout\Controller;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
 	Checkout\Cart\Cart,
-	Checkout\Cart\CartException,
+	Checkout\Cart\Exception\CustomerNotLoggedInException,
+	Checkout\Cart\Exception\OrderNotFoundException,
 	Checkout\Cart\LineItemFactoryRegistry,
 	Checkout\Cart\SalesChannel\CartService,
 	Checkout\Order\Aggregate\OrderLineItem\OrderLineItemCollection,
@@ -16,7 +17,7 @@ use Shopware\Core\{
 	Framework\DataAbstractionLayer\Search\Criteria,
 	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
 	Framework\DataAbstractionLayer\Search\Sorting\FieldSorting,
-    Framework\Log\Package,
+	Framework\Routing\Annotation\RouteScope,
 	Framework\Routing\Exception\MissingRequestParameterException,
 	Framework\Uuid\Uuid,
 	Framework\Uuid\Exception\InvalidUuidException,
@@ -52,9 +53,8 @@ use PostFinanceCheckoutPayment\Core\{
  *
  * @package PostFinanceCheckoutPayment\Core\Storefront\Checkout\Controller
  *
+ * @Route(defaults={"_routeScope"={"storefront"}})
  */
-#[Package('checkout')]
-#[Route(defaults: ['_routeScope' => ['storefront']])]
 class CheckoutController extends StorefrontController {
 
 	/**
@@ -145,13 +145,13 @@ class CheckoutController extends StorefrontController {
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
+	 * @Route(
+	 *     "/postfinancecheckout/checkout/pay",
+	 *     name="frontend.postfinancecheckout.checkout.pay",
+	 *     options={"seo": "false"},
+	 *     methods={"GET"}
+	 *     )
 	 */
-    #[Route(
-        path: "/postfinancecheckout/checkout/pay",
-        name: "frontend.postfinancecheckout.checkout.pay",
-        options: ["seo" => false],
-        methods: ["GET"],
-    )]
 	public function pay(SalesChannelContext $salesChannelContext, Request $request): Response
 	{
 		$orderId = $request->query->get('orderId');
@@ -176,7 +176,6 @@ class CheckoutController extends StorefrontController {
 				TransactionState::AUTHORIZED,
 				TransactionState::COMPLETED,
 				TransactionState::FULFILL,
-				TransactionState::PROCESSING,
 			]
 		)) {
 			return $this->redirect($transaction->getSuccessUrl(), Response::HTTP_MOVED_PERMANENTLY);
@@ -319,14 +318,14 @@ class CheckoutController extends StorefrontController {
 				->load(new Request(), $salesChannelContext, $criteria)
 				->getOrders();
 		} catch (InvalidUuidException $e) {
-			throw CartException::orderNotFound($orderId);
+			throw new OrderNotFoundException($orderId);
 		}
 
 		/** @var OrderEntity|null $order */
 		$order = $searchResult->get($orderId);
 
 		if (!$order) {
-			throw CartException::orderNotFound($orderId);
+			throw new OrderNotFoundException($orderId);
 		}
 
 		return $order;
@@ -340,13 +339,13 @@ class CheckoutController extends StorefrontController {
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 *
+	 * @Route(
+	 *     "/postfinancecheckout/checkout/recreate-cart",
+	 *     name="frontend.postfinancecheckout.checkout.recreate-cart",
+	 *     options={"seo": "false"},
+	 *     methods={"GET"}
+	 *     )
 	 */
-    #[Route(
-        path: "/postfinancecheckout/checkout/recreate-cart",
-        name: "frontend.postfinancecheckout.checkout.recreate-cart",
-        options: ["seo" => false],
-        methods: ["GET"],
-    )]
 	public function recreateCart(Request $request, SalesChannelContext $salesChannelContext)
 	{
 		$orderId = $request->query->get('orderId');

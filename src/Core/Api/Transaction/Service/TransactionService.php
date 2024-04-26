@@ -4,20 +4,19 @@ namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Service;
 
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Shopware\Core\{
-    Checkout\Cart\CartException,
+use Shopware\Core\{Checkout\Cart\Exception\OrderNotFoundException,
     Checkout\Cart\LineItem\LineItem,
     Checkout\Order\OrderEntity,
     Checkout\Payment\Cart\AsyncPaymentTransactionStruct,
     Framework\Context,
     Framework\DataAbstractionLayer\Search\Criteria,
     Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
-    System\SalesChannel\SalesChannelContext
+    System\SalesChannel\SalesChannelContext,
+    Checkout\Payment\Exception\CustomerCanceledAsyncPaymentException,
 };
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use PostFinanceCheckout\Sdk\{
-    Model\AddressCreate,
+use PostFinanceCheckout\Sdk\{Model\AddressCreate,
     Model\ChargeAttempt,
     Model\CreationEntityState,
     Model\CriteriaOperator,
@@ -29,10 +28,10 @@ use PostFinanceCheckout\Sdk\{
     Model\LineItemType,
     Model\Transaction,
     Model\TransactionCreate,
-    Model\TransactionPending
+    Model\TransactionPending,
+    Model\TransactionState
 };
-use PostFinanceCheckoutPayment\Core\{
-    Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
+use PostFinanceCheckoutPayment\Core\{Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
     Api\Refund\Entity\RefundEntityCollection,
     Api\Refund\Entity\RefundEntityDefinition,
     Api\Transaction\Entity\TransactionEntity,
@@ -130,7 +129,20 @@ class TransactionService
         $settings = $this->settingsService->getSettings($salesChannelId);
         $apiClient = $settings->getApiClient();
 
+        $failedStates = [
+            TransactionState::DECLINE,
+            TransactionState::FAILED,
+            TransactionState::VOIDED,
+        ];
         $pendingTransaction = $this->read($_SESSION['transactionId'], $salesChannelId);
+        if (in_array($pendingTransaction->getState(), $failedStates)) {
+            $errorMessage = strtr('Customer canceled payment for :orderId on SalesChannel :salesChannelName', [
+                ':orderId'          => $transaction->getOrder()->getId(),
+                ':salesChannelName' => $salesChannelContext->getSalesChannel()->getName(),
+            ]);
+            $this->logger->info($errorMessage);
+            throw new CustomerCanceledAsyncPaymentException($transaction->getOrder()->getId());
+        }
 
         $transactionPayloadClass = (new TransactionPayload(
             $this->container,
@@ -341,11 +353,11 @@ class TransactionService
                 $context
             )->first();
             if (is_null($order)) {
-                throw CartException::orderNotFound($orderId);
+                throw new OrderNotFoundException($orderId);
             }
             return $order;
         } catch (\Exception $e) {
-            throw CartException::orderNotFound($orderId);
+            throw new OrderNotFoundException($orderId);
         }
 
     }
@@ -466,14 +478,30 @@ class TransactionService
     }
 
     /**
-     * @param CheckoutConfirmPageLoadedEvent $event
+     * @param SalesChannelContext $salesChannelContext
+     * @param CheckoutConfirmPageLoadedEvent|null $event
      * @return int
      */
-    public function createPendingTransaction(CheckoutConfirmPageLoadedEvent $event): int
+    public function createPendingTransaction(SalesChannelContext $salesChannelContext, ?CheckoutConfirmPageLoadedEvent $event = null): int
     {
+        $expiredTransaction = true;
         $transactionId = $_SESSION['transactionId'] ?? null;
-        if (!$transactionId) {
-            $salesChannelContext = $event->getSalesChannelContext();
+        $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
+
+        if ($transactionId) {
+            $transactionService = $settings->getApiClient()->getTransactionService();
+            $pendingTransaction = $transactionService->read($settings->getSpaceId(), $transactionId);
+            $failedStates = [
+                TransactionState::DECLINE,
+                TransactionState::FAILED,
+                TransactionState::VOIDED,
+            ];
+            if (!in_array($pendingTransaction->getState(), $failedStates)) {
+                $expiredTransaction = false;
+            }
+        }
+
+        if (!$transactionId || $expiredTransaction) {
             $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
             $customerBillingAddress = $salesChannelContext->getCustomer()->getActiveBillingAddress();
 
@@ -490,13 +518,15 @@ class TransactionService
             $billingAddress->setPostalState($postalState);
             $billingAddress->setOrganizationName($customerBillingAddress->getCompany());
 
-            $cartLineItems = $event->getPage()->getCart()->getLineItems()->getElements();
             $lineItems = [];
-            foreach ($cartLineItems as $cartLineItem) {
-                if ($cartLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
-                    continue;
+            if ($event) {
+                $cartLineItems = $event->getPage()->getCart()->getLineItems()->getElements();
+                foreach ($cartLineItems as $cartLineItem) {
+                    if ($cartLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
+                        continue;
+                    }
+                    $lineItems[] = $this->createTempLineItem($cartLineItem);
                 }
-                $lineItems[] = $this->createTempLineItem($cartLineItem);
             }
 
             $currency = $salesChannelContext->getCurrency()->getIsoCode();

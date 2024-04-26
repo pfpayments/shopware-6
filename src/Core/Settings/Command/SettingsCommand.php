@@ -4,7 +4,6 @@ namespace PostFinanceCheckoutPayment\Core\Settings\Command;
 
 use Symfony\Component\{
 	Console\Command\Command,
-    Console\Attribute\AsCommand,
 	Console\Input\InputInterface,
 	Console\Input\InputOption,
 	Console\Output\OutputInterface};
@@ -17,8 +16,12 @@ use PostFinanceCheckoutPayment\Core\{
  * @internal
  * @package PostFinanceCheckoutPayment\Core\Settings\Command
  */
-#[AsCommand(name: 'postfinancecheckout:settings:install')]
 class SettingsCommand extends Command {
+
+	/**
+	 * @var string
+	 */
+	protected static $defaultName = 'postfinancecheckout:settings:install';
 
 	/**
 	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
@@ -31,7 +34,7 @@ class SettingsCommand extends Command {
 	 */
 	public function __construct(SettingsService $settingsService)
 	{
-		parent::__construct();
+		parent::__construct(self::$defaultName);
 		$this->settingsService = $settingsService;
 	}
 

@@ -1,3 +1,6 @@
+# 6.1.2
+- Fixed redirect to confirmation page after reload
+
 # 6.1.1
 - Fixed deprecated OrderNotFoundException
 

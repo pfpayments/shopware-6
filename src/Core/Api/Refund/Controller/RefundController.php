@@ -4,7 +4,7 @@ namespace PostFinanceCheckoutPayment\Core\Api\Refund\Controller;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\Log\Package;
+use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\{
 	HttpFoundation\Request,
@@ -20,9 +20,8 @@ use PostFinanceCheckoutPayment\Core\{
  *
  * @package PostFinanceCheckoutPayment\Core\Api\Refund\Controller
  *
+ * @Route(defaults={"_routeScope"={"api"}})
  */
-#[Package('sales-channel')]
-#[Route(defaults: ['_routeScope' => ['api']])]
 class RefundController extends AbstractController {
 
 	/**
@@ -70,10 +69,12 @@ class RefundController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @Route(
+	 *     "/api/_action/postfinancecheckout/refund/create-refund/",
+	 *     name="api.action.postfinancecheckout.refund.create-refund",
+	 *     methods={"POST"}
+	 *     )
 	 */
-    #[Route("/api/_action/postfinancecheckout/refund/create-refund/",
-    	name: "api.action.postfinancecheckout.refund.create-refund",
-        methods: ['POST'])]
 	public function createRefund(Request $request, Context $context): Response
 	{
 		$salesChannelId   = $request->request->get('salesChannelId');
@@ -97,10 +98,12 @@ class RefundController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @Route(
+	 *     "/api/_action/postfinancecheckout/refund/create-refund-by-amount/",
+	 *     name="api.action.postfinancecheckout.refund.create.refund.by.amount",
+	 *     methods={"POST"}
+	 *     )
 	 */
-    #[Route("/api/_action/postfinancecheckout/refund/create-refund-by-amount/",
-    	name: "api.action.postfinancecheckout.refund.create.refund.by.amount",
-        methods: ['POST'])]
 	public function createRefundByAmount(Request $request, Context $context): Response
 	{
 		$salesChannelId   = $request->request->get('salesChannelId');

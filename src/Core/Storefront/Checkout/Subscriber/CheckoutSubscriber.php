@@ -165,7 +165,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
                 $this->removePostFinanceCheckoutPaymentMethodFromConfirmPage($event);
             }
 
-            $createdTransactionId = $this->transactionService->createPendingTransaction($event);
+            $createdTransactionId = $this->transactionService->createPendingTransaction($salesChannelContext, $event);
             $this->updateTempTransactionIfNeeded($salesChannelContext, $createdTransactionId);
 
             $this->getAvailablePaymentMethods($settings, $createdTransactionId);

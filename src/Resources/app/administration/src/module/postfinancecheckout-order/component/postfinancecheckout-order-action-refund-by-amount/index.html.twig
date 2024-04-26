@@ -7,7 +7,7 @@
 		<sw-number-field v-model="refundAmount"
 		 :max="refundableAmount"
 		 :min="0"
-		 v-model:value="refundAmount"
+		 :value="refundableAmount"
 		 :label="$tc('postfinancecheckout-order.refund.refundAmount.label')"
 		 :suffix="currency">
 		</sw-number-field>

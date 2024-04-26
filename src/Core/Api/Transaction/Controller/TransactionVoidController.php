@@ -3,7 +3,7 @@
 namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Controller;
 
 use Psr\Log\LoggerInterface;
-use Shopware\Core\Framework\Log\Package;
+use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\{
 	HttpFoundation\JsonResponse,
@@ -19,9 +19,8 @@ use PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService;
  *
  * @package PostFinanceCheckoutPayment\Core\Api\Transaction\Controller
  *
+ * @Route(defaults={"_routeScope"={"api"}})
  */
-#[Package('sales-channel')]
-#[Route(defaults: ['_routeScope' => ['api']])]
 class TransactionVoidController extends AbstractController {
 
 	/**
@@ -62,10 +61,12 @@ class TransactionVoidController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
+	 * @Route(
+	 *     "/api/_action/postfinancecheckout/transaction-void/create-transaction-void/",
+	 *     name="api.action.postfinancecheckout.transaction-void.create-transaction-void",
+	 *     methods={"POST"}
+	 *     )
 	 */
-    #[Route("/api/_action/postfinancecheckout/transaction-void/create-transaction-void/",
-    	name: "api.action.postfinancecheckout.transaction-void.create-transaction-void",
-        methods: ['POST'])]
 	public function createTransactionVoid(Request $request): JsonResponse
 	{
 		$salesChannelId = $request->request->get('salesChannelId');

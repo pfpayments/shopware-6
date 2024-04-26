@@ -7,7 +7,7 @@ use Doctrine\DBAL\{
 	TransactionIsolationLevel};
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
-	Checkout\Cart\CartException,
+	Checkout\Cart\Exception\OrderNotFoundException,
 	Checkout\Order\Aggregate\OrderDelivery\OrderDeliveryEntity,
 	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity,
 	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler,
@@ -22,9 +22,7 @@ use Shopware\Core\{
 	System\StateMachine\Exception\IllegalTransitionException};
 use Shopware\Core\Checkout\Order\OrderStates;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Shopware\Core\Framework\Log\Package;
-use Symfony\Component\{
-    HttpFoundation\JsonResponse,
+use Symfony\Component\{HttpFoundation\JsonResponse,
 	HttpFoundation\ParameterBag,
 	HttpFoundation\Request,
 	HttpFoundation\Response,
@@ -50,9 +48,8 @@ use PostFinanceCheckoutPayment\Core\{
  *
  * @package PostFinanceCheckoutPayment\Core\Api\WebHooks\Controller
  *
+ * @Route(defaults={"_routeScope"={"api"}})
  */
-#[Package('sales-channel')]
-#[Route(defaults: ['_routeScope' => ['api']])]
 class WebHookController extends AbstractController {
 
 	/**
@@ -136,7 +133,7 @@ class WebHookController extends AbstractController {
 	 * @var \Shopware\Core\Checkout\Order\SalesChannel\OrderService
 	 */
 	private $orderService;
-
+	
 	const LINE_ITEM_TYPE_FEE = 'FEE';
 
 	/**
@@ -192,19 +189,14 @@ class WebHookController extends AbstractController {
 	 * @param string                                    $salesChannelId
 	 *
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse|\Symfony\Component\HttpFoundation\Response
+	 * @Route(
+	 *     "/api/_action/postfinancecheckout/webHook/callback/{salesChannelId}",
+	 *     name="api.action.postfinancecheckout.webhook.update",
+	 *     options={"seo": "false"},
+	 *     defaults={"csrf_protected"=false, "XmlHttpRequest"=true, "auth_required"=false},
+	 *     methods={"POST"}
+	 * )
 	 */
-    #[Route(
-        path: "/api/_action/postfinancecheckout/webHook/callback/{salesChannelId}",
-        name: "api.action.postfinancecheckout.webhook.update",
-        options: ["seo" => false],
-        defaults: [
-            "csrf_protected" => false,
-            "XmlHttpRequest" => true,
-            "auth_required" => false,
-        ],
-        methods: ["POST"],
-    )]
-
 	public function callback(Request $request, Context $context, string $salesChannelId): Response
 	{
 		$status       = Response::HTTP_UNPROCESSABLE_ENTITY;
@@ -283,7 +275,7 @@ class WebHookController extends AbstractController {
 					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
 					if (
 						in_array(
-							$orderTransaction->getStateMachineState()?->getTechnicalName(),
+							$orderTransaction->getStateMachineState()->getTechnicalName(),
 							[
 								OrderTransactionStates::STATE_PAID,
 								OrderTransactionStates::STATE_PARTIALLY_PAID,
@@ -298,7 +290,7 @@ class WebHookController extends AbstractController {
 								$this->orderTransactionStateHandler->refundPartially($orderTransactionId, $context);
 							}
 						}
-					} elseif ($orderTransaction->getStateMachineState()?->getTechnicalName()
+					} elseif ($orderTransaction->getStateMachineState()->getTechnicalName()
 						=== OrderTransactionStates::STATE_PARTIALLY_REFUNDED &&
 						($refund->getState() == RefundState::SUCCESSFUL)
 					) {
@@ -313,7 +305,7 @@ class WebHookController extends AbstractController {
 			}
 
 			$status = Response::HTTP_OK;
-		} catch (CartException $exception) {
+		} catch (OrderNotFoundException $exception) {
 			$status = Response::HTTP_OK;
 			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		} catch (IllegalTransitionException $exception) {
@@ -364,7 +356,7 @@ class WebHookController extends AbstractController {
 			$order = $this->container->get('order.repository')->search(new Criteria([$orderId]), $context)->first();
 
 			if(empty($order)){
-				throw CartException::orderNotFound($orderId);
+				throw new OrderNotFoundException($orderId);
 			}
 
 			$this->container->get('order.repository')->upsert([$data], $context);
@@ -412,10 +404,10 @@ class WebHookController extends AbstractController {
 					$context
 				)->first();
 				if (is_null($this->orderEntity)) {
-					throw CartException::orderNotFound($orderId);
+					throw new OrderNotFoundException($orderId);
 				}
 			} catch (\Exception $e) {
-				throw CartException::orderNotFound($orderId);
+				throw new OrderNotFoundException($orderId);
 			}
 		}
 
@@ -448,10 +440,10 @@ class WebHookController extends AbstractController {
 					$this->transactionService->upsert($transaction, $context);
 					$orderTransactionId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
 					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
-					$this->logger->info("OrderId: {$orderId} Current state: {$orderTransaction->getStateMachineState()?->getTechnicalName()}");
+					$this->logger->info("OrderId: {$orderId} Current state: {$orderTransaction->getStateMachineState()->getTechnicalName()}");
 
 					if (!in_array(
-						$orderTransaction->getStateMachineState()?->getTechnicalName(),
+						$orderTransaction->getStateMachineState()->getTechnicalName(),
 						$this->transactionFinalStates
 					)) {
 						switch ($transaction->getState()) {
@@ -479,7 +471,7 @@ class WebHookController extends AbstractController {
 				});
 			}
 			$status = Response::HTTP_OK;
-		} catch (CartException $exception) {
+		} catch (OrderNotFoundException $exception) {
 			$status = Response::HTTP_OK;
 			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		} catch (IllegalTransitionException $exception) {
@@ -538,7 +530,7 @@ class WebHookController extends AbstractController {
 					$this->updatePriceIfAdditionalItemsExist($transactionInvoice, $orderTransaction, $context);
 
 					if (!in_array(
-						$orderTransaction->getStateMachineState()?->getTechnicalName(),
+						$orderTransaction->getStateMachineState()->getTechnicalName(),
 						$this->transactionFinalStates
 					)) {
 						switch ($transactionInvoice->getState()) {
@@ -557,7 +549,7 @@ class WebHookController extends AbstractController {
 				});
 			}
 			$status = Response::HTTP_OK;
-		} catch (CartException $exception) {
+		} catch (OrderNotFoundException $exception) {
 			$status = Response::HTTP_OK;
 			$this->logger->info(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
 		} catch (IllegalTransitionException $exception) {
@@ -569,7 +561,7 @@ class WebHookController extends AbstractController {
 
 		return new JsonResponse(['data' => $callBackData->jsonSerialize()], $status);
 	}
-
+	
 	/**
 	 * Updates order table field price only if there are additional items added from portal side
 	 *
@@ -609,7 +601,7 @@ class WebHookController extends AbstractController {
 			 * @var OrderDeliveryEntity $orderDelivery
 			 */
 			$orderDelivery = $order->getDeliveries()->last();
-			if ($orderDelivery->getStateMachineState()?->getTechnicalName() !== OrderDeliveryStateHandler::STATE_HOLD){
+			if ($orderDelivery->getStateMachineState()->getTechnicalName() !== OrderDeliveryStateHandler::STATE_HOLD){
 				return;
 			}
 			$orderDeliveryStateHandler = $this->container->get(OrderDeliveryStateHandler::class);
@@ -648,7 +640,7 @@ class WebHookController extends AbstractController {
 			 * @var OrderDeliveryEntity $orderDelivery
 			 */
 			$orderDelivery = $order->getDeliveries()->last();
-			if ($orderDelivery->getStateMachineState()?->getTechnicalName() !== OrderDeliveryStateHandler::STATE_HOLD){
+			if ($orderDelivery->getStateMachineState()->getTechnicalName() !== OrderDeliveryStateHandler::STATE_HOLD){
 				return;
 			}
 			$orderDeliveryId = $orderDelivery->getId();
