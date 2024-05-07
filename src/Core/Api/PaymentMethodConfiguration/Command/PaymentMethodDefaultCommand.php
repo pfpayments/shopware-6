@@ -6,6 +6,7 @@ namespace PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Command
 use Shopware\Core\Framework\Context;
 use Symfony\Component\{
 	Console\Command\Command,
+    Console\Attribute\AsCommand,
 	Console\Input\InputInterface,
 	Console\Output\OutputInterface};
 use PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil;
@@ -15,12 +16,8 @@ use PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil;
  *
  * @package PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Command
  */
+#[AsCommand(name: 'postfinancecheckout:payment-method:default')]
 class PaymentMethodDefaultCommand extends Command {
-
-	/**
-	 * @var string
-	 */
-	protected static $defaultName = 'postfinancecheckout:payment-method:default';
 
 	/**
 	 * @var \PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil
@@ -34,7 +31,7 @@ class PaymentMethodDefaultCommand extends Command {
 	 */
 	public function __construct(PaymentMethodUtil $paymentMethodUtil)
 	{
-		parent::__construct(self::$defaultName);
+		parent::__construct();
 		$this->paymentMethodUtil = $paymentMethodUtil;
 	}
 

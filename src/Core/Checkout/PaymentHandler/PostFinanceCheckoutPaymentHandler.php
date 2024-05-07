@@ -95,9 +95,10 @@ class PostFinanceCheckoutPaymentHandler implements AsynchronousPaymentHandlerInt
             return new RedirectResponse($redirectUrl);
 
         } catch (\Exception $e) {
+            unset($_SESSION['transactionId']);
             $errorMessage = 'An error occurred during the communication with external payment gateway : ' . $e->getMessage();
             $this->logger->critical($errorMessage);
-            throw new AsyncPaymentProcessException($transaction->getOrderTransaction()->getId(), $errorMessage);
+            throw new \Exception($transaction->getOrderTransaction()->getId() . ': ' . $errorMessage);
         }
     }
 
@@ -137,8 +138,9 @@ class PostFinanceCheckoutPaymentHandler implements AsynchronousPaymentHandlerInt
                     ':orderId' => $transaction->getOrder()->getId(),
                     ':salesChannelName' => $salesChannelContext->getSalesChannel()->getName(),
                 ]);
+                unset($_SESSION['transactionId']);
                 $this->logger->info($errorMessage);
-                throw new CustomerCanceledAsyncPaymentException($transaction->getOrder()->getId());
+                throw new \Exception($transaction->getOrder()->getId());
             }
         } else {
             $this->orderTransactionStateHandler->paid($transaction->getOrderTransaction()->getId(), $salesChannelContext->getContext());

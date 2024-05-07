@@ -6,6 +6,7 @@ namespace PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Command;
 use Shopware\Core\Framework\Context;
 use Symfony\Component\{
 	Console\Command\Command,
+    Console\Attribute\AsCommand,
 	Console\Input\InputInterface,
 	Console\Output\OutputInterface};
 use PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService;
@@ -15,12 +16,8 @@ use PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Service\OrderDelivery
  *
  * @package PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Command
  */
+#[AsCommand(name: 'postfinancecheckout:order-delivery-states:install')]
 class OrderDeliveryStateCommand extends Command {
-
-	/**
-	 * @var string
-	 */
-	protected static $defaultName = 'postfinancecheckout:order-delivery-states:install';
 
 	/**
 	 * @var \PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService
@@ -34,7 +31,7 @@ class OrderDeliveryStateCommand extends Command {
 	 */
 	public function __construct(OrderDeliveryStateService $orderDeliveryStateService)
 	{
-		parent::__construct(self::$defaultName);
+		parent::__construct();
 		$this->orderDeliveryStateService = $orderDeliveryStateService;
 	}
 

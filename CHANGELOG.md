@@ -1,3 +1,7 @@
+# 6.1.3
+- Solvency check support for Powerpay and MF Group Invoice payment methods
+- Improved handling of abandoned transactions
+
 # 6.1.2
 - Fixed redirect to confirmation page after reload
 

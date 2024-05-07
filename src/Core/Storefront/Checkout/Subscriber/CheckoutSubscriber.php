@@ -242,9 +242,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
         $currencyCheck = $_SESSION['currencyCheck'] ?? null;
 
         $customer = $salesChannelContext->getCustomer();
-        $customerBillingAddress = $customer->getActiveBillingAddress();
-
-        $addressHash = md5(json_encode((array)$customerBillingAddress));
+        $addressHash = md5(json_encode((array)$customer));
         $currency = $salesChannelContext->getCurrency()->getIsoCode();
         if (($addressCheck && $currencyCheck) && $addressCheck !== $addressHash || $currencyCheck !== $currency) {
             if ($createdTransactionId) {

@@ -4,34 +4,37 @@ namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Service;
 
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Shopware\Core\{Checkout\Cart\Exception\OrderNotFoundException,
+use Shopware\Core\{
+    Checkout\Cart\CartException,
     Checkout\Cart\LineItem\LineItem,
     Checkout\Order\OrderEntity,
     Checkout\Payment\Cart\AsyncPaymentTransactionStruct,
     Framework\Context,
     Framework\DataAbstractionLayer\Search\Criteria,
     Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
-    System\SalesChannel\SalesChannelContext,
-    Checkout\Payment\Exception\CustomerCanceledAsyncPaymentException,
+    System\SalesChannel\SalesChannelContext
 };
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use PostFinanceCheckout\Sdk\{Model\AddressCreate,
+use PostFinanceCheckout\Sdk\{
+    Model\AddressCreate,
     Model\ChargeAttempt,
     Model\CreationEntityState,
     Model\CriteriaOperator,
     Model\EntityQuery,
     Model\EntityQueryFilter,
     Model\EntityQueryFilterType,
+    Model\Gender,
     Model\LineItemAttributeCreate,
     Model\LineItemCreate,
     Model\LineItemType,
     Model\Transaction,
     Model\TransactionCreate,
     Model\TransactionPending,
-    Model\TransactionState
+    Model\TransactionState,
 };
-use PostFinanceCheckoutPayment\Core\{Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
+use PostFinanceCheckoutPayment\Core\{
+    Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
     Api\Refund\Entity\RefundEntityCollection,
     Api\Refund\Entity\RefundEntityDefinition,
     Api\Transaction\Entity\TransactionEntity,
@@ -136,12 +139,9 @@ class TransactionService
         ];
         $pendingTransaction = $this->read($_SESSION['transactionId'], $salesChannelId);
         if (in_array($pendingTransaction->getState(), $failedStates)) {
-            $errorMessage = strtr('Customer canceled payment for :orderId on SalesChannel :salesChannelName', [
-                ':orderId'          => $transaction->getOrder()->getId(),
-                ':salesChannelName' => $salesChannelContext->getSalesChannel()->getName(),
-            ]);
-            $this->logger->info($errorMessage);
-            throw new CustomerCanceledAsyncPaymentException($transaction->getOrder()->getId());
+            unset($_SESSION['transactionId']);
+            $pendingTransactionId = $this->createPendingTransaction($salesChannelContext);
+            $pendingTransaction = $this->read($pendingTransactionId, $salesChannelId);
         }
 
         $transactionPayloadClass = (new TransactionPayload(
@@ -353,11 +353,11 @@ class TransactionService
                 $context
             )->first();
             if (is_null($order)) {
-                throw new OrderNotFoundException($orderId);
+                throw CartException::orderNotFound($orderId);
             }
             return $order;
         } catch (\Exception $e) {
-            throw new OrderNotFoundException($orderId);
+            throw CartException::orderNotFound($orderId);
         }
 
     }
@@ -503,20 +503,68 @@ class TransactionService
 
         if (!$transactionId || $expiredTransaction) {
             $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
-            $customerBillingAddress = $salesChannelContext->getCustomer()->getActiveBillingAddress();
+
+            $customer = $salesChannelContext->getCustomer();
+            $customerBillingAddress = $customer->getActiveBillingAddress();
 
             $billingAddress = new AddressCreate();
-            $billingAddress->setStreet($customerBillingAddress->getStreet());
-            $billingAddress->setCity($customerBillingAddress->getCity());
-            $billingAddress->setCountry($customerBillingAddress->getCountry()->getIso());
-            $billingAddress->setPostCode($customerBillingAddress->getZipcode());
 
+            $customerAddressEntity = $customer->getActiveBillingAddress();
+
+            $familyName = "";
+            if (!empty($customerAddressEntity->getLastName())) {
+                $familyName = $customerAddressEntity->getLastName();
+            } else {
+                if (!empty($customer->getLastName())) {
+                    $familyName = $customer->getLastName();
+                }
+            }
+            $billingAddress->setFamilyName($familyName);
+
+            $givenName = "";
+            if (!empty($customerAddressEntity->getFirstName())) {
+                $givenName = $customerAddressEntity->getFirstName();
+            } else {
+                if (!empty($customer->getFirstName())) {
+                    $givenName = $customer->getFirstName();
+                }
+            }
+            $billingAddress->setGivenName($givenName);
+            $billingAddress->setOrganizationName($customerBillingAddress->getCompany());
+            $billingAddress->setPhoneNumber($customerAddressEntity->getPhoneNumber());
+            $billingAddress->setCountry($customerBillingAddress->getCountry()->getIso());
             $postalState = $customerBillingAddress?->getCountryState()?->getName() ?? '';
             if (empty($postalState)) {
                 $postalState = $customerBillingAddress?->getCountryState()?->getShortCode() ?? '';
             }
             $billingAddress->setPostalState($postalState);
-            $billingAddress->setOrganizationName($customerBillingAddress->getCompany());
+            $billingAddress->setPostCode($customerBillingAddress->getZipcode());
+            $billingAddress->setStreet($customerBillingAddress->getStreet());
+            $billingAddress->setEmailAddress($customer->getEmail());
+
+
+            if (!empty($customer->getBirthday())) {
+                $birthday = new \DateTime();
+                $birthday->setTimestamp($customer->getBirthday()->getTimestamp());
+                $birthday = $birthday->format('Y-m-d');
+                $billingAddress->setDateOfBirth($birthday);
+            }
+
+            $salutation = "";
+            if (!(
+                empty($customerAddressEntity->getSalutation()) ||
+                empty($customerAddressEntity->getSalutation()->getDisplayName())
+            )) {
+                $salutation = $customerAddressEntity->getSalutation()->getDisplayName();
+            } else {
+                if (!empty($customer->getSalutation())) {
+                    $salutation = $customer->getSalutation()->getDisplayName();
+
+                }
+            }
+
+            $billingAddress->setGender(strtolower($customerAddressEntity->getSalutation()->getSalutationKey()) === 'mr' ? Gender::MALE : Gender::FEMALE);
+            $billingAddress->setSalutation($salutation);
 
             $lineItems = [];
             if ($event) {
@@ -529,6 +577,13 @@ class TransactionService
                 }
             }
 
+            $customerId = "";
+            if ($customer->getGuest() === false) {
+                $customerId = $customer->getCustomerNumber();
+            }
+
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+            $homeUrl = $protocol . $_SERVER['HTTP_HOST'];
             $currency = $salesChannelContext->getCurrency()->getIsoCode();
             $transactionPayload = (new TransactionCreate())
                 ->setBillingAddress($billingAddress)
@@ -536,7 +591,11 @@ class TransactionService
                 ->setCurrency($currency)
                 ->setSpaceViewId($settings->getSpaceViewId())
                 ->setAutoConfirmationEnabled(false)
-                ->setChargeRetryEnabled(false);
+                ->setChargeRetryEnabled(false)
+                ->setCustomerEmailAddress($customer->getEmail())
+                ->setCustomerId($customerId)
+                ->setSuccessUrl($homeUrl . '?success')
+                ->setFailedUrl($homeUrl . '?fail');
 
             $transactionService = $settings->getApiClient()->getTransactionService();
             $transaction = $transactionService->create($settings->getSpaceId(), $transactionPayload);
