@@ -56,7 +56,7 @@ class SettingsCommand extends Command {
 			SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED  => $input->getOption(SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED),
 			SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED  => $input->getOption(SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED),
 		]);
-		return 0;
+		return Command::SUCCESS;
 	}
 
 	/**
@@ -103,7 +103,7 @@ class SettingsCommand extends Command {
 				 SettingsService::CONFIG_IS_SHOWCASE,
 				 InputOption::VALUE_OPTIONAL,
 				 SettingsService::CONFIG_IS_SHOWCASE,
-				 true
+				 false
 			 )
 			 ->addOption(
 				 SettingsService::CONFIG_LINE_ITEM_CONSISTENCY_ENABLED,

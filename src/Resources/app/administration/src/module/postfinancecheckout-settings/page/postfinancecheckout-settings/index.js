@@ -81,7 +81,6 @@ Component.register('postfinancecheckout-settings', {
             handler() {
                 const defaultConfig = this.$refs.configComponent.allConfigs.null;
                 const salesChannelId = this.$refs.configComponent.selectedSalesChannelId;
-                this.isShowcase = this.config[this.CONFIG_IS_SHOWCASE];
                 if (salesChannelId === null) {
 
                     this.applicationKeyFilled = !!this.config[this.CONFIG_APPLICATION_KEY];
@@ -110,6 +109,10 @@ Component.register('postfinancecheckout-settings', {
 
                     if (!(this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED in this.config)) {
                         this.config[this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED] = this.configStorefrontPaymentsUpdateEnabledDefaultValue;
+                    }
+
+                    if (!(this.CONFIG_IS_SHOWCASE in this.config)) {
+                        this.config[this.CONFIG_IS_SHOWCASE] = this.isShowcase;
                     }
 
                 } else {
@@ -141,6 +144,10 @@ Component.register('postfinancecheckout-settings', {
 
                     if (!(this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED in this.config) || !(this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED in defaultConfig)) {
                         this.config[this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED] = this.configStorefrontPaymentsUpdateEnabledDefaultValue;
+                    }
+
+                    if (!(this.CONFIG_IS_SHOWCASE in this.config) || !(this.CONFIG_IS_SHOWCASE in defaultConfig)) {
+                        this.config[this.CONFIG_IS_SHOWCASE] = this.isShowcase;
                     }
                 }
             },

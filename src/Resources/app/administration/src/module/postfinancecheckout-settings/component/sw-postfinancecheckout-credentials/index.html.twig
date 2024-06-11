@@ -1,8 +1,8 @@
 {% block postfinancecheckout_settings_content_card_channel_config_credentials %}
 	<sw-card
 			class="sw-card"
-			 :title="$tc('postfinancecheckout-settings.settingForm.credentials.cardTitle')"
-			v-if="!isShowcase"
+			:title="$tc('postfinancecheckout-settings.settingForm.credentials.cardTitle')"
+			v-if="actualConfigData[CONFIG_IS_SHOWCASE] === 'false'"
 	>
 
 		{% block postfinancecheckout_settings_content_card_channel_config_credentials_card_container %}
