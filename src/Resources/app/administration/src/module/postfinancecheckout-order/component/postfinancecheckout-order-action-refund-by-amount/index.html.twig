@@ -4,7 +4,7 @@
 		  @modal-close="$emit('modal-close')">
 
 	{% block postfinancecheckout_order_action_refund_amount_by_amount %}
-		<sw-number-field v-model="refundAmount"
+		<sw-number-field
 		 :max="refundableAmount"
 		 :min="0"
 		 v-model:value="refundAmount"

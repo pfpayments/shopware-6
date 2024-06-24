@@ -9,7 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\{
 	HttpFoundation\Request,
 	HttpFoundation\Response,
-	Routing\Annotation\Route,};
+	Routing\Attribute\Route,};
 use PostFinanceCheckoutPayment\Core\{
 	Api\Refund\Service\RefundService,
 	Settings\Service\SettingsService};

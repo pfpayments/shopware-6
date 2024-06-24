@@ -28,7 +28,7 @@ use Symfony\Component\{
 	HttpFoundation\ParameterBag,
 	HttpFoundation\Request,
 	HttpFoundation\Response,
-	Routing\Annotation\Route};
+	Routing\Attribute\Route};
 use PostFinanceCheckout\Sdk\{
 	Model\RefundState,
 	Model\Transaction,

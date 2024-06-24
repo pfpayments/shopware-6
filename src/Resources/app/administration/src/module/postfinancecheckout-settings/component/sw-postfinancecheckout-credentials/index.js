@@ -10,6 +10,10 @@ Component.register('sw-postfinancecheckout-credentials', {
 
     name: 'PostFinanceCheckoutCredentials',
 
+    inject: [
+        'acl'
+    ],
+
     mixins: [
         Mixin.getByName('notification')
     ],
@@ -55,10 +59,6 @@ Component.register('sw-postfinancecheckout-credentials', {
         isTesting: {
             type: Boolean,
             required: false
-        },
-        isShowcase: {
-            type: Boolean,
-            required: true
         }
     },
 
@@ -67,8 +67,6 @@ Component.register('sw-postfinancecheckout-credentials', {
             ...constants
         };
     },
-
-    computed: {},
 
     methods: {
 

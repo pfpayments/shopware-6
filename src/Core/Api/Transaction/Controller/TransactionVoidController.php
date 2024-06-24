@@ -9,7 +9,7 @@ use Symfony\Component\{
 	HttpFoundation\JsonResponse,
 	HttpFoundation\Request,
 	HttpFoundation\Response,
-	Routing\Annotation\Route};
+	Routing\Attribute\Route};
 use PostFinanceCheckout\Sdk\{
 	Model\TransactionState};
 use PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService;

@@ -20,7 +20,9 @@
 		"button": {
 		  "description": "Cliquez sur ce bouton pour définir PostFinanceCheckout comme gestionnaire de paiement par défaut dans le canal de vente sélectionné.",
 		  "label": "Définir PostFinanceCheckout comme gestionnaire de paiement par défaut"
-		}
+		},
+		"messageDefaultPaymentError": "PostFinanceCheckout comme paiement par défaut n'a pas pu être défini.",
+		"messageDefaultPaymentUpdated": "PostFinanceCheckout comme paiement par défaut a été défini."
 	  },
 	  "settingForm": {
 		"credentials": {

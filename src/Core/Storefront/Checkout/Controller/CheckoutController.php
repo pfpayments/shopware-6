@@ -31,7 +31,7 @@ use Shopware\Storefront\{
 use Symfony\Component\{
 	HttpFoundation\Request,
 	HttpFoundation\Response,
-	Routing\Annotation\Route,
+	Routing\Attribute\Route,
 	Routing\Generator\UrlGeneratorInterface
 };
 use PostFinanceCheckout\Sdk\{

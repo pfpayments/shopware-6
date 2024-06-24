@@ -1,3 +1,6 @@
+# 6.1.5
+- Support for Shopware 6.6.3.1 and Vue 3
+
 # 6.1.4
 - Improved plugin's settings form
 - Support for Shopware 6.6.2.0

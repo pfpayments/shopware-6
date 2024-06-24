@@ -10,6 +10,12 @@
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
 			<tag name="console.command"/>
 		</service>
+		<service id="PostFinanceCheckoutPayment\Core\Settings\Command\CreateMerchantCommand">
+			<argument type="service" id="user.repository"/>
+			<argument type="service" id="acl_role.repository"/>
+			<argument type="service" id="locale.repository"/>
+			<tag name="console.command"/>
+		</service>
 
 		<!-- Services -->
 		<service id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService">

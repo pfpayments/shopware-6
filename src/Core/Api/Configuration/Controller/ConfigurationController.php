@@ -5,13 +5,13 @@ namespace PostFinanceCheckoutPayment\Core\Api\Configuration\Controller;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
 	Framework\Context,
-    Framework\Log\Package,};
+    Framework\Log\Package};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\{
 	HttpFoundation\JsonResponse,
 	HttpFoundation\Request,
 	HttpFoundation\Response,
-	Routing\Annotation\Route};
+	Routing\Attribute\Route};
 use PostFinanceCheckoutPayment\Core\{
 	Api\OrderDeliveryState\Service\OrderDeliveryStateService,
 	Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService,

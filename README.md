@@ -71,7 +71,7 @@ tail -f var/log/postfinancecheckout_payment*.log
 
 ## Documentation
 
-[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.4/docs/en/documentation.html)
+[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.5/docs/en/documentation.html)
 
 ## License
 

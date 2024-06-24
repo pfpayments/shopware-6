@@ -12,7 +12,7 @@ use Symfony\Component\{
 	HttpFoundation\JsonResponse,
 	HttpFoundation\Request,
 	HttpFoundation\Response,
-	Routing\Annotation\Route};
+	Routing\Attribute\Route};
 use PostFinanceCheckoutPayment\{
 	Core\Api\Transaction\Service\TransactionService,
 	Core\Settings\Service\SettingsService};
