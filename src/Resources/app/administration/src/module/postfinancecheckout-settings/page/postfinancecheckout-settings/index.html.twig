@@ -15,7 +15,7 @@
 	<template #smart-bar-actions>
 		{% block postfinancecheckout_settings_actions_save %}
 		<sw-button-process
-				v-model:value="isSaveSuccessful"
+				v-model="isSaveSuccessful"
 				class="sw-settings-login-registration__save-action"
 				variant="primary"
 				:isLoading="isLoading"
@@ -34,7 +34,7 @@
 		<sw-card-view>
 
 			{% block postfinancecheckout_settings_content_card_channel_config %}
-			<sw-sales-channel-config v-model:value="config"
+			<sw-sales-channel-config v-model="config"
 									 ref="configComponent"
 									 :domain="CONFIG_DOMAIN">
 
@@ -46,13 +46,12 @@
 
 						{% block postfinancecheckout_settings_content_card_channel_config_sales_channel_card_title %}
 						<sw-single-select
-								v-model:value="selectedSalesChannelId"
+								v-model="selectedSalesChannelId"
 								labelProperty="translated.name"
 								valueProperty="id"
-								:mapInheritance="props"
-								:isLoading="isLoading"
 								:options="salesChannel"
-								@update:value="onInput">
+								:disabled="isShowcase"
+								@change="onInput">
 						</sw-single-select>
 						{% endblock %}
 						{% block postfinancecheckout_settings_content_card_channel_config_sales_channel_card_footer %}
@@ -67,7 +66,7 @@
 
 								{% block postfinancecheckout_settings_content_card_channel_config_sales_channel_card_footer_container_button %}
 								<sw-button-process
-										v-model:value="isSetDefaultPaymentSuccessful"
+										v-model="isSetDefaultPaymentSuccessful"
 										:isLoading="isSettingDefaultPaymentMethods"
 										@click="onSetPaymentMethodDefault">
 									{{ $tc('postfinancecheckout-settings.salesChannelCard.button.label') }}
@@ -98,6 +97,7 @@
 								:applicationKeyFilled="applicationKeyFilled"
 								:isLoading="isLoading"
 								:isTesting="isTesting"
+								:isShowcase="isShowcase"
 								@check-api-connection-event="onCheckApiConnection"
 						></sw-postfinancecheckout-credentials>
 

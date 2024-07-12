@@ -10,13 +10,11 @@ Component.register('postfinancecheckout-settings', {
     template: template,
 
     inject: [
-        'acl',
         'PostFinanceCheckoutConfigurationService'
     ],
 
     mixins: [
-        Mixin.getByName('notification'),
-        Mixin.getByName('sw-inline-snippet')
+        Mixin.getByName('notification')
     ],
 
     data() {
@@ -28,6 +26,7 @@ Component.register('postfinancecheckout-settings', {
             isTesting: false,
 
             isSaveSuccessful: false,
+            isShowcase: false,
 
             applicationKeyFilled: false,
             applicationKeyErrorState: false,
@@ -79,9 +78,10 @@ Component.register('postfinancecheckout-settings', {
 
     watch: {
         config: {
-            handler(configData) {
+            handler() {
                 const defaultConfig = this.$refs.configComponent.allConfigs.null;
                 const salesChannelId = this.$refs.configComponent.selectedSalesChannelId;
+                this.isShowcase = this.config[this.CONFIG_IS_SHOWCASE];
                 if (salesChannelId === null) {
 
                     this.applicationKeyFilled = !!this.config[this.CONFIG_APPLICATION_KEY];
@@ -143,42 +143,12 @@ Component.register('postfinancecheckout-settings', {
                         this.config[this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED] = this.configStorefrontPaymentsUpdateEnabledDefaultValue;
                     }
                 }
-
-                this.$emit('salesChannelChanged');
-                this.$emit('update:value', configData);
             },
             deep: true
         }
     },
 
     methods: {
-        checkTextFieldInheritance(value) {
-            if (typeof value !== 'string') {
-                return true;
-            }
-
-            return value.length <= 0;
-        },
-
-        checkNumberFieldInheritance(value) {
-            if (typeof value !== 'number') {
-                return true;
-            }
-
-            return value.length <= 0;
-        },
-
-        checkBoolFieldInheritance(value) {
-            return typeof value !== 'boolean';
-        },
-
-        getInheritValue(key) {
-            if (this.selectedSalesChannelId == null ) {
-                return this.actualConfigData[key];
-            } else {
-                return this.allConfigs['null'][key];
-            }
-        },
 
         onSave() {
             if (!(this.spaceIdFilled && this.userIdFilled && this.applicationKeyFilled)) {
@@ -198,8 +168,7 @@ Component.register('postfinancecheckout-settings', {
                 this.registerWebHooks();
                 this.synchronizePaymentMethodConfiguration();
                 this.installOrderDeliveryStates();
-            }).catch((e) => {
-                console.error('Error:', e);
+            }).catch(() => {
                 this.isLoading = false;
             });
         },
@@ -215,13 +184,12 @@ Component.register('postfinancecheckout-settings', {
                         title: this.$tc('postfinancecheckout-settings.settingForm.titleSuccess'),
                         message: this.$tc('postfinancecheckout-settings.settingForm.messageWebHookUpdated')
                     });
-                }).catch((e) => {
-                    this.createNotificationError({
-                        title: this.$tc('postfinancecheckout-settings.settingForm.titleError'),
-                        message: this.$tc('postfinancecheckout-settings.settingForm.messageWebHookError')
-                    });
-                    this.isLoading = false;
-                    console.error('Error:', e);
+                }).catch(() => {
+                this.createNotificationError({
+                    title: this.$tc('postfinancecheckout-settings.settingForm.titleError'),
+                    message: this.$tc('postfinancecheckout-settings.settingForm.messageWebHookError')
+                });
+                this.isLoading = false;
             });
         },
 
@@ -237,13 +205,12 @@ Component.register('postfinancecheckout-settings', {
                         message: this.$tc('postfinancecheckout-settings.settingForm.messagePaymentMethodConfigurationUpdated')
                     });
                     this.isLoading = false;
-                }).catch((e) => {
-                    this.createNotificationError({
-                        title: this.$tc('postfinancecheckout-settings.settingForm.titleError'),
-                        message: this.$tc('postfinancecheckout-settings.settingForm.messagePaymentMethodConfigurationError')
-                    });
-                    this.isLoading = false;
-                    console.error('Error:', e);
+                }).catch(() => {
+                this.createNotificationError({
+                    title: this.$tc('postfinancecheckout-settings.settingForm.titleError'),
+                    message: this.$tc('postfinancecheckout-settings.settingForm.messagePaymentMethodConfigurationError')
+                });
+                this.isLoading = false;
             });
         },
 
@@ -256,11 +223,11 @@ Component.register('postfinancecheckout-settings', {
                     });
                     this.isLoading = false;
                 }).catch(() => {
-                    this.createNotificationError({
-                        title: this.$tc('postfinancecheckout-settings.settingForm.titleError'),
-                        message: this.$tc('postfinancecheckout-settings.settingForm.messageOrderDeliveryStateError')
-                    });
-                    this.isLoading = false;
+                this.createNotificationError({
+                    title: this.$tc('postfinancecheckout-settings.settingForm.titleError'),
+                    message: this.$tc('postfinancecheckout-settings.settingForm.messageOrderDeliveryStateError')
+                });
+                this.isLoading = false;
             });
         },
 
@@ -271,10 +238,6 @@ Component.register('postfinancecheckout-settings', {
             ).then(() => {
                 this.isSettingDefaultPaymentMethods = false;
                 this.isSetDefaultPaymentSuccessful = true;
-                this.createNotificationSuccess({
-                    title: this.$tc('postfinancecheckout-settings.settingForm.titleSuccess'),
-                    message: this.$tc('postfinancecheckout-settings.salesChannelCard.messageDefaultPaymentUpdated')
-                });
             });
         },
 

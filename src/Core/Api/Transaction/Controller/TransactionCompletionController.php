@@ -3,13 +3,13 @@
 namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Controller;
 
 use Psr\Log\LoggerInterface;
-use Shopware\Core\Framework\Log\Package;
+use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\{
 	HttpFoundation\JsonResponse,
 	HttpFoundation\Request,
 	HttpFoundation\Response,
-	Routing\Attribute\Route};
+	Routing\Annotation\Route};
 use PostFinanceCheckout\Sdk\{
 	Model\TransactionState};
 use PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService;
@@ -20,9 +20,8 @@ use PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService;
  *
  * @package PostFinanceCheckoutPayment\Core\Api\Transaction\Controller
  *
+ * @Route(defaults={"_routeScope"={"api"}})
  */
-#[Package('sales-channel')]
-#[Route(defaults: ['_routeScope' => ['api']])]
 class TransactionCompletionController extends AbstractController {
 
 	/**
@@ -63,10 +62,12 @@ class TransactionCompletionController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
+	 * @Route(
+	 *     "/api/_action/postfinancecheckout/transaction-completion/create-transaction-completion/",
+	 *     name="api.action.postfinancecheckout.transaction-completion.create-transaction-completion",
+	 *     methods={"POST"}
+	 *     )
 	 */
-    #[Route("/api/_action/postfinancecheckout/transaction-completion/create-transaction-completion/",
-    	name: "api.action.postfinancecheckout.transaction-completion.create-transaction-completion",
-        methods: ['POST'])]
 	public function createTransactionCompletion(Request $request): JsonResponse
 	{
 		$salesChannelId = $request->request->get('salesChannelId');

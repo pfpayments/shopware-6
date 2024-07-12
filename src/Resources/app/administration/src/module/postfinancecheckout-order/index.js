@@ -15,8 +15,8 @@ Module.register('postfinancecheckout-order', {
 	name: 'PostFinanceCheckout',
 	title: 'postfinancecheckout-order.general.title',
 	description: 'postfinancecheckout-order.general.descriptionTextModule',
-	version: '1.0.1',
-	targetVersion: '1.0.1',
+	version: '1.0.0',
+	targetVersion: '1.0.0',
 	color: '#2b52ff',
 
 	snippets: {

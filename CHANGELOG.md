@@ -1,27 +1,17 @@
-# 6.1.5
-- Support for Shopware 6.6.3.1 and Vue 3
+# 5.0.11
+- Fixed plugin upgrade dependency error
 
-# 6.1.4
-- Improved plugin's settings form
-- Support for Shopware 6.6.2.0
-
-# 6.1.3
+# 5.0.10
 - Solvency check support for Powerpay and MF Group Invoice payment methods
 - Improved handling of abandoned transactions
 
-# 6.1.2
+# 5.0.9
 - Fixed redirect to confirmation page after reload
 
-# 6.1.1
-- Fixed deprecated OrderNotFoundException
-
-# 6.1.0
+# 5.0.8
 - Fixed checkout issues after deactivating/activating plugin
 - Fixed plugin uninstall action
 - Fixed invoice payment method email function when order is shipped
-
-# 6.0.0
-- Support for Shopware 6.6
 
 # 5.0.7
 - Fix for refunds when a discount code is used

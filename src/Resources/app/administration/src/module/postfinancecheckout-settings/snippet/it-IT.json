@@ -20,9 +20,7 @@
 	  "button": {
 		"description": "Fai clic su questo pulsante per impostare PostFinanceCheckout come gestore di pagamento predefinito nel SalesChannel selezionato",
 		"label": "Imposta PostFinanceCheckout come gestore di pagamento predefinito"
-	  },
-	  "messageDefaultPaymentError": "Non è stato possibile impostare PostFinanceCheckout come pagamento predefinito.",
-	  "messageDefaultPaymentUpdated": "PostFinanceCheckout come pagamento predefinito è stato impostato."
+	  }
 	},
 	"settingForm": {
 	  "credentials": {
