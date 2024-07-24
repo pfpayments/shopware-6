@@ -4,6 +4,7 @@ namespace PostFinanceCheckoutPayment\Core\Settings\Command;
 
 use Symfony\Component\{
 	Console\Command\Command,
+    Console\Attribute\AsCommand,
 	Console\Input\InputInterface,
 	Console\Input\InputOption,
 	Console\Output\OutputInterface};
@@ -16,12 +17,8 @@ use PostFinanceCheckoutPayment\Core\{
  * @internal
  * @package PostFinanceCheckoutPayment\Core\Settings\Command
  */
+#[AsCommand(name: 'postfinancecheckout:settings:install')]
 class SettingsCommand extends Command {
-
-	/**
-	 * @var string
-	 */
-	protected static $defaultName = 'postfinancecheckout:settings:install';
 
 	/**
 	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
@@ -34,7 +31,7 @@ class SettingsCommand extends Command {
 	 */
 	public function __construct(SettingsService $settingsService)
 	{
-		parent::__construct(self::$defaultName);
+		parent::__construct();
 		$this->settingsService = $settingsService;
 	}
 
@@ -50,7 +47,6 @@ class SettingsCommand extends Command {
 			SettingsService::CONFIG_APPLICATION_KEY                     => $input->getOption(SettingsService::CONFIG_APPLICATION_KEY),
 			SettingsService::CONFIG_EMAIL_ENABLED                       => $input->getOption(SettingsService::CONFIG_EMAIL_ENABLED),
 			SettingsService::CONFIG_INTEGRATION                         => $input->getOption(SettingsService::CONFIG_INTEGRATION),
-			SettingsService::CONFIG_IS_SHOWCASE                         => $input->getOption(SettingsService::CONFIG_IS_SHOWCASE),
 			SettingsService::CONFIG_LINE_ITEM_CONSISTENCY_ENABLED       => $input->getOption(SettingsService::CONFIG_LINE_ITEM_CONSISTENCY_ENABLED),
 			SettingsService::CONFIG_SPACE_ID                            => $input->getOption(SettingsService::CONFIG_SPACE_ID),
 			SettingsService::CONFIG_SPACE_VIEW_ID                       => $input->getOption(SettingsService::CONFIG_SPACE_VIEW_ID),
@@ -59,7 +55,7 @@ class SettingsCommand extends Command {
 			SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED  => $input->getOption(SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED),
 			SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED  => $input->getOption(SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED),
 		]);
-		return 0;
+		return Command::SUCCESS;
 	}
 
 	/**
@@ -100,13 +96,6 @@ class SettingsCommand extends Command {
 				 InputOption::VALUE_OPTIONAL,
 				 SettingsService::CONFIG_INTEGRATION,
 				 Integration::IFRAME
-			 )
-			 ->addOption(
-				 SettingsService::CONFIG_IS_SHOWCASE,
-				 SettingsService::CONFIG_IS_SHOWCASE,
-				 InputOption::VALUE_OPTIONAL,
-				 SettingsService::CONFIG_IS_SHOWCASE,
-				 true
 			 )
 			 ->addOption(
 				 SettingsService::CONFIG_LINE_ITEM_CONSISTENCY_ENABLED,

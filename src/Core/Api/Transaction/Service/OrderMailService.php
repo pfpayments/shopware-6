@@ -6,7 +6,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
 	Checkout\Cart\Event\CheckoutOrderPlacedEvent,
-	Checkout\Cart\Exception\OrderNotFoundException,
+	Checkout\Cart\CartException,
 	Checkout\Order\OrderEntity,
 	Content\MailTemplate\MailTemplateEntity,
 	Content\Mail\Service\AbstractMailService,
@@ -128,8 +128,8 @@ class OrderMailService {
 	protected function getTransactionEntityByOrderId(string $orderId, Context $context): TransactionEntity
 	{
 		return $this->container->get(TransactionEntityDefinition::ENTITY_NAME . '.repository')
-							   ->search(new Criteria([$orderId]), $context)
-							   ->get($orderId);
+				    ->search(new Criteria([$orderId]), $context)
+				    ->get($orderId);
 	}
 
 	/**
@@ -165,7 +165,7 @@ class OrderMailService {
 		/** @var OrderEntity|null $order */
 		$order = $this->container->get('order.repository')->search($orderCriteria, $context)->first();
 		if (is_null($order)) {
-			throw new OrderNotFoundException($orderId);
+			throw CartException::orderNotFound($orderId);
 		}
 		return $order;
 	}

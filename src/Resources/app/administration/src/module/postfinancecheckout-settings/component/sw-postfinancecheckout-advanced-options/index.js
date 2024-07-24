@@ -10,6 +10,10 @@ Component.register('sw-postfinancecheckout-advanced-options', {
 
 	name: 'PostFinanceCheckoutAdvancedOptions',
 
+	inject: [
+		'acl'
+	],
+
 	mixins: [
 		Mixin.getByName('notification')
 	],
@@ -36,9 +40,6 @@ Component.register('sw-postfinancecheckout-advanced-options', {
 		return {
 			...constants
 		};
-	},
-
-	computed: {
 	},
 
 	methods: {

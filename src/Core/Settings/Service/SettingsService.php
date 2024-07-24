@@ -21,7 +21,6 @@ class SettingsService {
 	public const CONFIG_APPLICATION_KEY                     = 'applicationKey';
 	public const CONFIG_EMAIL_ENABLED                       = 'emailEnabled';
 	public const CONFIG_INTEGRATION                         = 'integration';
-	public const CONFIG_IS_SHOWCASE                         = 'isShowcase';
 	public const CONFIG_LINE_ITEM_CONSISTENCY_ENABLED       = 'lineItemConsistencyEnabled';
 	public const CONFIG_SPACE_ID                            = 'spaceId';
 	public const CONFIG_SPACE_VIEW_ID                       = 'spaceViewId';
