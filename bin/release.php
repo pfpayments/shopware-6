@@ -35,7 +35,7 @@ switch ($release_env) {
 		break;
 }
 
-$composerJsonData['version'] = '6.1.6';
+$composerJsonData['version'] = '6.1.7';
 
 $logger->info('Adding shopware/core and shopware/storefront to the composer.json.');
 file_put_contents(
