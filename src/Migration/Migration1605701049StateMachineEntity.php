@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Migration;
+namespace PostFinanceCheckoutPayment\Migration;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Migration\MigrationStep;
@@ -12,7 +12,7 @@ use Shopware\Core\System\StateMachine\StateMachineDefinition;
 /**
  * Class Migration1605701049StateMachineEntity
  *
- * @package WeArePlanetPayment\Migration
+ * @package PostFinanceCheckoutPayment\Migration
  */
 class Migration1605701049StateMachineEntity extends MigrationStep
 {

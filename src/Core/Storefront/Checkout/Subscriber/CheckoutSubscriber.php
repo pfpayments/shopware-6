@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Storefront\Checkout\Subscriber;
+namespace PostFinanceCheckoutPayment\Core\Storefront\Checkout\Subscriber;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection,
@@ -10,14 +10,14 @@ use Shopware\Core\{Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCol
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use WeArePlanetPayment\Core\{Api\Transaction\Service\OrderMailService,
+use PostFinanceCheckoutPayment\Core\{Api\Transaction\Service\OrderMailService,
     Api\Transaction\Service\TransactionService,
-    Checkout\PaymentHandler\WeArePlanetPaymentHandler,
+    Checkout\PaymentHandler\PostFinanceCheckoutPaymentHandler,
     Settings\Service\SettingsService,
     Settings\Struct\Settings,
     Util\PaymentMethodUtil};
-use WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService;
-use WeArePlanetPayment\Sdk\{Model\AddressCreate,
+use PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService;
+use PostFinanceCheckoutPayment\Sdk\{Model\AddressCreate,
     Model\ChargeAttempt,
     Model\CreationEntityState,
     Model\CriteriaOperator,
@@ -35,7 +35,7 @@ use WeArePlanetPayment\Sdk\{Model\AddressCreate,
 /**
  * Class CheckoutSubscriber
  *
- * @package WeArePlanetPayment\Storefront\Checkout\Subscriber
+ * @package PostFinanceCheckoutPayment\Storefront\Checkout\Subscriber
  */
 class CheckoutSubscriber implements EventSubscriberInterface
 {
@@ -46,32 +46,32 @@ class CheckoutSubscriber implements EventSubscriberInterface
     protected $logger;
 
     /**
-     * @var \WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
+     * @var \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
      */
     private $paymentMethodConfigurationService;
 
     /**
-     * @var \WeArePlanetPayment\Core\Api\Transaction\Service\TransactionService
+     * @var \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService
      */
     private $transactionService;
 
     /**
-     * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
+     * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
      */
     private $settingsService;
 
     /**
-     * @var \WeArePlanetPayment\Core\Util\PaymentMethodUtil
+     * @var \PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil
      */
     private $paymentMethodUtil;
 
     /**
      * CheckoutSubscriber constructor.
      *
-     * @param \WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService $paymentMethodConfigurationService
-     * @param \WeArePlanetPayment\Core\Api\Transaction\Service\TransactionService $transactionService
-     * @param \WeArePlanetPayment\Core\Settings\Service\SettingsService $settingsService
-     * @param \WeArePlanetPayment\Core\Util\PaymentMethodUtil $paymentMethodUtil
+     * @param \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService $paymentMethodConfigurationService
+     * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService $transactionService
+     * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService $settingsService
+     * @param \PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil $paymentMethodUtil
      */
     public function __construct(PaymentMethodConfigurationService $paymentMethodConfigurationService, TransactionService $transactionService, SettingsService $settingsService, PaymentMethodUtil $paymentMethodUtil)
     {
@@ -120,9 +120,9 @@ class CheckoutSubscriber implements EventSubscriberInterface
 
         if (!empty($order) && $order->getAmountTotal() > 0) {
 
-            $isWeArePlanetEmailSettingEnabled = $this->settingsService->getSettings($order->getSalesChannelId())->isEmailEnabled();
+            $isPostFinanceCheckoutEmailSettingEnabled = $this->settingsService->getSettings($order->getSalesChannelId())->isEmailEnabled();
 
-            if (!$isWeArePlanetEmailSettingEnabled) { //setting is disabled
+            if (!$isPostFinanceCheckoutEmailSettingEnabled) { //setting is disabled
                 return;
             }
 
@@ -135,8 +135,8 @@ class CheckoutSubscriber implements EventSubscriberInterface
                 return;
             }
 
-            $isWeArePlanetPM = WeArePlanetPaymentHandler::class == $orderTransactionLast->getPaymentMethod()->getHandlerIdentifier();
-            if (!$isWeArePlanetPM) { // not our payment method
+            $isPostFinanceCheckoutPM = PostFinanceCheckoutPaymentHandler::class == $orderTransactionLast->getPaymentMethod()->getHandlerIdentifier();
+            if (!$isPostFinanceCheckoutPM) { // not our payment method
                 return;
             }
 
@@ -162,7 +162,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
             if (is_null($settings)) {
                 $this->logger->notice('Removing payment methods because settings are invalid');
-                $this->removeWeArePlanetPaymentMethodFromConfirmPage($event);
+                $this->removePostFinanceCheckoutPaymentMethodFromConfirmPage($event);
             }
 
             $createdTransactionId = $this->transactionService->createPendingTransaction($salesChannelContext, $event);
@@ -172,17 +172,17 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $this->setPossiblePaymentMethods($settings->getSpaceId(), $event);
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
-            $this->removeWeArePlanetPaymentMethodFromConfirmPage($event);
+            $this->removePostFinanceCheckoutPaymentMethodFromConfirmPage($event);
         }
     }
 
     /**
      * @param \Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent $event
      */
-    private function removeWeArePlanetPaymentMethodFromConfirmPage(CheckoutConfirmPageLoadedEvent $event): void
+    private function removePostFinanceCheckoutPaymentMethodFromConfirmPage(CheckoutConfirmPageLoadedEvent $event): void
     {
         $paymentMethodCollection = $event->getPage()->getPaymentMethods();
-        $paymentMethodIds = $this->paymentMethodUtil->getWeArePlanetPaymentMethodIds($event->getContext());
+        $paymentMethodIds = $this->paymentMethodUtil->getPostFinanceCheckoutPaymentMethodIds($event->getContext());
         foreach ($paymentMethodIds as $paymentMethodId) {
             $paymentMethodCollection->remove($paymentMethodId);
         }
@@ -219,8 +219,8 @@ class CheckoutSubscriber implements EventSubscriberInterface
 
         $paymentMethodCollection = $event->getPage()->getPaymentMethods();
         foreach ($paymentMethodCollection as $paymentMethodCollectionItem) {
-            $isWeArePlanetPM = WeArePlanetPaymentHandler::class == $paymentMethodCollectionItem->getHandlerIdentifier();
-            if (!$isWeArePlanetPM) {
+            $isPostFinanceCheckoutPM = PostFinanceCheckoutPaymentHandler::class == $paymentMethodCollectionItem->getHandlerIdentifier();
+            if (!$isPostFinanceCheckoutPM) {
                 continue;
             }
 

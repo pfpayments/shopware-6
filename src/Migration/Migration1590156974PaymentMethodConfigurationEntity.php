@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Migration;
+namespace PostFinanceCheckoutPayment\Migration;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Migration\MigrationStep;
@@ -8,7 +8,7 @@ use Shopware\Core\Framework\Migration\MigrationStep;
 /**
  * Class Migration1590156974PaymentMethodConfigurationEntity
  *
- * @package WeArePlanetPayment\Migration
+ * @package PostFinanceCheckoutPayment\Migration
  */
 class Migration1590156974PaymentMethodConfigurationEntity extends MigrationStep {
 	/**
@@ -30,7 +30,7 @@ class Migration1590156974PaymentMethodConfigurationEntity extends MigrationStep 
 	public function update(Connection $connection): void
 	{
 		$connection->executeStatement('
-            CREATE TABLE IF NOT EXISTS `weareplanet_payment_method_configuration` (
+            CREATE TABLE IF NOT EXISTS `postfinancecheckout_payment_method_configuration` (
               `id` BINARY(16) NOT NULL,
               `data` JSON NOT NULL,
               `payment_method_configuration_id` INT UNSIGNED NOT NULL,
@@ -42,8 +42,8 @@ class Migration1590156974PaymentMethodConfigurationEntity extends MigrationStep 
               `updated_at` DATETIME(3) DEFAULT NULL,
               PRIMARY KEY (`id`),
               UNIQUE KEY `payment_method_configuration_id_space_id_UNIQUE` (`payment_method_configuration_id`,`space_id`),
-              KEY `fk.pln_payment_method_configuration.payment_method_id` (`payment_method_id`),
-              CONSTRAINT `fk.pln_payment_method_configuration.payment_method_id` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`id`) ON DELETE CASCADE
+              KEY `fk.pfc_payment_method_configuration.payment_method_id` (`payment_method_id`),
+              CONSTRAINT `fk.pfc_payment_method_configuration.payment_method_id` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`id`) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ');
 	}

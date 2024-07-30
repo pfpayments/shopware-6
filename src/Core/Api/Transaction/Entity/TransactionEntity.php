@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Api\Transaction\Entity;
+namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Entity;
 
 use Shopware\Core\{
 	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity,
@@ -9,12 +9,12 @@ use Shopware\Core\{
 	Framework\DataAbstractionLayer\Entity,
 	Framework\DataAbstractionLayer\EntityIdTrait,
 	System\SalesChannel\SalesChannelEntity};
-use WeArePlanetPayment\Core\Api\Refund\Entity\RefundEntityCollection;
+use PostFinanceCheckoutPayment\Core\Api\Refund\Entity\RefundEntityCollection;
 
 /**
  * Class TransactionEntity
  *
- * @package WeArePlanetPayment\Core\Api\Transaction\Entity
+ * @package PostFinanceCheckoutPayment\Core\Api\Transaction\Entity
  */
 class TransactionEntity extends Entity {
 
@@ -66,7 +66,7 @@ class TransactionEntity extends Entity {
 	protected $orderTransactionId;
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Api\Refund\Entity\RefundEntityCollection
+	 * @var \PostFinanceCheckoutPayment\Core\Api\Refund\Entity\RefundEntityCollection
 	 */
 	protected $refunds;
 
@@ -288,7 +288,7 @@ class TransactionEntity extends Entity {
 	}
 
 	/**
-	 * @return \WeArePlanetPayment\Core\Api\Refund\Entity\RefundEntityCollection|null
+	 * @return \PostFinanceCheckoutPayment\Core\Api\Refund\Entity\RefundEntityCollection|null
 	 */
 	public function getRefunds(): ?RefundEntityCollection
 	{
@@ -296,7 +296,7 @@ class TransactionEntity extends Entity {
 	}
 
 	/**
-	 * @param \WeArePlanetPayment\Core\Api\Refund\Entity\RefundEntityCollection $refunds
+	 * @param \PostFinanceCheckoutPayment\Core\Api\Refund\Entity\RefundEntityCollection $refunds
 	 */
 	public function setRefunds(RefundEntityCollection $refunds): void
 	{

@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Storefront\Checkout\Struct;
+namespace PostFinanceCheckoutPayment\Core\Storefront\Checkout\Struct;
 
 use Shopware\Core\Framework\Struct\Struct;
 
 /**
  * Class CheckoutPageData
  *
- * @package WeArePlanetPayment\Storefront\Checkout\Struct
+ * @package PostFinanceCheckoutPayment\Storefront\Checkout\Struct
  */
 class CheckoutPageData extends Struct {
 
@@ -93,11 +93,11 @@ class CheckoutPageData extends Struct {
 	/**
 	 * @param int    $spaceId
 	 * @param string $sessionId
-	 * @return \WeArePlanetPayment\Core\Storefront\Checkout\Struct\CheckoutPageData
+	 * @return \PostFinanceCheckoutPayment\Core\Storefront\Checkout\Struct\CheckoutPageData
 	 */
 	public function setDeviceJavascriptUrl(int $spaceId, string $sessionId): CheckoutPageData
 	{
-		$this->deviceJavascriptUrl = strtr('https://paymentshub.weareplanet.com/s/{spaceId}/payment/device.js?sessionIdentifier={sessionId}', [
+		$this->deviceJavascriptUrl = strtr('https://checkout.postfinance.ch/s/{spaceId}/payment/device.js?sessionIdentifier={sessionId}', [
 			'{spaceId}'   => $spaceId,
 			'{sessionId}' => $sessionId,
 		]);
@@ -116,7 +116,7 @@ class CheckoutPageData extends Struct {
 	 * JavaScript URL
 	 *
 	 * @param string $javascriptUrl
-	 * @return \WeArePlanetPayment\Core\Storefront\Checkout\Struct\CheckoutPageData
+	 * @return \PostFinanceCheckoutPayment\Core\Storefront\Checkout\Struct\CheckoutPageData
 	 */
 	public function setJavascriptUrl(string $javascriptUrl): CheckoutPageData
 	{
@@ -134,7 +134,7 @@ class CheckoutPageData extends Struct {
 
 	/**
 	 * @param array $possiblePaymentMethodsArray
-	 * @return \WeArePlanetPayment\Core\Storefront\Checkout\Struct\CheckoutPageData
+	 * @return \PostFinanceCheckoutPayment\Core\Storefront\Checkout\Struct\CheckoutPageData
 	 */
 	public function setPossiblePaymentMethodsArray(array $possiblePaymentMethodsArray): CheckoutPageData
 	{
@@ -152,7 +152,7 @@ class CheckoutPageData extends Struct {
 
 	/**
 	 * @param array $transactionPossiblePaymentMethods
-	 * @return \WeArePlanetPayment\Core\Storefront\Checkout\Struct\CheckoutPageData
+	 * @return \PostFinanceCheckoutPayment\Core\Storefront\Checkout\Struct\CheckoutPageData
 	 */
 	public function setTransactionPossiblePaymentMethods(array $transactionPossiblePaymentMethods): CheckoutPageData
 	{
@@ -170,7 +170,7 @@ class CheckoutPageData extends Struct {
 
 	/**
 	 * @param string $integration
-	 * @return \WeArePlanetPayment\Core\Storefront\Checkout\Struct\CheckoutPageData
+	 * @return \PostFinanceCheckoutPayment\Core\Storefront\Checkout\Struct\CheckoutPageData
 	 */
 	public function setIntegration(string $integration): CheckoutPageData
 	{
@@ -190,7 +190,7 @@ class CheckoutPageData extends Struct {
 	 * Payment method id from Shopware database
 	 *
 	 * @param string $paymentMethodId
-	 * @return \WeArePlanetPayment\Core\Storefront\Checkout\Struct\CheckoutPageData
+	 * @return \PostFinanceCheckoutPayment\Core\Storefront\Checkout\Struct\CheckoutPageData
 	 */
 	public function setPaymentMethodId(string $paymentMethodId): CheckoutPageData
 	{

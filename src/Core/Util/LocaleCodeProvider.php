@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Util;
+namespace PostFinanceCheckoutPayment\Core\Util;
 
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -17,7 +17,7 @@ use Shopware\Core\{
 /**
  * Class LocaleCodeProvider
  *
- * @package WeArePlanetPayment\Core\Util
+ * @package PostFinanceCheckoutPayment\Core\Util
  */
 class LocaleCodeProvider {
 
@@ -131,7 +131,7 @@ class LocaleCodeProvider {
 
 		foreach ($locales as $locale) {
 			$translation = $this->translator->trans($snippet, [], null, $locale);
-			$pattern     = '/^weareplanet\./';
+			$pattern     = '/^postfinancecheckout\./';
 
 			// there is a bug/lack of documentation on Shopware translations, sometimes the translation does not work
 

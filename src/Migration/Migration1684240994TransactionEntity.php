@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Migration;
+namespace PostFinanceCheckoutPayment\Migration;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Migration\MigrationStep;
@@ -8,7 +8,7 @@ use Shopware\Core\Framework\Migration\MigrationStep;
 /**
  * Class Migration1684240994TransactionEntity
  *
- * @package WeArePlanetPayment\Migration
+ * @package PostFinanceCheckoutPayment\Migration
  */
 class Migration1684240994TransactionEntity extends MigrationStep {
 	
@@ -30,7 +30,7 @@ class Migration1684240994TransactionEntity extends MigrationStep {
 	public function update(Connection $connection): void
 	{
 		try {
-			$connection->executeStatement('ALTER TABLE `weareplanet_transaction` ADD COLUMN `erp_merchant_id` VARCHAR(255) DEFAULT NULL AFTER `confirmation_email_sent`;');
+			$connection->executeStatement('ALTER TABLE `postfinancecheckout_transaction` ADD COLUMN `erp_merchant_id` VARCHAR(255) DEFAULT NULL AFTER `confirmation_email_sent`;');
 		}catch (\Exception $exception){
 			// column probably exists
 		}

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Api\Refund\Controller;
+namespace PostFinanceCheckoutPayment\Core\Api\Refund\Controller;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Context;
@@ -10,7 +10,7 @@ use Symfony\Component\{
 	HttpFoundation\Request,
 	HttpFoundation\Response,
 	Routing\Annotation\Route,};
-use WeArePlanetPayment\Core\{
+use PostFinanceCheckoutPayment\Core\{
 	Api\Refund\Service\RefundService,
 	Settings\Service\SettingsService};
 
@@ -18,19 +18,19 @@ use WeArePlanetPayment\Core\{
 /**
  * Class RefundController
  *
- * @package WeArePlanetPayment\Core\Api\Refund\Controller
+ * @package PostFinanceCheckoutPayment\Core\Api\Refund\Controller
  *
  * @Route(defaults={"_routeScope"={"api"}})
  */
 class RefundController extends AbstractController {
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Api\Refund\Service\RefundService
+	 * @var \PostFinanceCheckoutPayment\Core\Api\Refund\Service\RefundService
 	 */
 	protected $refundService;
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
+	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
 	 */
 	protected $settingsService;
 
@@ -42,8 +42,8 @@ class RefundController extends AbstractController {
 	/**
 	 * RefundController constructor.
 	 *
-	 * @param \WeArePlanetPayment\Core\Api\Refund\Service\RefundService $refundService
-	 * @param \WeArePlanetPayment\Core\Settings\Service\SettingsService $settingsService
+	 * @param \PostFinanceCheckoutPayment\Core\Api\Refund\Service\RefundService $refundService
+	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService $settingsService
 	 */
 	public function __construct(RefundService $refundService, SettingsService $settingsService)
 	{
@@ -66,12 +66,12 @@ class RefundController extends AbstractController {
 	 * @param \Symfony\Component\HttpFoundation\Request $request
 	 * @param \Shopware\Core\Framework\Context          $context
 	 * @return \Symfony\Component\HttpFoundation\Response
-	 * @throws \WeArePlanet\Sdk\ApiException
-	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
-	 * @throws \WeArePlanet\Sdk\VersioningException
+	 * @throws \PostFinanceCheckout\Sdk\ApiException
+	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
+	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 * @Route(
-	 *     "/api/_action/weareplanet/refund/create-refund/",
-	 *     name="api.action.weareplanet.refund.create-refund",
+	 *     "/api/_action/postfinancecheckout/refund/create-refund/",
+	 *     name="api.action.postfinancecheckout.refund.create-refund",
 	 *     methods={"POST"}
 	 *     )
 	 */
@@ -95,12 +95,12 @@ class RefundController extends AbstractController {
 	 * @param \Symfony\Component\HttpFoundation\Request $request
 	 * @param \Shopware\Core\Framework\Context          $context
 	 * @return \Symfony\Component\HttpFoundation\Response
-	 * @throws \WeArePlanet\Sdk\ApiException
-	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
-	 * @throws \WeArePlanet\Sdk\VersioningException
+	 * @throws \PostFinanceCheckout\Sdk\ApiException
+	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
+	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 * @Route(
-	 *     "/api/_action/weareplanet/refund/create-refund-by-amount/",
-	 *     name="api.action.weareplanet.refund.create.refund.by.amount",
+	 *     "/api/_action/postfinancecheckout/refund/create-refund-by-amount/",
+	 *     name="api.action.postfinancecheckout.refund.create.refund.by.amount",
 	 *     methods={"POST"}
 	 *     )
 	 */

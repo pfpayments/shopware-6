@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Settings\Options;
+namespace PostFinanceCheckoutPayment\Core\Settings\Options;
 
 /**
  * Class Integration
  *
- * @package WeArePlanetPayment\Core\Settings\Options
+ * @package PostFinanceCheckoutPayment\Core\Settings\Options
  */
 class Integration {
 

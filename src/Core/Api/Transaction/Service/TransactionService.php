@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Api\Transaction\Service;
+namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Service;
 
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -15,7 +15,7 @@ use Shopware\Core\{Checkout\Cart\Exception\OrderNotFoundException,
 };
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use WeArePlanet\Sdk\{Model\AddressCreate,
+use PostFinanceCheckout\Sdk\{Model\AddressCreate,
     Model\ChargeAttempt,
     Model\CreationEntityState,
     Model\CriteriaOperator,
@@ -31,7 +31,7 @@ use WeArePlanet\Sdk\{Model\AddressCreate,
     Model\TransactionPending,
     Model\TransactionState,
 };
-use WeArePlanetPayment\Core\{Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
+use PostFinanceCheckoutPayment\Core\{Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
     Api\Refund\Entity\RefundEntityCollection,
     Api\Refund\Entity\RefundEntityDefinition,
     Api\Transaction\Entity\TransactionEntity,
@@ -46,7 +46,7 @@ use WeArePlanetPayment\Core\{Api\OrderDeliveryState\Handler\OrderDeliveryStateHa
 /**
  * Class TransactionService
  *
- * @package WeArePlanetPayment\Core\Api\Transaction\Service
+ * @package PostFinanceCheckoutPayment\Core\Api\Transaction\Service
  */
 class TransactionService
 {
@@ -56,7 +56,7 @@ class TransactionService
     protected $container;
 
     /**
-     * @var \WeArePlanetPayment\Core\Util\LocaleCodeProvider
+     * @var \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider
      */
     private $localeCodeProvider;
 
@@ -66,7 +66,7 @@ class TransactionService
     private $logger;
 
     /**
-     * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
+     * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
      */
     private $settingsService;
 
@@ -80,8 +80,8 @@ class TransactionService
      * TransactionService constructor.
      *
      * @param \Psr\Container\ContainerInterface $container
-     * @param \WeArePlanetPayment\Core\Util\LocaleCodeProvider $localeCodeProvider
-     * @param \WeArePlanetPayment\Core\Settings\Service\SettingsService $settingsService
+     * @param \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider $localeCodeProvider
+     * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService $settingsService
      */
     public function __construct(
         ContainerInterface $container,
@@ -116,9 +116,9 @@ class TransactionService
      * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
      *
      * @return string
-     * @throws \WeArePlanet\Sdk\ApiException
-     * @throws \WeArePlanet\Sdk\Http\ConnectionException
-     * @throws \WeArePlanet\Sdk\VersioningException
+     * @throws \PostFinanceCheckout\Sdk\ApiException
+     * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
+     * @throws \PostFinanceCheckout\Sdk\VersioningException
      */
     public function create(
         AsyncPaymentTransactionStruct $transaction,
@@ -154,7 +154,7 @@ class TransactionService
         $createdTransaction = $apiClient->getTransactionService()
             ->confirm($settings->getSpaceId(), $transactionPayload);
 
-        $this->addWeArePlanetTransactionId(
+        $this->addPostFinanceCheckoutTransactionId(
             $transaction,
             $salesChannelContext->getContext(),
             $createdTransaction->getId(),
@@ -162,7 +162,7 @@ class TransactionService
         );
 
         $redirectUrl = $this->container->get('router')->generate(
-            'frontend.weareplanet.checkout.pay',
+            'frontend.postfinancecheckout.checkout.pay',
             ['orderId' => $transaction->getOrder()->getId(),],
             UrlGeneratorInterface::ABSOLUTE_URL
         );
@@ -192,30 +192,30 @@ class TransactionService
     /**
      * @param \Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct $transaction
      * @param \Shopware\Core\Framework\Context $context
-     * @param int $weareplanetTransactionId
+     * @param int $postfinancecheckoutTransactionId
      * @param int $spaceId
      */
-    protected function addWeArePlanetTransactionId(
+    protected function addPostFinanceCheckoutTransactionId(
         AsyncPaymentTransactionStruct $transaction,
         Context                       $context,
-        int                           $weareplanetTransactionId,
+        int                           $postfinancecheckoutTransactionId,
         int                           $spaceId
     ): void
     {
         $data = [
             'id' => $transaction->getOrderTransaction()->getId(),
             'customFields' => [
-                TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_WEAREPLANET_TRANSACTION_ID => $weareplanetTransactionId,
-                TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_WEAREPLANET_SPACE_ID => $spaceId,
+                TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_TRANSACTION_ID => $postfinancecheckoutTransactionId,
+                TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_SPACE_ID => $spaceId,
             ],
         ];
         $this->container->get('order_transaction.repository')->update([$data], $context);
     }
 
     /**
-     * Persist WeArePlanet transaction
+     * Persist PostFinanceCheckout transaction
      *
-     * @param \WeArePlanet\Sdk\Model\Transaction $transaction
+     * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
      * @param \Shopware\Core\Framework\Context $context
      * @param string|null $paymentMethodId
      * @param string|null $salesChannelId
@@ -236,8 +236,8 @@ class TransactionService
                 $salesChannelId = $transactionMetaData['salesChannelId'] ?? '';
             }
 
-            $orderId = $transactionMetaData[TransactionPayload::WEAREPLANET_METADATA_ORDER_ID];
-            $orderTransactionId = $transactionMetaData[TransactionPayload::WEAREPLANET_METADATA_ORDER_TRANSACTION_ID];
+            $orderId = $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
+            $orderTransactionId = $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
 
             $dataParamValue = json_decode(strval($transaction), true);
             $brandName = '';
@@ -269,8 +269,8 @@ class TransactionService
                 $payId = $this->getChargeAttemptAdditionalData($chargeAttempt, self::PAY_ID_KEY);
                 $dataParamValue['payId'] = $payId ? $payId[0] : '';
 
-                $dataParamValue['customerName'] = isset($transactionMetaData[TransactionPayload::WEAREPLANET_METADATA_CUSTOMER_NAME])
-                    ? $transactionMetaData[TransactionPayload::WEAREPLANET_METADATA_CUSTOMER_NAME]
+                $dataParamValue['customerName'] = isset($transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME])
+                    ? $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME]
                     : '';
 
                 $creditCardValidity = $this->getChargeAttemptAdditionalData($chargeAttempt, self::CARD_VALIDITY_KEY);
@@ -365,7 +365,7 @@ class TransactionService
      * @param string $orderId
      * @param \Shopware\Core\Framework\Context $context
      *
-     * @return \WeArePlanetPayment\Core\Api\Transaction\Entity\TransactionEntity
+     * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity
      */
     public function getByOrderId(string $orderId, Context $context): TransactionEntity
     {
@@ -375,15 +375,15 @@ class TransactionService
     }
 
     /**
-     * Read transaction from WeArePlanet API
+     * Read transaction from PostFinanceCheckout API
      *
      * @param int $transactionId
      * @param string $salesChannelId
      *
-     * @return \WeArePlanet\Sdk\Model\Transaction
-     * @throws \WeArePlanet\Sdk\ApiException
-     * @throws \WeArePlanet\Sdk\Http\ConnectionException
-     * @throws \WeArePlanet\Sdk\VersioningException
+     * @return \PostFinanceCheckout\Sdk\Model\Transaction
+     * @throws \PostFinanceCheckout\Sdk\ApiException
+     * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
+     * @throws \PostFinanceCheckout\Sdk\VersioningException
      */
     public function read(int $transactionId, string $salesChannelId): Transaction
     {
@@ -392,12 +392,12 @@ class TransactionService
     }
 
     /**
-     * Get transaction entity by WeArePlanet transaction id
+     * Get transaction entity by PostFinanceCheckout transaction id
      *
      * @param int $transactionId
      * @param \Shopware\Core\Framework\Context $context
      *
-     * @return \WeArePlanetPayment\Core\Api\Transaction\Entity\TransactionEntity|null
+     * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity|null
      */
     public function getByTransactionId(int $transactionId, Context $context): ?TransactionEntity
     {
@@ -410,12 +410,12 @@ class TransactionService
     }
 
     /**
-     * Get transaction entity by WeArePlanet order transaction id
+     * Get transaction entity by PostFinanceCheckout order transaction id
      *
      * @param string $transactionId
      * @param \Shopware\Core\Framework\Context $context
      *
-     * @return \WeArePlanetPayment\Core\Api\Transaction\Entity\TransactionEntity|null
+     * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity|null
      */
     public function getByOrderTransactionId(string $orderTransactionId, Context $context): ?TransactionEntity
     {
@@ -428,12 +428,12 @@ class TransactionService
     }
 
     /**
-     * Get transaction entity by WeArePlanet transaction id
+     * Get transaction entity by PostFinanceCheckout transaction id
      *
      * @param int $transactionId
      * @param \Shopware\Core\Framework\Context $context
      *
-     * @return \WeArePlanetPayment\Core\Api\Refund\Entity\RefundEntityCollection
+     * @return \PostFinanceCheckoutPayment\Core\Api\Refund\Entity\RefundEntityCollection
      */
     public function getRefundEntityCollectionByTransactionId(int $transactionId, Context $context): ?RefundEntityCollection
     {

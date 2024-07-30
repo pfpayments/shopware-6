@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Util\Payload;
+namespace PostFinanceCheckoutPayment\Core\Util\Payload;
 
 
 use Psr\Container\ContainerInterface;
@@ -14,7 +14,7 @@ use Shopware\Core\{Checkout\Cart\Tax\Struct\CalculatedTaxCollection,
 };
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use WeArePlanet\Sdk\{Model\AddressCreate,
+use PostFinanceCheckout\Sdk\{Model\AddressCreate,
     Model\ChargeAttempt,
     Model\CreationEntityState,
     Model\CriteriaOperator,
@@ -28,7 +28,7 @@ use WeArePlanet\Sdk\{Model\AddressCreate,
     Model\TransactionCreate,
     Model\TransactionPending
 };
-use WeArePlanetPayment\Core\{Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity,
+use PostFinanceCheckoutPayment\Core\{Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity,
     Settings\Struct\Settings,
     Util\Exception\InvalidPayloadException,
     Util\LocaleCodeProvider,
@@ -39,20 +39,20 @@ use WeArePlanetPayment\Core\{Api\PaymentMethodConfiguration\Entity\PaymentMethod
 /**
  * Class TransactionPayload
  *
- * @package WeArePlanetPayment\Core\Util\Payload
+ * @package PostFinanceCheckoutPayment\Core\Util\Payload
  */
 class TransactionPayload extends AbstractPayload
 {
 
     use CustomProductsLineItems;
 
-    public const ORDER_TRANSACTION_CUSTOM_FIELDS_WEAREPLANET_SPACE_ID = 'weareplanet_space_id';
-    public const ORDER_TRANSACTION_CUSTOM_FIELDS_WEAREPLANET_TRANSACTION_ID = 'weareplanet_transaction_id';
+    public const ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_SPACE_ID = 'postfinancecheckout_space_id';
+    public const ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_TRANSACTION_ID = 'postfinancecheckout_transaction_id';
 
-    public const WEAREPLANET_METADATA_SALES_CHANNEL_ID = 'salesChannelId';
-    public const WEAREPLANET_METADATA_ORDER_ID = 'orderId';
-    public const WEAREPLANET_METADATA_ORDER_TRANSACTION_ID = 'orderTransactionId';
-    public const WEAREPLANET_METADATA_CUSTOMER_NAME = 'customerName';
+    public const POSTFINANCECHECKOUT_METADATA_SALES_CHANNEL_ID = 'salesChannelId';
+    public const POSTFINANCECHECKOUT_METADATA_ORDER_ID = 'orderId';
+    public const POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID = 'orderTransactionId';
+    public const POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME = 'customerName';
 
 
     /**
@@ -66,7 +66,7 @@ class TransactionPayload extends AbstractPayload
     protected $transaction;
 
     /**
-     * @var \WeArePlanetPayment\Core\Settings\Struct\Settings
+     * @var \PostFinanceCheckoutPayment\Core\Settings\Struct\Settings
      */
     protected $settings;
 
@@ -76,7 +76,7 @@ class TransactionPayload extends AbstractPayload
     protected $container;
 
     /**
-     * @var \WeArePlanetPayment\Core\Util\LocaleCodeProvider
+     * @var \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider
      */
     private $localeCodeProvider;
 
@@ -89,9 +89,9 @@ class TransactionPayload extends AbstractPayload
      * TransactionPayload constructor.
      *
      * @param \Psr\Container\ContainerInterface $container
-     * @param \WeArePlanetPayment\Core\Util\LocaleCodeProvider $localeCodeProvider
+     * @param \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider $localeCodeProvider
      * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
-     * @param \WeArePlanetPayment\Core\Settings\Struct\Settings $settings
+     * @param \PostFinanceCheckoutPayment\Core\Settings\Struct\Settings $settings
      * @param \Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct $transaction
      */
     public function __construct(
@@ -113,7 +113,7 @@ class TransactionPayload extends AbstractPayload
     /**
      * Get Transaction Payload
      *
-     * @return \WeArePlanet\Sdk\Model\TransactionPending
+     * @return \PostFinanceCheckout\Sdk\Model\TransactionPending
      * @throws \Exception
      */
     public function get(int $version): TransactionPending
@@ -143,10 +143,10 @@ class TransactionPayload extends AbstractPayload
             'language' => $this->localeCodeProvider->getLocaleCodeFromContext($this->salesChannelContext->getContext()) ?? null,
             'merchant_reference' => $this->fixLength($this->transaction->getOrder()->getOrderNumber(), 100),
             'meta_data' => [
-                self::WEAREPLANET_METADATA_ORDER_ID => $this->transaction->getOrder()->getId(),
-                self::WEAREPLANET_METADATA_ORDER_TRANSACTION_ID => $this->transaction->getOrderTransaction()->getId(),
-                self::WEAREPLANET_METADATA_SALES_CHANNEL_ID => $this->salesChannelContext->getSalesChannel()->getId(),
-                self::WEAREPLANET_METADATA_CUSTOMER_NAME => $customerName,
+                self::POSTFINANCECHECKOUT_METADATA_ORDER_ID => $this->transaction->getOrder()->getId(),
+                self::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID => $this->transaction->getOrderTransaction()->getId(),
+                self::POSTFINANCECHECKOUT_METADATA_SALES_CHANNEL_ID => $this->salesChannelContext->getSalesChannel()->getId(),
+                self::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME => $customerName,
             ],
             'shipping_method' => $this->salesChannelContext->getShippingMethod()->getName() ? $this->fixLength($this->salesChannelContext->getShippingMethod()->getName(), 200) : null,
             'space_view_id' => $this->settings->getSpaceViewId() ?? null,
@@ -213,13 +213,13 @@ class TransactionPayload extends AbstractPayload
     /**
      * Get transaction line items
      *
-     * @return \WeArePlanet\Sdk\Model\LineItemCreate[]
+     * @return \PostFinanceCheckout\Sdk\Model\LineItemCreate[]
      * @throws \Exception
      */
     protected function getLineItems(): array
     {
         /**
-         * @var \WeArePlanet\Sdk\Model\LineItemCreate[] $lineItems
+         * @var \PostFinanceCheckout\Sdk\Model\LineItemCreate[] $lineItems
          */
         $lineItems = [];
 
@@ -288,7 +288,7 @@ class TransactionPayload extends AbstractPayload
 
     /**
      *
-     * @return \WeArePlanet\Sdk\Model\LineItemCreate|null
+     * @return \PostFinanceCheckout\Sdk\Model\LineItemCreate|null
      * @throws \Exception
      * @var \Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity $shopLineItem
      */
@@ -324,7 +324,7 @@ class TransactionPayload extends AbstractPayload
             $productAttributes = $this->getCustomProductLineItemAttribute($shopLineItem);
             $taxes = $this->getCustomProductTaxes(
                 $shopLineItem->getPrice()->getCalculatedTaxes(),
-                $this->translator->trans('weareplanet.payload.taxes'),
+                $this->translator->trans('postfinancecheckout.payload.taxes'),
                 $amount
             );
 
@@ -333,7 +333,7 @@ class TransactionPayload extends AbstractPayload
 
             $taxes = $this->getTaxes(
                 $shopLineItem->getPrice()->getCalculatedTaxes(),
-                $this->translator->trans('weareplanet.payload.taxes')
+                $this->translator->trans('postfinancecheckout.payload.taxes')
             );
         }
 
@@ -413,7 +413,7 @@ class TransactionPayload extends AbstractPayload
     }
 
     /**
-     * @return \WeArePlanet\Sdk\Model\LineItemCreate|null
+     * @return \PostFinanceCheckout\Sdk\Model\LineItemCreate|null
      */
     protected function getShippingLineItem(): ?LineItemCreate
     {
@@ -424,7 +424,7 @@ class TransactionPayload extends AbstractPayload
 
             if ($amount > 0) {
 
-                $shippingName = $this->salesChannelContext->getShippingMethod()->getName() ?? $this->translator->trans('weareplanet.payload.shipping.name');
+                $shippingName = $this->salesChannelContext->getShippingMethod()->getName() ?? $this->translator->trans('postfinancecheckout.payload.shipping.name');
                 $taxes = $this->getTaxes(
                     $this->transaction->getOrder()->getShippingCosts()->getCalculatedTaxes(),
                     $shippingName
@@ -432,7 +432,7 @@ class TransactionPayload extends AbstractPayload
 
                 $lineItem = (new LineItemCreate())
                     ->setAmountIncludingTax($amount)
-                    ->setName($this->fixLength($shippingName . ' ' . $this->translator->trans('weareplanet.payload.shipping.lineItem'), 150))
+                    ->setName($this->fixLength($shippingName . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
                     ->setQuantity($this->transaction->getOrder()->getShippingCosts()->getQuantity() ?? 1)
                     ->setTaxes($taxes)
                     ->setSku($this->fixLength($shippingName . '-Shipping', 200))
@@ -457,9 +457,9 @@ class TransactionPayload extends AbstractPayload
     /**
      * Get Adjustment Line Item
      *
-     * @param \WeArePlanet\Sdk\Model\LineItemCreate[] $lineItems
+     * @param \PostFinanceCheckout\Sdk\Model\LineItemCreate[] $lineItems
      *
-     * @return \WeArePlanet\Sdk\Model\LineItemCreate|null
+     * @return \PostFinanceCheckout\Sdk\Model\LineItemCreate|null
      * @throws \Exception
      */
     protected function getAdjustmentLineItem(array &$lineItems): ?LineItemCreate
@@ -484,7 +484,7 @@ class TransactionPayload extends AbstractPayload
 
             } else {
                 $lineItem = (new LineItemCreate())
-                    ->setName($this->translator->trans('weareplanet.payload.adjustmentLineItem'))
+                    ->setName($this->translator->trans('postfinancecheckout.payload.adjustmentLineItem'))
                     ->setUniqueId('Adjustment-Line-Item')
                     ->setSku('Adjustment-Line-Item')
                     ->setQuantity(1);
@@ -508,7 +508,7 @@ class TransactionPayload extends AbstractPayload
      * @param \Shopware\Core\Checkout\Customer\CustomerEntity $customer
      * @param \Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity $customerAddressEntity
      *
-     * @return \WeArePlanet\Sdk\Model\AddressCreate
+     * @return \PostFinanceCheckout\Sdk\Model\AddressCreate
      * @throws \Exception
      */
     protected function getAddressPayload(CustomerEntity $customer, CustomerAddressEntity $customerAddressEntity, bool $returnSalesTaxNumber = true): AddressCreate
@@ -630,13 +630,13 @@ class TransactionPayload extends AbstractPayload
     /**
      * @param string $id
      *
-     * @return \WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity
+     * @return \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity
      */
     protected function getPaymentConfiguration(string $id): PaymentMethodConfigurationEntity
     {
         $criteria = (new Criteria([$id]));
 
-        return $this->container->get('weareplanet_payment_method_configuration.repository')
+        return $this->container->get('postfinancecheckout_payment_method_configuration.repository')
             ->search($criteria, $this->salesChannelContext->getContext())
             ->getEntities()->first();
     }
@@ -651,7 +651,7 @@ class TransactionPayload extends AbstractPayload
     protected function getFailUrl(string $orderId): string
     {
         return $this->container->get('router')->generate(
-            'frontend.weareplanet.checkout.recreate-cart',
+            'frontend.postfinancecheckout.checkout.recreate-cart',
             ['orderId' => $orderId,],
             UrlGeneratorInterface::ABSOLUTE_URL
         );

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Api\Transaction\Controller;
+namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Controller;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
@@ -13,21 +13,21 @@ use Symfony\Component\{
 	HttpFoundation\Request,
 	HttpFoundation\Response,
 	Routing\Annotation\Route};
-use WeArePlanetPayment\{
+use PostFinanceCheckoutPayment\{
 	Core\Api\Transaction\Service\TransactionService,
 	Core\Settings\Service\SettingsService};
 
 /**
  * Class TransactionController
  *
- * @package WeArePlanetPayment\Core\Api\Transaction\Controller
+ * @package PostFinanceCheckoutPayment\Core\Api\Transaction\Controller
  *
  * @Route(defaults={"_routeScope"={"api"}})
  */
 class TransactionController extends AbstractController {
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
+	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
 	 */
 	protected $settingsService;
 
@@ -37,15 +37,15 @@ class TransactionController extends AbstractController {
 	protected $logger;
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Api\Transaction\Service\TransactionService
+	 * @var \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService
 	 */
 	protected $transactionService;
 
 	/**
 	 * TransactionController constructor.
 	 *
-	 * @param \WeArePlanetPayment\Core\Settings\Service\SettingsService           $settingsService
-	 * @param \WeArePlanetPayment\Core\Api\Transaction\Service\TransactionService $transactionService
+	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService           $settingsService
+	 * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService $transactionService
 	 */
 	public function __construct(SettingsService $settingsService, TransactionService $transactionService)
 	{
@@ -71,8 +71,8 @@ class TransactionController extends AbstractController {
 	 *
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 * @Route(
-	 *     "/api/_action/weareplanet/transaction/get-transaction-data/",
-	 *     name="api.action.weareplanet.transaction.get-transaction-data",
+	 *     "/api/_action/postfinancecheckout/transaction/get-transaction-data/",
+	 *     name="api.action.postfinancecheckout.transaction.get-transaction-data",
 	 *     methods={"POST"}
 	 *     )
 	 */
@@ -99,13 +99,13 @@ class TransactionController extends AbstractController {
 	 * @param int    $transactionId
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
-	 * @throws \WeArePlanet\Sdk\ApiException
-	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
-	 * @throws \WeArePlanet\Sdk\VersioningException
+	 * @throws \PostFinanceCheckout\Sdk\ApiException
+	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
+	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
 	 * @Route(
-	 *     "/api/_action/weareplanet/transaction/get-invoice-document/{salesChannelId}/{transactionId}",
-	 *     name="api.action.weareplanet.transaction.get-invoice-document",
+	 *     "/api/_action/postfinancecheckout/transaction/get-invoice-document/{salesChannelId}/{transactionId}",
+	 *     name="api.action.postfinancecheckout.transaction.get-invoice-document",
 	 *     methods={"GET"},
 	 *     defaults={"csrf_protected"=false, "auth_required"=false}
 	 *     )
@@ -135,13 +135,13 @@ class TransactionController extends AbstractController {
 	 * @param int    $transactionId
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
-	 * @throws \WeArePlanet\Sdk\ApiException
-	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
-	 * @throws \WeArePlanet\Sdk\VersioningException
+	 * @throws \PostFinanceCheckout\Sdk\ApiException
+	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
+	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
 	 * @Route(
-	 *     "/api/_action/weareplanet/transaction/get-packing-slip/{salesChannelId}/{transactionId}",
-	 *     name="api.action.weareplanet.transaction.get-packing-slip",
+	 *     "/api/_action/postfinancecheckout/transaction/get-packing-slip/{salesChannelId}/{transactionId}",
+	 *     name="api.action.postfinancecheckout.transaction.get-packing-slip",
 	 *     methods={"GET"},
 	 *     defaults={"csrf_protected"=false, "auth_required"=false}
 	 *     )

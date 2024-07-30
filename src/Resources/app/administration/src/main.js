@@ -1,3 +1,3 @@
-import './module/weareplanet-order';
-import './module/weareplanet-settings';
+import './module/postfinancecheckout-order';
+import './module/postfinancecheckout-settings';
 import './init/api-service.init';

@@ -6,23 +6,23 @@
 
 	<services>
 		<!-- Commands -->
-		<service id="WeArePlanetPayment\Core\Api\WebHooks\Command\WebHooksCommand">
-			<argument type="service" id="WeArePlanetPayment\Core\Api\WebHooks\Service\WebHooksService"/>
+		<service id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Command\WebHooksCommand">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService"/>
 			<tag name="console.command"/>
 		</service>
 
 		<!-- Controllers -->
-		<service id="WeArePlanetPayment\Core\Api\WebHooks\Controller\WebHookController" public="true">
+		<service id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Controller\WebHookController" public="true">
 			<argument type="service" id="Doctrine\DBAL\Connection"/>
 			<argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
 			<argument type="service" id="Shopware\Core\Checkout\Order\SalesChannel\OrderService"/>
-			<argument type="service" id="WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService"/>
-			<argument type="service" id="WeArePlanetPayment\Core\Api\Refund\Service\RefundService"/>
-			<argument type="service" id="WeArePlanetPayment\Core\Api\Transaction\Service\OrderMailService"/>
-			<argument type="service" id="WeArePlanetPayment\Core\Api\Transaction\Service\TransactionService"/>
-			<argument type="service" id="WeArePlanetPayment\Core\Settings\Service\SettingsService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Refund\Service\RefundService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\OrderMailService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
 			<call method="setLogger">
-				<argument type="service" id="WeArePlanetPayment\Core\Util\Logger"/>
+				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
 			</call>
 			<call method="setContainer">
 				<argument type="service" id="service_container"/>
@@ -30,11 +30,11 @@
 		</service>
 
 		<!-- Services -->
-		<service id="WeArePlanetPayment\Core\Api\WebHooks\Service\WebHooksService" public="true">
-			<argument type="service" id="WeArePlanetPayment\Core\Settings\Service\SettingsService"/>
+		<service id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService" public="true">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
 			<argument type="service" id="router.default"/>
 			<call method="setLogger">
-				<argument type="service" id="WeArePlanetPayment\Core\Util\Logger"/>
+				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
 			</call>
 		</service>
 	</services>

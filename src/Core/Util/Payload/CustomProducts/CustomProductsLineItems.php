@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Util\Payload\CustomProducts;
+namespace PostFinanceCheckoutPayment\Core\Util\Payload\CustomProducts;
 
 use Shopware\Core\{
 	Checkout\Cart\Tax\Struct\CalculatedTaxCollection,
 	Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity
 };
-use WeArePlanet\Sdk\{
+use PostFinanceCheckout\Sdk\{
 	Model\LineItemAttributeCreate,
 	Model\TaxCreate
 };
-use WeArePlanetPayment\Core\Util\Exception\InvalidPayloadException;
+use PostFinanceCheckoutPayment\Core\Util\Exception\InvalidPayloadException;
 
 trait CustomProductsLineItems {
 

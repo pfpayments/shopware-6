@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Entity;
+namespace PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity;
 
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 
 /**
  * Class PaymentMethodConfigurationEntityCollection
  *
- * @package WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Entity
+ * @package PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity
  *
  * @method void              add(PaymentMethodConfigurationEntity $entity)
  * @method void              set(string $key, PaymentMethodConfigurationEntity $entity)

@@ -109,7 +109,7 @@
 - Added settings to control update of webhooks and payment methods
 
 # 4.0.15
-- Adjust WeArePlanet/SW6 documentation - how to do refunds
+- Adjust PostFinance Checkout/SW6 documentation - how to do refunds
 
 # 4.0.14
 - Support for Shopware 6.4.6
@@ -299,4 +299,4 @@
 - Save refunds to db, and reload order tab on changes
 
 # 1.0.0
-- First version of the WeArePlanet integrations for Shopware 6
+- First version of the PostFinanceCheckout integrations for Shopware 6

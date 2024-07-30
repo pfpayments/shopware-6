@@ -1,36 +1,36 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Settings\Command;
+namespace PostFinanceCheckoutPayment\Core\Settings\Command;
 
 use Symfony\Component\{
 	Console\Command\Command,
 	Console\Input\InputInterface,
 	Console\Input\InputOption,
 	Console\Output\OutputInterface};
-use WeArePlanetPayment\Core\{
+use PostFinanceCheckoutPayment\Core\{
 	Settings\Options\Integration,
 	Settings\Service\SettingsService};
 
 /**
  * Class SettingsCommand
  * @internal
- * @package WeArePlanetPayment\Core\Settings\Command
+ * @package PostFinanceCheckoutPayment\Core\Settings\Command
  */
 class SettingsCommand extends Command {
 
 	/**
 	 * @var string
 	 */
-	protected static $defaultName = 'weareplanet:settings:install';
+	protected static $defaultName = 'postfinancecheckout:settings:install';
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
+	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
 	 */
 	protected $settingsService;
 
 	/**
 	 * SettingsCommand constructor.
-	 * @param \WeArePlanetPayment\Core\Settings\Service\SettingsService $settingsService
+	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService $settingsService
 	 */
 	public function __construct(SettingsService $settingsService)
 	{
@@ -45,7 +45,7 @@ class SettingsCommand extends Command {
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$output->writeln('Set WeArePlanetPayment settings...');
+		$output->writeln('Set PostFinanceCheckoutPayment settings...');
 		$this->settingsService->updateSettings([
 			SettingsService::CONFIG_APPLICATION_KEY                     => $input->getOption(SettingsService::CONFIG_APPLICATION_KEY),
 			SettingsService::CONFIG_EMAIL_ENABLED                       => $input->getOption(SettingsService::CONFIG_EMAIL_ENABLED),
@@ -67,8 +67,8 @@ class SettingsCommand extends Command {
 	 */
 	protected function configure()
 	{
-		$this->setDescription('Sets WeArePlanetPayment settings.')
-			 ->setHelp('This command updates WeArePlanetPayment settings for all SalesChannels.')
+		$this->setDescription('Sets PostFinanceCheckoutPayment settings.')
+			 ->setHelp('This command updates PostFinanceCheckoutPayment settings for all SalesChannels.')
 			 ->addOption(
 				 SettingsService::CONFIG_APPLICATION_KEY,
 				 SettingsService::CONFIG_APPLICATION_KEY,

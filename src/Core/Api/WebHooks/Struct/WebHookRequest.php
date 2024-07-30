@@ -1,13 +1,13 @@
 <?php
 
-namespace WeArePlanetPayment\Core\Api\WebHooks\Struct;
+namespace PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct;
 
 use Shopware\Core\Framework\Struct\Struct;
 
 /**
  * Class WebHookRequest
  *
- * @package WeArePlanetPayment\Core\Api\WebHooks\Struct
+ * @package PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct
  */
 class WebHookRequest extends Struct {
 

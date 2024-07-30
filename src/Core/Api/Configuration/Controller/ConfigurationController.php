@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Api\Configuration\Controller;
+namespace PostFinanceCheckoutPayment\Core\Api\Configuration\Controller;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
@@ -12,7 +12,7 @@ use Symfony\Component\{
 	HttpFoundation\Request,
 	HttpFoundation\Response,
 	Routing\Annotation\Route};
-use WeArePlanetPayment\Core\{
+use PostFinanceCheckoutPayment\Core\{
 	Api\OrderDeliveryState\Service\OrderDeliveryStateService,
 	Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService,
 	Api\WebHooks\Service\WebHooksService,
@@ -23,20 +23,20 @@ use WeArePlanetPayment\Core\{
 /**
  * Class ConfigurationController
  *
- * This class handles web calls that are made via the WeArePlanetPayment settings page.
+ * This class handles web calls that are made via the PostFinanceCheckoutPayment settings page.
  *
- * @package WeArePlanetPayment\Core\Api\Config\Controller
+ * @package PostFinanceCheckoutPayment\Core\Api\Config\Controller
  * @Route(defaults={"_routeScope"={"api"}})
  */
 class ConfigurationController extends AbstractController {
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Api\WebHooks\Service\WebHooksService
+	 * @var \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService
 	 */
 	protected $webHooksService;
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Api\Space\Service\SpaceService
+	 * @var \PostFinanceCheckoutPayment\Core\Api\Space\Service\SpaceService
 	 */
 	protected $spaceService;
 
@@ -46,17 +46,17 @@ class ConfigurationController extends AbstractController {
 	protected $logger;
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
+	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
 	 */
 	protected $settingsService;
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Util\PaymentMethodUtil
+	 * @var \PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil
 	 */
 	private $paymentMethodUtil;
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
+	 * @var \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
 	 */
 	private $paymentMethodConfigurationService;
 
@@ -94,24 +94,24 @@ class ConfigurationController extends AbstractController {
 	}
 
 	/**
-	 * Set WeArePlanetPayment as the default payment for a give sales channel
+	 * Set PostFinanceCheckoutPayment as the default payment for a give sales channel
 	 *
 	 * @param \Symfony\Component\HttpFoundation\Request $request
 	 * @param \Shopware\Core\Framework\Context          $context
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 *
 	 * @Route(
-	 *     "/api/_action/weareplanet/configuration/set-weareplanet-as-sales-channel-payment-default",
-	 *     name="api.action.weareplanet.configuration.set-weareplanet-as-sales-channel-payment-default",
+	 *     "/api/_action/postfinancecheckout/configuration/set-postfinancecheckout-as-sales-channel-payment-default",
+	 *     name="api.action.postfinancecheckout.configuration.set-postfinancecheckout-as-sales-channel-payment-default",
 	 *     methods={"POST"}
 	 *     )
 	 */
-	public function setWeArePlanetAsSalesChannelPaymentDefault(Request $request, Context $context): JsonResponse
+	public function setPostFinanceCheckoutAsSalesChannelPaymentDefault(Request $request, Context $context): JsonResponse
 	{
 		$salesChannelId = $request->request->get('salesChannelId');
 		$salesChannelId = ($salesChannelId == 'null') ? null : $salesChannelId;
 
-		$this->paymentMethodUtil->setWeArePlanetAsDefaultPaymentMethod($context, $salesChannelId);
+		$this->paymentMethodUtil->setPostFinanceCheckoutAsDefaultPaymentMethod($context, $salesChannelId);
 		return new JsonResponse([]);
 	}
 
@@ -120,13 +120,13 @@ class ConfigurationController extends AbstractController {
 	 *
 	 * @param \Symfony\Component\HttpFoundation\Request $request
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
-	 * @throws \WeArePlanet\Sdk\ApiException
-	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
-	 * @throws \WeArePlanet\Sdk\VersioningException
+	 * @throws \PostFinanceCheckout\Sdk\ApiException
+	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
+	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
 	 * @Route(
-	 *     "/api/_action/weareplanet/configuration/register-web-hooks",
-	 *     name="api.action.weareplanet.configuration.register-web-hooks",
+	 *     "/api/_action/postfinancecheckout/configuration/register-web-hooks",
+	 *     name="api.action.postfinancecheckout.configuration.register-web-hooks",
 	 *     methods={"POST"}
 	 *   )
 	 */
@@ -153,13 +153,13 @@ class ConfigurationController extends AbstractController {
 	 *
 	 * @param \Symfony\Component\HttpFoundation\Request $request
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
-	 * @throws \WeArePlanet\Sdk\ApiException
-	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
-	 * @throws \WeArePlanet\Sdk\VersioningException
+	 * @throws \PostFinanceCheckout\Sdk\ApiException
+	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
+	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
 	 * @Route(
-	 *     "/api/_action/weareplanet/configuration/check-api-connection",
-	 *     name="api.action.weareplanet.configuration.check-api-connection",
+	 *     "/api/_action/postfinancecheckout/configuration/check-api-connection",
+	 *     name="api.action.postfinancecheckout.configuration.check-api-connection",
 	 *     methods={"POST"}
 	 *   )
 	 */
@@ -192,8 +192,8 @@ class ConfigurationController extends AbstractController {
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 *
 	 * @Route(
-	 *     "/api/_action/weareplanet/configuration/synchronize-payment-method-configuration",
-	 *     name="api.action.weareplanet.configuration.synchronize-payment-method-configuration",
+	 *     "/api/_action/postfinancecheckout/configuration/synchronize-payment-method-configuration",
+	 *     name="api.action.postfinancecheckout.configuration.synchronize-payment-method-configuration",
 	 *     methods={"POST"}
 	 *   )
 	 */
@@ -229,15 +229,15 @@ class ConfigurationController extends AbstractController {
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 *
 	 * @Route(
-	 *     "/api/_action/weareplanet/configuration/install-order-delivery-states",
-	 *     name="api.action.weareplanet.configuration.install-order-delivery-states",
+	 *     "/api/_action/postfinancecheckout/configuration/install-order-delivery-states",
+	 *     name="api.action.postfinancecheckout.configuration.install-order-delivery-states",
 	 *     methods={"POST"}
 	 *   )
 	 */
 	public function installOrderDeliveryStates(Context $context): JsonResponse
 	{
 		/**
-		 * @var \WeArePlanetPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService $orderDeliveryStateService
+		 * @var \PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService $orderDeliveryStateService
 		 */
 		$orderDeliveryStateService = $this->container->get(OrderDeliveryStateService::class);
 		$orderDeliveryStateService->install($context);

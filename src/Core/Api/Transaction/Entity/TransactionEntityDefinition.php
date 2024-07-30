@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Api\Transaction\Entity;
+namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Entity;
 
 use Shopware\Core\{Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDefinition,
     Checkout\Order\OrderDefinition,
@@ -23,16 +23,16 @@ use Shopware\Core\{Checkout\Order\Aggregate\OrderTransaction\OrderTransactionDef
     Framework\DataAbstractionLayer\Field\UpdatedAtField,
     Framework\DataAbstractionLayer\FieldCollection,
     System\SalesChannel\SalesChannelDefinition};
-use WeArePlanetPayment\Core\Api\Refund\Entity\RefundEntityDefinition;
+use PostFinanceCheckoutPayment\Core\Api\Refund\Entity\RefundEntityDefinition;
 
 /**
  * Class TransactionEntityDefinition
  *
- * @package WeArePlanetPayment\Core\Api\Transaction\Entity
+ * @package PostFinanceCheckoutPayment\Core\Api\Transaction\Entity
  */
 class TransactionEntityDefinition extends EntityDefinition {
 
-	public const ENTITY_NAME = 'weareplanet_transaction';
+	public const ENTITY_NAME = 'postfinancecheckout_transaction';
 
 	/**
 	 * @return string

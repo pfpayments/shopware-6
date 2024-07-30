@@ -107,7 +107,7 @@
 - Einstellungen zur Steuerung der Aktualisierung von Webhooks und Zahlungsmethoden hinzugefügt
 
 # 4.0.15
-- WeArePlanet/SW6-Dokumentation anpassen – wie man Rückerstattungen durchführt
+- PostFinance Checkout/SW6-Dokumentation anpassen – wie man Rückerstattungen durchführt
 
 # 4.0.14
 - Unterstützung für Shopware 6.4.6
@@ -297,4 +297,4 @@
 - Speichern Sie Rückerstattungen in db und laden Sie die Registerkarte Bestellung bei Änderungen neu
 
 # 1.0.0
-- Erste Version der WeArePlanet-Integrationen für Shopware 6
+- Erste Version der PostFinanceCheckout-Integrationen für Shopware 6

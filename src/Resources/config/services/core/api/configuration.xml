@@ -5,14 +5,14 @@
 		   xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
 	<services>
-		<service id="WeArePlanetPayment\Core\Api\Configuration\Controller\ConfigurationController" public="true">
-			<argument type="service" id="WeArePlanetPayment\Core\Util\PaymentMethodUtil"/>
-			<argument type="service" id="WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService"/>
-			<argument type="service" id="WeArePlanetPayment\Core\Api\WebHooks\Service\WebHooksService"/>
-			<argument type="service" id="WeArePlanetPayment\Core\Api\Space\Service\SpaceService"/>
-			<argument type="service" id="WeArePlanetPayment\Core\Settings\Service\SettingsService"/>
+		<service id="PostFinanceCheckoutPayment\Core\Api\Configuration\Controller\ConfigurationController" public="true">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Space\Service\SpaceService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
 			<call method="setLogger">
-				<argument type="service" id="WeArePlanetPayment\Core\Util\Logger"/>
+				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
 			</call>
 			<call method="setContainer">
 				<argument type="service" id="service_container"/>

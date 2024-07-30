@@ -1,42 +1,42 @@
 /* global Shopware */
 
-import WeArePlanetConfigurationService from '../core/service/api/weareplanet-configuration.service';
-import WeArePlanetRefundService from '../core/service/api/weareplanet-refund.service';
-import WeArePlanetTransactionService from '../core/service/api/weareplanet-transaction.service';
-import WeArePlanetTransactionCompletionService
-	from '../core/service/api/weareplanet-transaction-completion.service';
-import WeArePlanetTransactionVoidService
-	from '../core/service/api/weareplanet-transaction-void.service';
+import PostFinanceCheckoutConfigurationService from '../core/service/api/postfinancecheckout-configuration.service';
+import PostFinanceCheckoutRefundService from '../core/service/api/postfinancecheckout-refund.service';
+import PostFinanceCheckoutTransactionService from '../core/service/api/postfinancecheckout-transaction.service';
+import PostFinanceCheckoutTransactionCompletionService
+	from '../core/service/api/postfinancecheckout-transaction-completion.service';
+import PostFinanceCheckoutTransactionVoidService
+	from '../core/service/api/postfinancecheckout-transaction-void.service';
 
 
 const {Application} = Shopware;
 
 // noinspection JSUnresolvedFunction
-Application.addServiceProvider('WeArePlanetConfigurationService', (container) => {
+Application.addServiceProvider('PostFinanceCheckoutConfigurationService', (container) => {
 	const initContainer = Application.getContainer('init');
-	return new WeArePlanetConfigurationService(initContainer.httpClient, container.loginService);
+	return new PostFinanceCheckoutConfigurationService(initContainer.httpClient, container.loginService);
 });
 
 // noinspection JSUnresolvedFunction
-Application.addServiceProvider('WeArePlanetRefundService', (container) => {
+Application.addServiceProvider('PostFinanceCheckoutRefundService', (container) => {
 	const initContainer = Application.getContainer('init');
-	return new WeArePlanetRefundService(initContainer.httpClient, container.loginService);
+	return new PostFinanceCheckoutRefundService(initContainer.httpClient, container.loginService);
 });
 
 // noinspection JSUnresolvedFunction
-Application.addServiceProvider('WeArePlanetTransactionService', (container) => {
+Application.addServiceProvider('PostFinanceCheckoutTransactionService', (container) => {
 	const initContainer = Application.getContainer('init');
-	return new WeArePlanetTransactionService(initContainer.httpClient, container.loginService);
+	return new PostFinanceCheckoutTransactionService(initContainer.httpClient, container.loginService);
 });
 
 // noinspection JSUnresolvedFunction
-Application.addServiceProvider('WeArePlanetTransactionCompletionService', (container) => {
+Application.addServiceProvider('PostFinanceCheckoutTransactionCompletionService', (container) => {
 	const initContainer = Application.getContainer('init');
-	return new WeArePlanetTransactionCompletionService(initContainer.httpClient, container.loginService);
+	return new PostFinanceCheckoutTransactionCompletionService(initContainer.httpClient, container.loginService);
 });
 
 // noinspection JSUnresolvedFunction
-Application.addServiceProvider('WeArePlanetTransactionVoidService', (container) => {
+Application.addServiceProvider('PostFinanceCheckoutTransactionVoidService', (container) => {
 	const initContainer = Application.getContainer('init');
-	return new WeArePlanetTransactionVoidService(initContainer.httpClient, container.loginService);
+	return new PostFinanceCheckoutTransactionVoidService(initContainer.httpClient, container.loginService);
 });

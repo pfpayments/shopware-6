@@ -1,57 +1,57 @@
 {
   "authors": [
 	{
-	  "homepage": "https://www.weareplanet.com/",
-	  "name": "WeArePlanet"
+	  "homepage": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html",
+	  "name": "PostFinance Checkout"
 	}
   ],
   "autoload": {
 	"psr-4": {
-	  "WeArePlanetPayment\\": "src/"
+	  "PostFinanceCheckoutPayment\\": "src/"
 	}
   },
   "conflict": {
 	"shopware/administration": "<6.5.0.0,>=7",
 	"shopware/storefront": "<6.5.0.0,>=7"
   },
-  "description": "WeArePlanet integration for Shopware 6",
+  "description": "PostFinanceCheckout integration for Shopware 6",
   "extra": {
-	"copyright": "(c) by WeArePlanet",
+	"copyright": "(c) by PostFinance Checkout",
 	"description": {
-	  "de-DE": "WeArePlanet integration für Shopware 6",
-	  "en-GB": "WeArePlanet integration for Shopware 6",
-	  "fr-FR": "Intégration de WeArePlanet pour Shopware 6",
-      "it-IT": "Integrazione WeArePlanet per Shopware"
+	  "de-DE": "PostFinanceCheckout integration für Shopware 6",
+	  "en-GB": "PostFinanceCheckout integration for Shopware 6",
+	  "fr-FR": "Intégration de PostFinanceCheckout pour Shopware 6",
+      "it-IT": "Integrazione PostFinanceCheckout per Shopware"
 	},
 	"label": {
-	  "de-DE": "WeArePlanet Produkte für Shopware 6",
-	  "en-GB": "WeArePlanet Products for Shopware 6",
-	  "fr-FR": "WeArePlanet Produits for Shopware 6",
-	  "it-IT": "WeArePlanet Prodotti per Shopware 6"
+	  "de-DE": "PostFinanceCheckout Produkte für Shopware 6",
+	  "en-GB": "PostFinanceCheckout Products for Shopware 6",
+	  "fr-FR": "PostFinanceCheckout Produits for Shopware 6",
+	  "it-IT": "PostFinanceCheckout Prodotti per Shopware 6"
 	},
 	"manufacturerLink": {
-	  "de-DE": "https://www.weareplanet.com/",
-	  "en-GB": "https://www.weareplanet.com/",
-	  "fr-FR": "https://www.weareplanet.com/",
-      "it-IT": "https://www.weareplanet.com/"
+	  "de-DE": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html",
+	  "en-GB": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html",
+	  "fr-FR": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html",
+      "it-IT": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html"
 	},
 	"supportLink": {
-	  "de-DE": "https://paymentshub.weareplanet.com/space/select?target=/support",
-	  "en-GB": "https://paymentshub.weareplanet.com/space/select?target=/support",
-	  "fr-FR": "https://paymentshub.weareplanet.com/space/select?target=/support",
-      "it-IT": "https://paymentshub.weareplanet.com/space/select?target=/support"
+	  "de-DE": "https://www.postfinance.ch/en/business/support.html",
+	  "en-GB": "https://www.postfinance.ch/en/business/support.html",
+	  "fr-FR": "https://www.postfinance.ch/en/business/support.html",
+      "it-IT": "https://www.postfinance.ch/en/business/support.html"
 	},
-	"shopware-plugin-class": "WeArePlanetPayment\\WeArePlanetPayment"
+	"shopware-plugin-class": "PostFinanceCheckoutPayment\\PostFinanceCheckoutPayment"
   },
-  "homepage": "https://www.weareplanet.com//",
+  "homepage": "https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/",
   "keywords": [
-	"WeArePlanet",
+	"PostFinance Checkout",
 	"payment",
 	"php",
 	"shopware"
   ],
   "license": "Apache-2.0",
-  "name": "weareplanet/shopware-6",
+  "name": "postfinancecheckout/shopware-6",
   "require": {
 	"ext-curl": "*",
 	"ext-json": "*",

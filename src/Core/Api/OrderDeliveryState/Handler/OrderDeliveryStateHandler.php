@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Api\OrderDeliveryState\Handler;
+namespace PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Handler;
 
 use Shopware\Core\{
 	Checkout\Order\Aggregate\OrderDelivery\OrderDeliveryDefinition,
@@ -12,7 +12,7 @@ use Shopware\Core\{
 /**
  * Class OrderDeliveryStateHandler
  *
- * @package WeArePlanetPayment\Core\Api\OrderDeliveryState\Handler
+ * @package PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Handler
  */
 class OrderDeliveryStateHandler {
 

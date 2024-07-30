@@ -1,13 +1,13 @@
 <?php
 
-namespace WeArePlanetPayment\Core\Api\WebHooks\Struct;
+namespace PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct;
 
 use Shopware\Core\Framework\Struct\Struct;
 
 /**
  * Class Entity
  *
- * @package WeArePlanetPayment\Core\Api\WebHooks\Struct
+ * @package PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct
  */
 class Entity extends Struct {
 
@@ -41,7 +41,7 @@ class Entity extends Struct {
 
 	/**
 	 * @param int $id
-	 * @return \WeArePlanetPayment\Core\Api\WebHooks\Struct\Entity
+	 * @return \PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct\Entity
 	 */
 	public function setId(int $id): Entity
 	{
@@ -59,7 +59,7 @@ class Entity extends Struct {
 
 	/**
 	 * @param string $name
-	 * @return \WeArePlanetPayment\Core\Api\WebHooks\Struct\Entity
+	 * @return \PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct\Entity
 	 */
 	public function setName(string $name): Entity
 	{
@@ -77,7 +77,7 @@ class Entity extends Struct {
 
 	/**
 	 * @param array $states
-	 * @return \WeArePlanetPayment\Core\Api\WebHooks\Struct\Entity
+	 * @return \PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct\Entity
 	 */
 	public function setStates(array $states): Entity
 	{
@@ -95,7 +95,7 @@ class Entity extends Struct {
 
 	/**
 	 * @param bool $notifyEveryChange
-	 * @return \WeArePlanetPayment\Core\Api\WebHooks\Struct\Entity
+	 * @return \PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct\Entity
 	 */
 	public function setNotifyEveryChange(bool $notifyEveryChange): Entity
 	{

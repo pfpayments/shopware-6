@@ -1,36 +1,36 @@
 <?php declare(strict_types=1);
 
 
-namespace WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Command;
+namespace PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Command;
 
 use Shopware\Core\Framework\Context;
 use Symfony\Component\{
 	Console\Command\Command,
 	Console\Input\InputInterface,
 	Console\Output\OutputInterface};
-use WeArePlanetPayment\Core\Util\PaymentMethodUtil;
+use PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil;
 
 /**
  * Class PaymentMethodDefaultCommand
  *
- * @package WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Command
+ * @package PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Command
  */
 class PaymentMethodDefaultCommand extends Command {
 
 	/**
 	 * @var string
 	 */
-	protected static $defaultName = 'weareplanet:payment-method:default';
+	protected static $defaultName = 'postfinancecheckout:payment-method:default';
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Util\PaymentMethodUtil
+	 * @var \PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil
 	 */
 	protected $paymentMethodUtil;
 
 	/**
 	 * PaymentMethodDefaultCommand constructor.
 	 *
-	 * @param \WeArePlanetPayment\Core\Util\PaymentMethodUtil $paymentMethodUtil
+	 * @param \PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil $paymentMethodUtil
 	 */
 	public function __construct(PaymentMethodUtil $paymentMethodUtil)
 	{
@@ -45,9 +45,9 @@ class PaymentMethodDefaultCommand extends Command {
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$output->writeln('Set WeArePlanetPayment as default payment method...');
+		$output->writeln('Set PostFinanceCheckoutPayment as default payment method...');
 		$context = Context::createDefaultContext();
-		$this->paymentMethodUtil->setWeArePlanetAsDefaultPaymentMethod($context);
+		$this->paymentMethodUtil->setPostFinanceCheckoutAsDefaultPaymentMethod($context);
 		$this->paymentMethodUtil->disableSystemPaymentMethods($context);
 		return 0;
 	}
@@ -57,8 +57,8 @@ class PaymentMethodDefaultCommand extends Command {
 	 */
 	protected function configure()
 	{
-		$this->setDescription('Sets WeArePlanetPayment as default payment method.')
-			 ->setHelp('This command updates WeArePlanetPayment as default payment method for all SalesChannels.');
+		$this->setDescription('Sets PostFinanceCheckoutPayment as default payment method.')
+			 ->setHelp('This command updates PostFinanceCheckoutPayment as default payment method for all SalesChannels.');
 	}
 
 }

@@ -2,7 +2,7 @@
 // noinspection ThisExpressionReferencesGlobalObjectJS
 (function (window) {
     /**
-     * WeArePlanetCheckout
+     * PostFinanceCheckoutCheckout
      * @type {
      *      {
      *          payment_method_handler_name: string,
@@ -19,18 +19,18 @@
      *      }
      * }
      */
-    const WeArePlanetCheckout = {
+    const PostFinanceCheckoutCheckout = {
         /**
          * Variables
          */
-        payment_panel_id: 'weareplanet-payment-panel',
-        payment_method_iframe_id: 'weareplanet-payment-iframe',
-        payment_method_handler_name: 'weareplanet_payment_handler',
-        payment_method_handler_status: 'input[name="weareplanet_payment_handler_validation_status"]',
+        payment_panel_id: 'postfinancecheckout-payment-panel',
+        payment_method_iframe_id: 'postfinancecheckout-payment-iframe',
+        payment_method_handler_name: 'postfinancecheckout_payment_handler',
+        payment_method_handler_status: 'input[name="postfinancecheckout_payment_handler_validation_status"]',
         payment_form_id: 'confirmOrderForm',
-        button_cancel_id: 'weareplanetOrderCancel',
-        button_home_override: 'weareplanetHomeLink',
-        loader_id: 'weareplanetLoader',
+        button_cancel_id: 'postfinancecheckoutOrderCancel',
+        button_home_override: 'postfinancecheckoutHomeLink',
+        loader_id: 'postfinancecheckoutLoader',
         checkout_url: null,
         checkout_url_id: 'checkoutUrl',
         cart_recreate_url: null,
@@ -41,7 +41,7 @@
          * Initialize plugin
          */
         init: function () {
-            WeArePlanetCheckout.activateLoader(true);
+            PostFinanceCheckoutCheckout.activateLoader(true);
             this.checkout_url = document.getElementById(this.checkout_url_id).value;
             this.cart_recreate_url = document.getElementById(this.cart_recreate_url_id).value;
 
@@ -49,7 +49,7 @@
             document.getElementById(this.button_home_override).addEventListener('click', this.recreateCart, false);
             document.getElementById(this.payment_form_id).addEventListener('submit', this.submitPayment, false);
 
-            WeArePlanetCheckout.getIframe();
+            PostFinanceCheckoutCheckout.getIframe();
         },
 
         activateLoader: function (activate) {
@@ -66,15 +66,15 @@
         },
 
         hideLoader: function () {
-            const loader = document.getElementById(WeArePlanetCheckout.loader_id);
+            const loader = document.getElementById(PostFinanceCheckoutCheckout.loader_id);
             if (loader !== null && loader.parentNode !== null) {
                 loader.parentNode.removeChild(loader);
             }
-            WeArePlanetCheckout.activateLoader(false);
+            PostFinanceCheckoutCheckout.activateLoader(false);
         },
 
         recreateCart: function (e) {
-            window.location.href = WeArePlanetCheckout.cart_recreate_url;
+            window.location.href = PostFinanceCheckoutCheckout.cart_recreate_url;
             e.preventDefault();
         },
 
@@ -85,8 +85,8 @@
          * @return {boolean}
          */
         submitPayment: function (event) {
-            WeArePlanetCheckout.activateLoader(true);
-            WeArePlanetCheckout.handler.validate();
+            PostFinanceCheckoutCheckout.activateLoader(true);
+            PostFinanceCheckoutCheckout.handler.validate();
             event.preventDefault();
             return false;
         },
@@ -95,26 +95,26 @@
          * Get iframe
          */
         getIframe: function () {
-            const paymentPanel = document.getElementById(WeArePlanetCheckout.payment_panel_id);
+            const paymentPanel = document.getElementById(PostFinanceCheckoutCheckout.payment_panel_id);
             const paymentMethodConfigurationId = paymentPanel.dataset.id;
-            const iframeContainer = document.getElementById(WeArePlanetCheckout.payment_method_iframe_id);
+            const iframeContainer = document.getElementById(PostFinanceCheckoutCheckout.payment_method_iframe_id);
 
-            if (!WeArePlanetCheckout.handler) { // iframe has not been loaded yet
+            if (!PostFinanceCheckoutCheckout.handler) { // iframe has not been loaded yet
                 // noinspection JSUnresolvedFunction
-                WeArePlanetCheckout.handler = window.IframeCheckoutHandler(paymentMethodConfigurationId);
+                PostFinanceCheckoutCheckout.handler = window.IframeCheckoutHandler(paymentMethodConfigurationId);
                 // noinspection JSUnresolvedFunction
-                WeArePlanetCheckout.handler.setValidationCallback(function(validationResult){
-                    WeArePlanetCheckout.hideErrors();
-                    WeArePlanetCheckout.validationCallBack(validationResult);
+                PostFinanceCheckoutCheckout.handler.setValidationCallback(function(validationResult){
+                    PostFinanceCheckoutCheckout.hideErrors();
+                    PostFinanceCheckoutCheckout.validationCallBack(validationResult);
                 });
-                WeArePlanetCheckout.handler.setInitializeCallback(WeArePlanetCheckout.hideLoader());
-                WeArePlanetCheckout.handler.setHeightChangeCallback(function(height){
+                PostFinanceCheckoutCheckout.handler.setInitializeCallback(PostFinanceCheckoutCheckout.hideLoader());
+                PostFinanceCheckoutCheckout.handler.setHeightChangeCallback(function(height){
                     if(height < 1){ // iframe has no fields
-                        WeArePlanetCheckout.handler.submit();
+                        PostFinanceCheckoutCheckout.handler.submit();
                     }
                 });
-                WeArePlanetCheckout.handler.create(iframeContainer);
-                setTimeout(WeArePlanetCheckout.hideLoader(), 10000);
+                PostFinanceCheckoutCheckout.handler.create(iframeContainer);
+                setTimeout(PostFinanceCheckoutCheckout.hideLoader(), 10000);
 
             }
         },
@@ -126,16 +126,16 @@
         validationCallBack: function (validationResult) {
             if (validationResult.success) {
                 document.querySelector(this.payment_method_handler_status).value = true;
-                WeArePlanetCheckout.handler.submit();
+                PostFinanceCheckoutCheckout.handler.submit();
             } else {
                 document.body.scrollTop = 0;
                 document.documentElement.scrollTop = 0;
 
                 if (validationResult.errors) {
-                    WeArePlanetCheckout.showErrors(validationResult.errors);
+                    PostFinanceCheckoutCheckout.showErrors(validationResult.errors);
                 }
                 document.querySelector(this.payment_method_handler_status).value = false;
-                WeArePlanetCheckout.activateLoader(false);
+                PostFinanceCheckoutCheckout.activateLoader(false);
             }
         },
 
@@ -143,7 +143,7 @@
             let alert = document.createElement('div');
             alert.setAttribute('class', 'alert alert-danger');
             alert.setAttribute('role', 'alert');
-            alert.setAttribute('id', 'weareplanet-errors');
+            alert.setAttribute('id', 'postfinancecheckout-errors');
             document.getElementsByClassName('flashbags')[0].appendChild(alert);
 
             let alertContentContainer = document.createElement('div');
@@ -169,14 +169,14 @@
         },
 
         hideErrors: function() {
-            let errorElement = document.getElementById('weareplanet-errors');
+            let errorElement = document.getElementById('postfinancecheckout-errors');
             if (errorElement) {
                 errorElement.parentNode.removeChild(errorElement);
             }
         }
     };
 
-    window.WeArePlanetCheckout = WeArePlanetCheckout;
+    window.PostFinanceCheckoutCheckout = PostFinanceCheckoutCheckout;
 
 }(typeof window !== "undefined" ? window : this));
 
@@ -184,9 +184,9 @@
  * Vanilla JS over JQuery
  */
 window.addEventListener('load', function (e) {
-    WeArePlanetCheckout.init();
-    window.history.pushState({}, document.title, WeArePlanetCheckout.cart_recreate_url);
-    window.history.pushState({}, document.title, WeArePlanetCheckout.checkout_url);
+    PostFinanceCheckoutCheckout.init();
+    window.history.pushState({}, document.title, PostFinanceCheckoutCheckout.cart_recreate_url);
+    window.history.pushState({}, document.title, PostFinanceCheckoutCheckout.checkout_url);
 }, false);
 
 /**
@@ -197,5 +197,5 @@ window.addEventListener('popstate', function (e) {
     if (window.history.state == null) { // This means it's page load
         return;
     }
-    window.location.href = WeArePlanetCheckout.cart_recreate_url;
+    window.location.href = PostFinanceCheckoutCheckout.cart_recreate_url;
 }, false);

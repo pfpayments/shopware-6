@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace WeArePlanetPayment\Core\Api\Refund\Service;
+namespace PostFinanceCheckoutPayment\Core\Api\Refund\Service;
 
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -10,11 +10,11 @@ use Shopware\Core\{
 	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
 	Framework\Uuid\Uuid
 };
-use WeArePlanet\Sdk\{
+use PostFinanceCheckout\Sdk\{
 	Model\Refund,
 	Model\Transaction
 };
-use WeArePlanetPayment\Core\{
+use PostFinanceCheckoutPayment\Core\{
 	Api\Refund\Entity\RefundEntity,
 	Api\Transaction\Entity\TransactionEntity,
 	Api\Transaction\Entity\TransactionEntityDefinition,
@@ -25,7 +25,7 @@ use WeArePlanetPayment\Core\{
 /**
  * Class RefundService
  *
- * @package WeArePlanetPayment\Core\Api\Refund\Service
+ * @package PostFinanceCheckoutPayment\Core\Api\Refund\Service
  */
 class RefundService {
 
@@ -40,7 +40,7 @@ class RefundService {
 	private $logger;
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
+	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
 	 */
 	private $settingsService;
 
@@ -48,7 +48,7 @@ class RefundService {
 	 * RefundService constructor.
 	 *
 	 * @param \Psr\Container\ContainerInterface                                   $container
-	 * @param \WeArePlanetPayment\Core\Settings\Service\SettingsService $settingsService
+	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService $settingsService
 	 */
 	public function __construct(ContainerInterface $container, SettingsService $settingsService)
 	{
@@ -75,12 +75,12 @@ class RefundService {
 	 *
 	 * A redirect to the url will be performed
 	 *
-	 * @param \WeArePlanet\Sdk\Model\Transaction $transaction
+	 * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
 	 * @param string|null                                  $lineItemId
 	 * @param int                                          $quantity
 	 * @param \Shopware\Core\Framework\Context             $context
 	 *
-	 * @return \WeArePlanet\Sdk\Model\Refund|null
+	 * @return \PostFinanceCheckout\Sdk\Model\Refund|null
 	 * @throws \Exception
 	 */
 	public function create(Transaction $transaction, Context $context, ?string $lineItemId, int $quantity): ?Refund
@@ -111,11 +111,11 @@ class RefundService {
 	 *
 	 * A redirect to the url will be performed
 	 *
-	 * @param \WeArePlanet\Sdk\Model\Transaction $transaction
+	 * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
 	 * @param float                                        $refundableAmount
 	 * @param \Shopware\Core\Framework\Context             $context
 	 *
-	 * @return \WeArePlanet\Sdk\Model\Refund|null
+	 * @return \PostFinanceCheckout\Sdk\Model\Refund|null
 	 * @throws \Exception
 	 */
 	public function createRefundByAmount(Transaction $transaction, float $refundableAmount, Context $context): ?Refund
@@ -141,12 +141,12 @@ class RefundService {
 	}
 
 	/**
-	 * Get transaction entity by WeArePlanet transaction id
+	 * Get transaction entity by PostFinanceCheckout transaction id
 	 *
 	 * @param int                              $transactionId
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
-	 * @return \WeArePlanetPayment\Core\Api\Transaction\Entity\TransactionEntity
+	 * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity
 	 */
 	public function getTransactionEntityByTransactionId(int $transactionId, Context $context): TransactionEntity
 	{
@@ -159,10 +159,10 @@ class RefundService {
 	}
 
 	/**
-	 * Persist WeArePlanet transaction
+	 * Persist PostFinanceCheckout transaction
 	 *
 	 * @param \Shopware\Core\Framework\Context        $context
-	 * @param \WeArePlanet\Sdk\Model\Refund $refund
+	 * @param \PostFinanceCheckout\Sdk\Model\Refund $refund
 	 */
 	public function upsert(Refund $refund, Context $context): void
 	{
@@ -180,7 +180,7 @@ class RefundService {
 			];
 
 			$data = array_filter($data);
-			$this->container->get('weareplanet_refund.repository')->upsert([$data], $context);
+			$this->container->get('postfinancecheckout_refund.repository')->upsert([$data], $context);
 
 		} catch (\Exception $exception) {
 			$this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage());
@@ -188,16 +188,16 @@ class RefundService {
 	}
 
 	/**
-	 * Get refund entity by WeArePlanet refund id
+	 * Get refund entity by PostFinanceCheckout refund id
 	 *
 	 * @param int                              $refundId
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
-	 * @return \WeArePlanetPayment\Core\Api\Refund\Entity\RefundEntity|null
+	 * @return \PostFinanceCheckoutPayment\Core\Api\Refund\Entity\RefundEntity|null
 	 */
 	public function getByRefundId(int $refundId, Context $context): ?RefundEntity
 	{
-		return $this->container->get('weareplanet_refund.repository')
+		return $this->container->get('postfinancecheckout_refund.repository')
 							   ->search(
 								   (new Criteria())->addFilter(new EqualsFilter('refundId', $refundId)),
 								   $context

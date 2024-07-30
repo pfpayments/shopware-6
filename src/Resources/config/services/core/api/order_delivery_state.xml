@@ -6,18 +6,18 @@
 
 	<services>
 		<!-- Commands -->
-		<service id="WeArePlanetPayment\Core\Api\OrderDeliveryState\Command\OrderDeliveryStateCommand">
-			<argument type="service" id="WeArePlanetPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService"/>
+		<service id="PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Command\OrderDeliveryStateCommand">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService"/>
 			<tag name="console.command"/>
 		</service>
 
 		<!-- Handlers -->
-		<service id="WeArePlanetPayment\Core\Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler" public="true">
+		<service id="PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler" public="true">
 			<argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
 		</service>
 
 		<!-- Services -->
-		<service id="WeArePlanetPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService" public="true">
+		<service id="PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService" public="true">
 			<argument type="service" id="service_container"/>
 		</service>
 	</services>

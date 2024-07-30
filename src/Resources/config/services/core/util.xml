@@ -5,24 +5,24 @@
 		   xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
 	<services>
-		<service id="WeArePlanetPayment\Core\Util\LocaleCodeProvider" public="true">
+		<service id="PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider" public="true">
 			<argument type="service" id="service_container"/>
 			<argument type="service" id="Shopware\Core\Framework\Adapter\Translation\Translator"/>
 			<call method="setLogger">
-				<argument type="service" id="WeArePlanetPayment\Core\Util\Logger"/>
+				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
 			</call>
 		</service>
 
-		<service id="WeArePlanetPayment\Core\Util\PaymentMethodUtil">
+		<service id="PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil">
 			<argument type="service" id="service_container"/>
 			<call method="setLogger">
-				<argument type="service" id="WeArePlanetPayment\Core\Util\Logger"/>
+				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
 			</call>
 		</service>
 
-		<service id="WeArePlanetPayment\Core\Util\Logger" class="Monolog\Logger">
+		<service id="PostFinanceCheckoutPayment\Core\Util\Logger" class="Monolog\Logger">
 			<factory service="Shopware\Core\Framework\Log\LoggerFactory" method="createRotating"/>
-			<argument type="string">weareplanet_payment</argument>
+			<argument type="string">postfinancecheckout_payment</argument>
 		</service>
 	</services>
 </container>

@@ -1,36 +1,36 @@
 <?php declare(strict_types=1);
 
 
-namespace WeArePlanetPayment\Core\Api\OrderDeliveryState\Command;
+namespace PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Command;
 
 use Shopware\Core\Framework\Context;
 use Symfony\Component\{
 	Console\Command\Command,
 	Console\Input\InputInterface,
 	Console\Output\OutputInterface};
-use WeArePlanetPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService;
+use PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService;
 
 /**
  * Class OrderDeliveryStateCommand
  *
- * @package WeArePlanetPayment\Core\Api\OrderDeliveryState\Command
+ * @package PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Command
  */
 class OrderDeliveryStateCommand extends Command {
 
 	/**
 	 * @var string
 	 */
-	protected static $defaultName = 'weareplanet:order-delivery-states:install';
+	protected static $defaultName = 'postfinancecheckout:order-delivery-states:install';
 
 	/**
-	 * @var \WeArePlanetPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService
+	 * @var \PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService
 	 */
 	protected $orderDeliveryStateService;
 
 	/**
 	 * OrderDeliveryStateCommand constructor.
 	 *
-	 * @param \WeArePlanetPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService $orderDeliveryStateService
+	 * @param \PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Service\OrderDeliveryStateService $orderDeliveryStateService
 	 */
 	public function __construct(OrderDeliveryStateService $orderDeliveryStateService)
 	{
@@ -45,7 +45,7 @@ class OrderDeliveryStateCommand extends Command {
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$output->writeln('Install WeArePlanetPayment extra delivery states...');
+		$output->writeln('Install PostFinanceCheckoutPayment extra delivery states...');
 		$this->orderDeliveryStateService->install(Context::createDefaultContext());
 		return 0;
 	}
@@ -55,8 +55,8 @@ class OrderDeliveryStateCommand extends Command {
 	 */
 	protected function configure()
 	{
-		$this->setDescription('Installs WeArePlanetPayment extra delivery states.')
-			 ->setHelp('This command installs WeArePlanetPayment extra delivery states.');
+		$this->setDescription('Installs PostFinanceCheckoutPayment extra delivery states.')
+			 ->setHelp('This command installs PostFinanceCheckoutPayment extra delivery states.');
 	}
 
 }

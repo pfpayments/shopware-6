@@ -6,15 +6,15 @@
 
 	<services>
 		<!-- Controllers -->
-		<service id="WeArePlanetPayment\Core\Storefront\Checkout\Controller\CheckoutController" public="true">
+		<service id="PostFinanceCheckoutPayment\Core\Storefront\Checkout\Controller\CheckoutController" public="true">
 			<argument type="service" id="Shopware\Core\Checkout\Cart\LineItemFactoryRegistry"/>
 			<argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>
-			<argument type="service" id="WeArePlanetPayment\Core\Settings\Service\SettingsService"/>
-			<argument type="service" id="WeArePlanetPayment\Core\Api\Transaction\Service\TransactionService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService"/>
 			<argument type="service" id="Shopware\Storefront\Page\GenericPageLoader"/>
 			<argument type="service" id="Shopware\Core\Checkout\Order\SalesChannel\OrderRoute"/>
 			<call method="setLogger">
-				<argument type="service" id="WeArePlanetPayment\Core\Util\Logger"/>
+				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
 			</call>
 			<call method="setContainer">
 				<argument type="service" id="service_container"/>
@@ -25,20 +25,20 @@
 		</service>
 
 		<!-- Subscribers -->
-		<service id="WeArePlanetPayment\Core\Storefront\Checkout\Subscriber\CheckoutSubscriber">
-			<argument id="WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService" type="service"/>
-			<argument id="WeArePlanetPayment\Core\Api\Transaction\Service\TransactionService" type="service"/>
-			<argument id="WeArePlanetPayment\Core\Settings\Service\SettingsService" type="service"/>
-			<argument id="WeArePlanetPayment\Core\Util\PaymentMethodUtil" type="service"/>
+		<service id="PostFinanceCheckoutPayment\Core\Storefront\Checkout\Subscriber\CheckoutSubscriber">
+			<argument id="PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService" type="service"/>
+			<argument id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService" type="service"/>
+			<argument id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService" type="service"/>
+			<argument id="PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil" type="service"/>
 			<call method="setLogger">
-				<argument type="service" id="WeArePlanetPayment\Core\Util\Logger"/>
+				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
 			</call>
 			<tag name="kernel.event_subscriber"/>
 		</service>
 
 		<!-- Decorators -->
-		<service id="WeArePlanetPayment\Core\Storefront\Framework\Cookie\WeArePlanetCookieProvider" decorates="Shopware\Storefront\Framework\Cookie\CookieProviderInterface">
-			<argument type="service" id="WeArePlanetPayment\Core\Storefront\Framework\Cookie\WeArePlanetCookieProvider.inner"/>
+		<service id="PostFinanceCheckoutPayment\Core\Storefront\Framework\Cookie\PostFinanceCheckoutCookieProvider" decorates="Shopware\Storefront\Framework\Cookie\CookieProviderInterface">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Storefront\Framework\Cookie\PostFinanceCheckoutCookieProvider.inner"/>
 		</service>
 	</services>
 
