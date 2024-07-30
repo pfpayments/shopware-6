@@ -1,0 +1,23 @@
+{% block weareplanet_order_action_void %}
+<sw-modal variant="small"
+		  :title="$tc(`weareplanet-order.modal.title.void`)"
+		  @modal-close="$emit('modal-close')">
+
+	{% block weareplanet_order_action_void_amount %}
+		<sw-checkbox-field
+				:label="$tc('weareplanet-order.voidAction.confirm.message')"
+				v-model="isVoid"></sw-checkbox-field>
+	{% endblock %}
+
+	{% block weareplanet_order_action_void_confirm_button %}
+	<template #modal-footer>
+		<sw-button variant="primary"
+				   @click="voidPayment">
+			{{ $tc('weareplanet-order.refundAction.confirmButton.text') }}
+		</sw-button>
+	</template>
+	{% endblock %}
+
+	<sw-loader v-if="isLoading"></sw-loader>
+</sw-modal>
+{% endblock %}

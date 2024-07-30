@@ -1,3 +1,16 @@
+# 5.0.12
+- Meldung behoben, dass Liefer- und Rechnungsadresse immer identisch waren
+
+# 5.0.11
+- Plugin-Upgrade-Abhängigkeitsfehler behoben
+
+# 5.0.10
+- Unterstützung der Bonitätsprüfung für die Zahlungsmethoden Powerpay und MF Group Invoice
+- Verbesserte Handhabung abgebrochener Transaktionen
+
+# 5.0.9
+- Die Weiterleitung zur Bestätigungsseite nach dem Neuladen wurde behoben
+
 # 5.0.8
 - Checkout-Probleme nach dem Deaktivieren/Aktivieren des Plugins behoben
 - Plugin-Deinstallationsaktion behoben
@@ -94,7 +107,7 @@
 - Einstellungen zur Steuerung der Aktualisierung von Webhooks und Zahlungsmethoden hinzugefügt
 
 # 4.0.15
-- PostFinance Checkout/SW6-Dokumentation anpassen – wie man Rückerstattungen durchführt
+- WeArePlanet/SW6-Dokumentation anpassen – wie man Rückerstattungen durchführt
 
 # 4.0.14
 - Unterstützung für Shopware 6.4.6
@@ -284,4 +297,4 @@
 - Speichern Sie Rückerstattungen in db und laden Sie die Registerkarte Bestellung bei Änderungen neu
 
 # 1.0.0
-- Erste Version der PostFinanceCheckout-Integrationen für Shopware 6
+- Erste Version der WeArePlanet-Integrationen für Shopware 6

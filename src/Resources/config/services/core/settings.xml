@@ -6,16 +6,16 @@
 
 	<services>
 		<!-- Commands -->
-		<service id="PostFinanceCheckoutPayment\Core\Settings\Command\SettingsCommand">
-			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
+		<service id="WeArePlanetPayment\Core\Settings\Command\SettingsCommand">
+			<argument type="service" id="WeArePlanetPayment\Core\Settings\Service\SettingsService"/>
 			<tag name="console.command"/>
 		</service>
 
 		<!-- Services -->
-		<service id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService">
+		<service id="WeArePlanetPayment\Core\Settings\Service\SettingsService">
 			<argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
 			<call method="setLogger">
-				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
+				<argument type="service" id="WeArePlanetPayment\Core\Util\Logger"/>
 			</call>
 		</service>
 	</services>

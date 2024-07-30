@@ -1,27 +1,27 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Util\Payload;
+namespace WeArePlanetPayment\Core\Util\Payload;
 
-use PostFinanceCheckout\Sdk\{
+use WeArePlanet\Sdk\{
 	Model\LineItem,
 	Model\RefundCreate,
 	Model\RefundType,
 	Model\Transaction,
 	Model\TransactionState};
-use PostFinanceCheckoutPayment\Core\Util\Exception\InvalidPayloadException;
+use WeArePlanetPayment\Core\Util\Exception\InvalidPayloadException;
 
 /**
  * Class RefundPayload
  *
- * @package PostFinanceCheckoutPayment\Core\Util\Payload
+ * @package WeArePlanetPayment\Core\Util\Payload
  */
 class RefundPayload extends AbstractPayload {
 
 	/**
-	 * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
+	 * @param \WeArePlanet\Sdk\Model\Transaction $transaction
 	 * @param string                                       $lineItemId
 	 * @param int                                          $quantity
-	 * @return \PostFinanceCheckout\Sdk\Model\RefundCreate|null
+	 * @return \WeArePlanet\Sdk\Model\RefundCreate|null
 	 * @throws \Exception
 	 */
 	public function get(Transaction $transaction, string $lineItemId, int $quantity): ?RefundCreate
@@ -48,7 +48,7 @@ class RefundPayload extends AbstractPayload {
 			($transaction->getState() == TransactionState::FULFILL) &&
 			($amount <= floatval($transaction->getAuthorizationAmount()))
 		) {
-			$reduction = new \PostFinanceCheckout\Sdk\Model\LineItemReductionCreate();
+			$reduction = new \WeArePlanet\Sdk\Model\LineItemReductionCreate();
 			$reduction->setLineItemUniqueId($lineItem['unique_id']);
 			$reduction->setQuantityReduction($quantity);
 			$reduction->setUnitPriceReduction($price);
@@ -73,9 +73,9 @@ class RefundPayload extends AbstractPayload {
 	}
 
 	/**
-	 * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
+	 * @param \WeArePlanet\Sdk\Model\Transaction $transaction
 	 * @param float                                        $amount
-	 * @return \PostFinanceCheckout\Sdk\Model\RefundCreate|null
+	 * @return \WeArePlanet\Sdk\Model\RefundCreate|null
 	 * @throws \Exception
 	 */
 	public function getByAmount(Transaction $transaction, float $amount): ?RefundCreate

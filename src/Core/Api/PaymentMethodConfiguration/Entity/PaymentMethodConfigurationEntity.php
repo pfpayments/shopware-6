@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity;
+namespace WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Entity;
 
 use Shopware\Core\{
 	Checkout\Payment\PaymentMethodEntity,
@@ -10,7 +10,7 @@ use Shopware\Core\{
 /**
  * Class PaymentMethodConfigurationEntity
  *
- * @package PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity
+ * @package WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Entity
  */
 class PaymentMethodConfigurationEntity extends Entity {
 

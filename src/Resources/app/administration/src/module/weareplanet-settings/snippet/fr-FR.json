@@ -1,0 +1,103 @@
+{
+	"sw-privileges": {
+		"permissions": {
+			"parents": {
+				"weareplanet": "WeArePlanet brancher"
+			},
+			"weareplanet": {
+				"label": "WeArePlanet autorisations"
+			}
+		}
+	},
+	"weareplanet-settings": {
+	  "general": {
+		"descriptionTextModule": "Paramètres de WeArePlanet",
+		"mainMenuItemGeneral": "WeArePlanet"
+	  },
+	  "header": "WeArePlanet",
+	  "messageNotBlank": "Cette valeur ne doit pas être vide.",
+	  "salesChannelCard": {
+		"button": {
+		  "description": "Cliquez sur ce bouton pour définir WeArePlanet comme gestionnaire de paiement par défaut dans le canal de vente sélectionné.",
+		  "label": "Définir WeArePlanet comme gestionnaire de paiement par défaut"
+		}
+	  },
+	  "settingForm": {
+		"credentials": {
+		  "applicationKey": {
+			"label": "Application Key",
+			"tooltipText": "La clé d'application est utilisée pour authentifier ce plugin avec l'API."
+		  },
+		  "cardTitle": "Références",
+		  "spaceId": {
+			"label": "Space ID",
+			"tooltipText": "L'ID de l'espace est utilisé pour authentifier ce plugin avec l'API WeArePlanet.."
+		  },
+		  "userId": {
+			"label": "User ID",
+			"tooltipText": "L'ID utilisateur est utilisé pour authentifier ce plugin avec l'API WeArePlanet."
+		  },
+		  "button": {
+			"description": "Cliquez sur ce bouton pour tester l'API WeArePlanet.",
+			"label": "Test de connexion à l'API"
+		  },
+		  "alert": {
+			"title": "Test API",
+			"successMessage": "La connexion a été testée avec succès.",
+			"errorMessage": "La connexion a échoué. Réessayez."
+		  }
+		},
+		"messageSaveSuccess": "Les paramètres de WeArePlanet ont été enregistrés.",
+		"messageOrderDeliveryStateError": "Les paramètres de WeArePlanet OrderDeliveryState n'ont pas pu être enregistrés.",
+		"messageOrderDeliveryStateUpdated": "WeArePlanet OrderDeliveryState a été mis à jour.",
+		"messagePaymentMethodConfigurationError": "WeArePlanet PaymentMethodConfiguration n'a pas pu être enregistré. Veuillez vérifier vos informations d'identification.",
+		"messagePaymentMethodConfigurationUpdated": "WeArePlanet PaymentMethodConfiguration a été enregistré.",
+		"messageWebHookError": "WeArePlanet WebHook n'a pas pu être enregistré. Veuillez vérifier vos informations d'identification.",
+		"messageWebHookUpdated": "WeArePlanet WebHook a été mis à jour.",
+		"options": {
+		  "cardTitle": "Options",
+		  "emailEnabled": {
+			"label": "Envoyer un e-mail de confirmation de commande",
+			"tooltipText": "If this setting is enabled your customers will receive an email from your store when their order payment is authorised"
+		  },
+		  "integration": {
+			"label": "Integration",
+			"options": {
+			  "iframe": "Iframe",
+			  "payment_page": "Page de paiement"
+			},
+			"tooltipText": "Integration"
+		  },
+		  "lineItemConsistencyEnabled": {
+			"label": "Cohérence des postes de ligne",
+			"tooltipText": "Si cette option est activée, les totaux des articles dans WeArePlanetPayment correspondront toujours au total de la commande Shopware."
+		  },
+		  "spaceViewId": {
+			"label": "Space View ID",
+			"tooltipText": "Space View ID"
+		  }
+		},
+		"save": "Enregistrer",
+		"storefrontOptions": {
+		  "cardTitle": "Storefront Options",
+		  "invoiceDownloadEnabled": {
+			"label": "Téléchargement de facture",
+			"tooltipText": "Si ce paramètre est activé, vos clients pourront télécharger les factures de commande depuis WeArePlanet"
+		  }
+		},
+		"advancedOptions": {
+		  "cardTitle": "Options avancées",
+		  "webhooksUpdateEnabled": {
+			  "label": "Mise à jour des webhooks",
+			  "tooltipText": "Si ce paramètre est activé, la mise à jour des webhooks sera déclenchée lorsque vous enregistrerez les paramètres."
+		  },
+		  "paymentsUpdateEnabled": {
+			"label": "Mise à jour des paiements",
+			"tooltipText": "Si ce paramètre est activé, la mise à jour des méthodes de paiement sera déclenchée lorsque vous enregistrez les paramètres."
+		  }
+		},
+		"titleError": "Erreur",
+		"titleSuccess": "Succès"
+	  }
+	}
+  }

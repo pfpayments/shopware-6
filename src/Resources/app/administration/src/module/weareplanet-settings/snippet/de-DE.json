@@ -1,0 +1,103 @@
+{
+  "sw-privileges": {
+	"permissions": {
+	  "parents": {
+		"weareplanet": "WeArePlanet plugin"
+	  },
+	  "weareplanet": {
+		"label": "WeArePlanet berechtigungen"
+	  }
+	}
+  },
+  "weareplanet-settings": {
+	"general": {
+	  "descriptionTextModule": "WeArePlanet-Einstellungen",
+	  "mainMenuItemGeneral": "WeArePlanet"
+	},
+	"header": "WeArePlanet",
+	"messageNotBlank": "Dieser Wert sollte nicht leer sein.",
+	"salesChannelCard": {
+	  "button": {
+		"description": "Klicken Sie auf diese Schaltfläche, um WeArePlanet als Standard-Zahlungsabwickler im ausgewählten Vertriebskanal festzulegen",
+		"label": "WeArePlanet als Standard-Zahlungsabwickler festlegen"
+	  }
+	},
+	"settingForm": {
+	  "credentials": {
+		"applicationKey": {
+		  "label": "Application Key",
+		  "tooltipText": "Der Anwendungsschlüssel wird verwendet, um dieses Plugin mit der API WeArePlanet zu authentifizieren."
+		},
+		"cardTitle": "Anmeldedaten",
+		"spaceId": {
+		  "label": "Space ID",
+		  "tooltipText": "Die Space ID wird verwendet, um dieses Plugin mit der API WeArePlanet zu authentifizieren."
+		},
+		"userId": {
+		  "label": "User ID",
+		  "tooltipText": "Die Benutzer-ID wird verwendet, um dieses Plugin mit der WeArePlanet-API zu authentifizieren."
+		},
+		"button": {
+		  "description": "Klicken Sie auf diese Schaltfläche, um die WeArePlanet API zu testen",
+		  "label": "API Verbindung testen"
+		},
+		"alert": {
+		  "title": "API-Test",
+		  "successMessage": "Die Verbindung wurde erfolgreich getestet.",
+		  "errorMessage": "Die Verbindung ist fehlgeschlagen. Versuchen Sie es erneut."
+		}
+	  },
+	  "messageSaveSuccess": "WeArePlanet-Einstellungen wurden gespeichert.",
+	  "messageOrderDeliveryStateError": "WeArePlanet OrderDeliveryState konnte nicht gespeichert werden.",
+	  "messageOrderDeliveryStateUpdated": "WeArePlanet OrderDeliveryState wurde aktualisiert.",
+	  "messagePaymentMethodConfigurationError": "WeArePlanet PaymentMethodConfiguration konnte nicht gespeichert werden. Bitte überprüfen Sie Ihre Anmeldedaten.",
+	  "messagePaymentMethodConfigurationUpdated": "WeArePlanet PaymentMethodConfiguration wurde registriert.",
+	  "messageWebHookError": "WeArePlanet WebHook konnte nicht gespeichert werden. Bitte überprüfen Sie Ihre Zugangsdaten.",
+	  "messageWebHookUpdated": "WeArePlanet WebHook wurde aktualisiert.",
+	  "options": {
+		"cardTitle": "Optionen",
+		"emailEnabled": {
+		  "label": "Auftragsbestätigung per E-Mail senden",
+		  "tooltipText": "Wenn diese Einstellung aktiviert ist, erhalten Ihre Kunden eine E-Mail von Ihrem Geschäft, wenn die Zahlung ihrer Bestellung autorisiert ist."
+		},
+		"integration": {
+		  "label": "Integration",
+		  "options": {
+			"iframe": "Iframe",
+			"payment_page": "Payment Page"
+		  },
+		  "tooltipText": "Integration"
+		},
+		"lineItemConsistencyEnabled": {
+		  "label": "Konsistenz der Einzelposten",
+		  "tooltipText": "Wenn diese Option aktiviert ist, stimmen die Summen der Einzelposten in WeArePlanetPayment immer mit der Shopware-Bestellsumme überein."
+		},
+		"spaceViewId": {
+		  "label": "Space View ID",
+		  "tooltipText": "Space View ID"
+		}
+	  },
+	  "save": "Speichern",
+	  "storefrontOptions": {
+		"cardTitle": "Storefront-Optionen",
+		"invoiceDownloadEnabled": {
+		  "label": "Rechnung Download",
+		  "tooltipText": "Wenn diese Einstellung aktiviert ist, können Ihre Kunden Auftragsrechnungen von WeArePlanet herunterladen."
+		}
+	  },
+	  "advancedOptions": {
+		"cardTitle": "Erweiterte-Optionen",
+		"webhooksUpdateEnabled": {
+			"label": "Webhooks-Update",
+			"tooltipText": "Wenn diese Einstellung aktiviert ist, wird das Webhook-Update ausgelöst, wenn Sie die Einstellungen speichern"
+		},
+	    "paymentsUpdateEnabled": {
+		  "label": "Payments-Update",
+		  "tooltipText": "Wenn diese Einstellung aktiviert ist, wird die Aktualisierung der Zahlungsmethoden ausgelöst, wenn Sie die Einstellungen speichern"
+	    }
+	  },
+	  "titleError": "Fehler",
+	  "titleSuccess": "Erfolg"
+	}
+  }
+}

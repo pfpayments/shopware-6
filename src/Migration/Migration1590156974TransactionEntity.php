@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Migration;
+namespace WeArePlanetPayment\Migration;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Migration\MigrationStep;
@@ -8,7 +8,7 @@ use Shopware\Core\Framework\Migration\MigrationStep;
 /**
  * Class Migration1590156974TransactionEntity
  *
- * @package PostFinanceCheckoutPayment\Migration
+ * @package WeArePlanetPayment\Migration
  */
 class Migration1590156974TransactionEntity extends MigrationStep {
 
@@ -31,7 +31,7 @@ class Migration1590156974TransactionEntity extends MigrationStep {
 	public function update(Connection $connection): void
 	{
 		$connection->executeStatement('
-            CREATE TABLE IF NOT EXISTS `postfinancecheckout_transaction` (
+            CREATE TABLE IF NOT EXISTS `weareplanet_transaction` (
               `id` BINARY(16) NOT NULL,
               `data` JSON NOT NULL,
               `payment_method_id` BINARY(16) NOT NULL,
@@ -45,14 +45,14 @@ class Migration1590156974TransactionEntity extends MigrationStep {
               `updated_at` DATETIME(3) DEFAULT NULL,
               PRIMARY KEY (`id`),
               UNIQUE KEY `transaction_id_UNIQUE` (`transaction_id`),
-              KEY `fk.pfc_transaction.order_id` (`order_id`),
-              KEY `fk.pfc_transaction.order_transaction_id` (`order_transaction_id`),
-              KEY `fk.pfc_transaction.payment_method_id` (`payment_method_id`),
-              KEY `fk.pfc_transaction.sales_channel_id` (`sales_channel_id`),
-              CONSTRAINT `fk.pfc_transaction.order_id` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE,
-              CONSTRAINT `fk.pfc_transaction.order_transaction_id` FOREIGN KEY (`order_transaction_id`) REFERENCES `order_transaction` (`id`) ON DELETE CASCADE,
-              CONSTRAINT `fk.pfc_transaction.payment_method_id` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`id`) ON DELETE CASCADE,
-              CONSTRAINT `fk.pfc_transaction.sales_channel_id` FOREIGN KEY (`sales_channel_id`) REFERENCES `sales_channel` (`id`) ON DELETE CASCADE
+              KEY `fk.pln_transaction.order_id` (`order_id`),
+              KEY `fk.pln_transaction.order_transaction_id` (`order_transaction_id`),
+              KEY `fk.pln_transaction.payment_method_id` (`payment_method_id`),
+              KEY `fk.pln_transaction.sales_channel_id` (`sales_channel_id`),
+              CONSTRAINT `fk.pln_transaction.order_id` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE,
+              CONSTRAINT `fk.pln_transaction.order_transaction_id` FOREIGN KEY (`order_transaction_id`) REFERENCES `order_transaction` (`id`) ON DELETE CASCADE,
+              CONSTRAINT `fk.pln_transaction.payment_method_id` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`id`) ON DELETE CASCADE,
+              CONSTRAINT `fk.pln_transaction.sales_channel_id` FOREIGN KEY (`sales_channel_id`) REFERENCES `sales_channel` (`id`) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ');
 	}

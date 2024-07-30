@@ -1,35 +1,35 @@
 <?php declare(strict_types=1);
 
 
-namespace PostFinanceCheckoutPayment\Core\Api\WebHooks\Command;
+namespace WeArePlanetPayment\Core\Api\WebHooks\Command;
 
 use Symfony\Component\{
 	Console\Command\Command,
 	Console\Input\InputInterface,
 	Console\Output\OutputInterface};
-use PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService;
+use WeArePlanetPayment\Core\Api\WebHooks\Service\WebHooksService;
 
 /**
  * Class WebHooksCommand
  *
- * @package PostFinanceCheckoutPayment\Core\Api\WebHooks\Command
+ * @package WeArePlanetPayment\Core\Api\WebHooks\Command
  */
 class WebHooksCommand extends Command {
 
 	/**
 	 * @var string
 	 */
-	protected static $defaultName = 'postfinancecheckout:webhooks:install';
+	protected static $defaultName = 'weareplanet:webhooks:install';
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService
+	 * @var \WeArePlanetPayment\Core\Api\WebHooks\Service\WebHooksService
 	 */
 	protected $webHooksService;
 
 	/**
 	 * WebHooksCommand constructor.
 	 *
-	 * @param \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService $webHooksService
+	 * @param \WeArePlanetPayment\Core\Api\WebHooks\Service\WebHooksService $webHooksService
 	 */
 	public function __construct(WebHooksService $webHooksService)
 	{
@@ -42,13 +42,13 @@ class WebHooksCommand extends Command {
 	 * @param \Symfony\Component\Console\Output\OutputInterface $output
 	 *
 	 * @return int
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$output->writeln('Install PostFinanceCheckoutPayment webhooks...');
+		$output->writeln('Install WeArePlanetPayment webhooks...');
 		$this->webHooksService->install();
 		return 0;
 	}
@@ -58,8 +58,8 @@ class WebHooksCommand extends Command {
 	 */
 	protected function configure()
 	{
-		$this->setDescription('Install PostFinanceCheckoutPayment webhooks.')
-			 ->setHelp('This command installs PostFinanceCheckoutPayment webhooks.');
+		$this->setDescription('Install WeArePlanetPayment webhooks.')
+			 ->setHelp('This command installs WeArePlanetPayment webhooks.');
 	}
 
 }

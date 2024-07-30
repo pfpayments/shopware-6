@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Controller;
+namespace WeArePlanetPayment\Core\Api\Transaction\Controller;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
@@ -10,22 +10,22 @@ use Symfony\Component\{
 	HttpFoundation\Request,
 	HttpFoundation\Response,
 	Routing\Annotation\Route};
-use PostFinanceCheckout\Sdk\{
+use WeArePlanet\Sdk\{
 	Model\TransactionState};
-use PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService;
+use WeArePlanetPayment\Core\Settings\Service\SettingsService;
 
 
 /**
  * Class TransactionCompletionController
  *
- * @package PostFinanceCheckoutPayment\Core\Api\Transaction\Controller
+ * @package WeArePlanetPayment\Core\Api\Transaction\Controller
  *
  * @Route(defaults={"_routeScope"={"api"}})
  */
 class TransactionCompletionController extends AbstractController {
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
+	 * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
 	 */
 	protected $settingsService;
 
@@ -37,7 +37,7 @@ class TransactionCompletionController extends AbstractController {
 	/**
 	 * TransactionCompletionController constructor.
 	 *
-	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService $settingsService
+	 * @param \WeArePlanetPayment\Core\Settings\Service\SettingsService $settingsService
 	 */
 	public function __construct(SettingsService $settingsService)
 	{
@@ -58,13 +58,13 @@ class TransactionCompletionController extends AbstractController {
 	/**
 	 * @param \Symfony\Component\HttpFoundation\Request $request
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 *
 	 * @Route(
-	 *     "/api/_action/postfinancecheckout/transaction-completion/create-transaction-completion/",
-	 *     name="api.action.postfinancecheckout.transaction-completion.create-transaction-completion",
+	 *     "/api/_action/weareplanet/transaction-completion/create-transaction-completion/",
+	 *     name="api.action.weareplanet.transaction-completion.create-transaction-completion",
 	 *     methods={"POST"}
 	 *     )
 	 */

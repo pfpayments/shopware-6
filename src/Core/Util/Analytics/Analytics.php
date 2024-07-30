@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Util\Analytics;
+namespace WeArePlanetPayment\Core\Util\Analytics;
 
-use PostFinanceCheckout\Sdk\ApiClient;
+use WeArePlanet\Sdk\ApiClient;
 
 /**
  * Class Analytics
  *
- * @package PostFinanceCheckoutPayment\Core\Util\Analytics
+ * @package WeArePlanetPayment\Core\Util\Analytics
  */
 class Analytics {
 
@@ -28,7 +28,7 @@ class Analytics {
 	}
 
 	/**
-	 * @param \PostFinanceCheckout\Sdk\ApiClient $apiClient
+	 * @param \WeArePlanet\Sdk\ApiClient $apiClient
 	 */
 	public static function addHeaders(ApiClient &$apiClient)
 	{

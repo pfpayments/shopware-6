@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Api\WebHooks\Service;
+namespace WeArePlanetPayment\Core\Api\WebHooks\Service;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\PlatformRequest;
 use Symfony\Component\{
 	Routing\Generator\UrlGeneratorInterface,
 	Routing\RouterInterface,};
-use PostFinanceCheckout\Sdk\{
+use WeArePlanet\Sdk\{
 	ApiClient,
 	Model\CreationEntityState,
 	Model\CriteriaOperator,
@@ -21,19 +21,19 @@ use PostFinanceCheckout\Sdk\{
 	Model\WebhookListenerCreate,
 	Model\WebhookUrl,
 	Model\WebhookUrlCreate,};
-use PostFinanceCheckoutPayment\Core\{
+use WeArePlanetPayment\Core\{
 	Api\WebHooks\Struct\Entity,
 	Settings\Service\SettingsService};
 
 /**
  * Class WebHooksService
  *
- * @package PostFinanceCheckoutPayment\Core\Api\WebHooks\Service
+ * @package WeArePlanetPayment\Core\Api\WebHooks\Service
  */
 class WebHooksService {
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
+	 * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
 	 */
 	protected $settingsService;
 
@@ -43,7 +43,7 @@ class WebHooksService {
 	protected $router;
 
 	/**
-	 * @var \PostFinanceCheckout\Sdk\ApiClient
+	 * @var \WeArePlanet\Sdk\ApiClient
 	 */
 	protected $apiClient;
 
@@ -66,7 +66,7 @@ class WebHooksService {
 		/**
 		 * Transaction WebHook Entity Id
 		 *
-		 * @link https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/doc/api/webhook-entity/view/1472041829003
+		 * @link https://www.weareplanet.com//doc/api/webhook-entity/view/1472041829003
 		 */
 		[
 			'id'                => '1472041829003',
@@ -86,7 +86,7 @@ class WebHooksService {
 		/**
 		 * Transaction Invoice WebHook Entity Id
 		 *
-		 * @link https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/doc/api/webhook-entity/view/1472041816898
+		 * @link https://www.weareplanet.com//doc/api/webhook-entity/view/1472041816898
 		 */
 		[
 			'id'                => '1472041816898',
@@ -101,7 +101,7 @@ class WebHooksService {
 		/**
 		 * Refund WebHook Entity Id
 		 *
-		 * @link https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/doc/api/webhook-entity/view/1472041839405
+		 * @link https://www.weareplanet.com//doc/api/webhook-entity/view/1472041839405
 		 */
 		[
 			'id'                => '1472041839405',
@@ -115,7 +115,7 @@ class WebHooksService {
 		/**
 		 * Payment Method Configuration Id
 		 *
-		 * @link https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/doc/api/webhook-entity/view/1472041857405
+		 * @link https://www.weareplanet.com//doc/api/webhook-entity/view/1472041857405
 		 */
 		[
 			'id'                => '1472041857405',
@@ -144,7 +144,7 @@ class WebHooksService {
 	/**
 	 * WebHooksService constructor.
 	 *
-	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService $settingsService
+	 * @param \WeArePlanetPayment\Core\Settings\Service\SettingsService $settingsService
 	 * @param \Symfony\Component\Routing\RouterInterface                          $router
 	 */
 	public function __construct(SettingsService $settingsService, RouterInterface $router)
@@ -181,7 +181,7 @@ class WebHooksService {
 	}
 
 	/**
-	 * @return \PostFinanceCheckout\Sdk\ApiClient
+	 * @return \WeArePlanet\Sdk\ApiClient
 	 */
 	public function getApiClient(): ApiClient
 	{
@@ -189,9 +189,9 @@ class WebHooksService {
 	}
 
 	/**
-	 * @param \PostFinanceCheckout\Sdk\ApiClient $apiClient
+	 * @param \WeArePlanet\Sdk\ApiClient $apiClient
 	 *
-	 * @return \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService
+	 * @return \WeArePlanetPayment\Core\Api\WebHooks\Service\WebHooksService
 	 */
 	public function setApiClient(ApiClient $apiClient): WebHooksService
 	{
@@ -210,7 +210,7 @@ class WebHooksService {
 	/**
 	 * @param int $spaceId
 	 *
-	 * @return \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService
+	 * @return \WeArePlanetPayment\Core\Api\WebHooks\Service\WebHooksService
 	 */
 	public function setSpaceId(int $spaceId): WebHooksService
 	{
@@ -222,9 +222,9 @@ class WebHooksService {
 	 * Install WebHooks
 	 *
 	 * @return array
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	public function install(): array
 	{
@@ -250,7 +250,7 @@ class WebHooksService {
 	 *
 	 * @param string|null $salesChannelId
 	 *
-	 * @return \PostFinanceCheckoutPayment\Core\Api\WebHooks\Service\WebHooksService
+	 * @return \WeArePlanetPayment\Core\Api\WebHooks\Service\WebHooksService
 	 */
 	public function setSalesChannelId(?string $salesChannelId = null): WebHooksService
 	{
@@ -276,7 +276,7 @@ class WebHooksService {
 
 
 			/**
-			 * @var \PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct\Entity $data
+			 * @var \WeArePlanetPayment\Core\Api\WebHooks\Struct\Entity $data
 			 */
 			foreach ($this->webHookEntitiesConfig as $data) {
 
@@ -306,9 +306,9 @@ class WebHooksService {
 	 * Create WebHook URL
 	 *
 	 * @return WebhookUrl
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	protected function getOrCreateWebHookUrl(): WebhookUrl
 	{
@@ -345,7 +345,7 @@ class WebHooksService {
 	 * @param        $value
 	 * @param string $operator
 	 *
-	 * @return \PostFinanceCheckout\Sdk\Model\EntityQueryFilter
+	 * @return \WeArePlanet\Sdk\Model\EntityQueryFilter
 	 */
 	protected function getEntityFilter(string $fieldName, $value, string $operator = CriteriaOperator::EQUALS): EntityQueryFilter
 	{
@@ -365,7 +365,7 @@ class WebHooksService {
 	protected function getWebHookCallBackUrl(): string
 	{
 		return $this->router->generate(
-			'api.action.postfinancecheckout.webhook.update',
+			'api.action.weareplanet.webhook.update',
 			['salesChannelId' => $this->getSalesChannelId() ?? 'null',],
 			UrlGeneratorInterface::ABSOLUTE_URL
 		);
@@ -375,9 +375,9 @@ class WebHooksService {
 	 * @param int $webHookUrlId
 	 *
 	 * @return array
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	protected function getInstalledWebHookListeners(int $webHookUrlId): array
 	{

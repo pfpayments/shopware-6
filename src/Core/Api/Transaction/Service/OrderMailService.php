@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Service;
+namespace WeArePlanetPayment\Core\Api\Transaction\Service;
 
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -16,18 +16,18 @@ use Shopware\Core\{
 	Framework\DataAbstractionLayer\Search\Filter\NotFilter,
 	Framework\DataAbstractionLayer\Search\Filter\OrFilter,
 	Framework\Event\EventAction\EventActionCollection};
-use PostFinanceCheckoutPayment\Core\{
+use WeArePlanetPayment\Core\{
 	Api\Transaction\Entity\TransactionEntity,
 	Api\Transaction\Entity\TransactionEntityDefinition};
 
 /**
  * Class OrderMailService
  *
- * @package PostFinanceCheckoutPayment\Core\Api\Transaction\Service
+ * @package WeArePlanetPayment\Core\Api\Transaction\Service
  */
 class OrderMailService {
 
-	public const EMAIL_ORIGIN_IS_POSTFINANCECHECKOUT = "isPostFinanceCheckoutPayment";
+	public const EMAIL_ORIGIN_IS_WEAREPLANET = "isWeArePlanetPayment";
 	/**
 	 * @var \Psr\Container\ContainerInterface
 	 */
@@ -101,7 +101,7 @@ class OrderMailService {
 
 			$templateData = [
 				'order'                                     => $order,
-				self::EMAIL_ORIGIN_IS_POSTFINANCECHECKOUT => true,
+				self::EMAIL_ORIGIN_IS_WEAREPLANET => true,
 			];
 
 			$data = $this->getData($order, $context);
@@ -123,7 +123,7 @@ class OrderMailService {
 	 * @param string                           $orderId
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
-	 * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity
+	 * @return \WeArePlanetPayment\Core\Api\Transaction\Entity\TransactionEntity
 	 */
 	protected function getTransactionEntityByOrderId(string $orderId, Context $context): TransactionEntity
 	{

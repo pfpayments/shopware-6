@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service;
+namespace WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service;
 
 use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;
@@ -15,7 +15,7 @@ use Shopware\Core\{
 	Framework\Plugin\Util\PluginIdProvider,
 	Framework\Uuid\Uuid};
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use PostFinanceCheckout\Sdk\{
+use WeArePlanet\Sdk\{
 	ApiClient,
 	Model\CreationEntityState,
 	Model\CriteriaOperator,
@@ -24,29 +24,29 @@ use PostFinanceCheckout\Sdk\{
 	Model\EntityQueryFilterType,
 	Model\PaymentMethodConfiguration,
 	Model\RestLanguage};
-use PostFinanceCheckoutPayment\Core\{
+use WeArePlanetPayment\Core\{
 	Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity,
 	Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntityDefinition,
-	Checkout\PaymentHandler\PostFinanceCheckoutPaymentHandler,
+	Checkout\PaymentHandler\WeArePlanetPaymentHandler,
 	Settings\Service\SettingsService,
 	Util\LocaleCodeProvider};
-use PostFinanceCheckoutPayment\PostFinanceCheckoutPayment;
+use WeArePlanetPayment\WeArePlanetPayment;
 
 
 /**
  * Class PaymentMethodConfigurationService
  *
- * @package PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service
+ * @package WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service
  */
 class PaymentMethodConfigurationService {
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
+	 * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
 	 */
 	protected $settingsService;
 
 	/**
-	 * @var \PostFinanceCheckout\Sdk\ApiClient
+	 * @var \WeArePlanet\Sdk\ApiClient
 	 */
 	protected $apiClient;
 
@@ -88,7 +88,7 @@ class PaymentMethodConfigurationService {
 	private $languages;
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider
+	 * @var \WeArePlanetPayment\Core\Util\LocaleCodeProvider
 	 */
 	private $localeCodeProvider;
 
@@ -105,7 +105,7 @@ class PaymentMethodConfigurationService {
 	/**
 	 * PaymentMethodConfigurationService constructor.
 	 *
-	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService                        $settingsService
+	 * @param \WeArePlanetPayment\Core\Settings\Service\SettingsService                        $settingsService
 	 * @param \Symfony\Component\DependencyInjection\ContainerInterface                                  $container
 	 * @param \Shopware\Core\Content\ImportExport\DataAbstractionLayer\Serializer\Entity\MediaSerializer $mediaSerializer
 	 * @param \Shopware\Core\Content\ImportExport\DataAbstractionLayer\Serializer\SerializerRegistry     $serializerRegistry
@@ -139,7 +139,7 @@ class PaymentMethodConfigurationService {
 	}
 
 	/**
-	 * @return \PostFinanceCheckout\Sdk\ApiClient
+	 * @return \WeArePlanet\Sdk\ApiClient
 	 */
 	public function getApiClient(): ApiClient
 	{
@@ -147,9 +147,9 @@ class PaymentMethodConfigurationService {
 	}
 
 	/**
-	 * @param \PostFinanceCheckout\Sdk\ApiClient $apiClient
+	 * @param \WeArePlanet\Sdk\ApiClient $apiClient
 	 *
-	 * @return \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
+	 * @return \WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
 	 */
 	public function setApiClient(ApiClient $apiClient): PaymentMethodConfigurationService
 	{
@@ -161,9 +161,9 @@ class PaymentMethodConfigurationService {
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
 	 * @return array
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	public function synchronize(Context $context): array
 	{
@@ -193,7 +193,7 @@ class PaymentMethodConfigurationService {
 	 *
 	 * @param string|null $salesChannelId
 	 *
-	 * @return \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
+	 * @return \WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
 	 */
 	public function setSalesChannelId(?string $salesChannelId = null): PaymentMethodConfigurationService
 	{
@@ -213,21 +213,21 @@ class PaymentMethodConfigurationService {
 		$criteria = (new Criteria())->addFilter(new EqualsFilter('spaceId', $this->getSpaceId()));
 
 		/**
-		 * @var $postFinanceCheckoutPMConfigurationRepository
+		 * @var $weArePlanetPMConfigurationRepository
 		 */
-		$postFinanceCheckoutPMConfigurationRepository = $this->container->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository');
+		$weArePlanetPMConfigurationRepository = $this->container->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository');
 
 		/** @var EntityRepositoryInterface $salesChannelPaymentRepository */
 		$salesChannelPaymentRepository = $this->container->get('sales_channel_payment_method.repository');
 
-		$paymentMethodConfigurationEntities = $postFinanceCheckoutPMConfigurationRepository
+		$paymentMethodConfigurationEntities = $weArePlanetPMConfigurationRepository
 			->search($criteria, $context)
 			->getEntities();
 
 		if (!empty($paymentMethodConfigurationEntities)) {
 
 			/**
-			 * @var $paymentMethodConfigurationEntity \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity
+			 * @var $paymentMethodConfigurationEntity \WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity
 			 */
 			foreach ($paymentMethodConfigurationEntities as $paymentMethodConfigurationEntity) {
 				$data[] = [
@@ -246,7 +246,7 @@ class PaymentMethodConfigurationService {
 			}
 
 			try {
-				$postFinanceCheckoutPMConfigurationRepository->update($data, $context);
+				$weArePlanetPMConfigurationRepository->update($data, $context);
 				$this->paymentMethodRepository->update($paymentMethodData, $context);
 				$salesChannelPaymentRepository->delete($salesChannelPaymentMethodData, $context);
 			} catch (\Exception $exception) {
@@ -267,11 +267,11 @@ class PaymentMethodConfigurationService {
 			$query = "UPDATE payment_method
 				  	  SET active=0
 				  	  WHERE handler_identifier=:handler_identifier AND id NOT IN (
-				  	  	SELECT payment_method_id FROM postfinancecheckout_payment_method_configuration
+				  	  	SELECT payment_method_id FROM weareplanet_payment_method_configuration
 				  	  )";
 
 			$params = [
-				'handler_identifier' => PostFinanceCheckoutPaymentHandler::class,
+				'handler_identifier' => WeArePlanetPaymentHandler::class,
 			];
 
 			$connection = $this->container->get(Connection::class);
@@ -296,13 +296,13 @@ class PaymentMethodConfigurationService {
 	}
 
 	/**
-	 * Enable payment methods from PostFinanceCheckout API
+	 * Enable payment methods from WeArePlanet API
 	 *
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	private function enablePaymentMethodConfigurations(Context $context): void
 	{
@@ -310,7 +310,7 @@ class PaymentMethodConfigurationService {
 		$this->logger->debug('Updating payment methods', $paymentMethodConfigurations);
 
 		/**
-		 * @var $paymentMethodConfiguration \PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration
+		 * @var $paymentMethodConfiguration \WeArePlanet\Sdk\Model\PaymentMethodConfiguration
 		 */
 		foreach ($paymentMethodConfigurations as $paymentMethodConfiguration) {
 
@@ -342,12 +342,12 @@ class PaymentMethodConfigurationService {
 	}
 
 	/**
-	 * Fetch active merchant payment methods from PostFinanceCheckout API
+	 * Fetch active merchant payment methods from WeArePlanet API
 	 *
-	 * @return \PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration[]
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @return \WeArePlanet\Sdk\Model\PaymentMethodConfiguration[]
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	private function getPaymentMethodConfigurations(): array
 	{
@@ -382,7 +382,7 @@ class PaymentMethodConfigurationService {
 	/**
 	 * @param int $spaceId
 	 *
-	 * @return \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
+	 * @return \WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
 	 */
 	public function setSpaceId(int $spaceId): PaymentMethodConfigurationService
 	{
@@ -395,7 +395,7 @@ class PaymentMethodConfigurationService {
 	 * @param int                              $paymentMethodConfigurationId
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
-	 * @return \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity|null
+	 * @return \WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity|null
 	 */
 	protected function getPaymentMethodConfigurationEntity(
 		int $spaceId,
@@ -434,12 +434,12 @@ class PaymentMethodConfigurationService {
 	 * Update or insert Payment Method
 	 *
 	 * @param string                                                      $id
-	 * @param \PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration $paymentMethodConfiguration
+	 * @param \WeArePlanet\Sdk\Model\PaymentMethodConfiguration $paymentMethodConfiguration
 	 * @param \Shopware\Core\Framework\Context                            $context
 	 *
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	protected function upsertPaymentMethod(
 		string $id,
@@ -450,13 +450,13 @@ class PaymentMethodConfigurationService {
 		/** @var PluginIdProvider $pluginIdProvider */
 		$pluginIdProvider = $this->container->get(PluginIdProvider::class);
 		$pluginId         = $pluginIdProvider->getPluginIdByBaseClass(
-			PostFinanceCheckoutPayment::class,
+			WeArePlanetPayment::class,
 			$context
 		);
 
 		$data = [
 			'id'                 => $id,
-			'handlerIdentifier'  => PostFinanceCheckoutPaymentHandler::class,
+			'handlerIdentifier'  => WeArePlanetPaymentHandler::class,
 			'pluginId'           => $pluginId,
 			'position'           => $paymentMethodConfiguration->getSortOrder() - 100,
 			'afterOrderEnabled'  => true,
@@ -472,13 +472,13 @@ class PaymentMethodConfigurationService {
 	}
 
 	/**
-	 * @param \PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration $paymentMethodConfiguration
+	 * @param \WeArePlanet\Sdk\Model\PaymentMethodConfiguration $paymentMethodConfiguration
 	 * @param \Shopware\Core\Framework\Context                            $context
 	 *
 	 * @return array
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	protected function getPaymentMethodConfigurationTranslation(PaymentMethodConfiguration $paymentMethodConfiguration, Context $context): array
 	{
@@ -498,9 +498,9 @@ class PaymentMethodConfigurationService {
 	 * @param string $locale
 	 *
 	 * @return string|null
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	protected function translate(array $translatedString, string $locale): ?string
 	{
@@ -530,10 +530,10 @@ class PaymentMethodConfigurationService {
 	 *
 	 * @param $code
 	 *
-	 * @return \PostFinanceCheckout\Sdk\Model\RestLanguage|null
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @return \WeArePlanet\Sdk\Model\RestLanguage|null
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	protected function findPrimaryLanguage(string $code): ?RestLanguage
 	{
@@ -549,9 +549,9 @@ class PaymentMethodConfigurationService {
 	/**
 	 *
 	 * @return array
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	protected function getLanguages(): array
 	{
@@ -565,7 +565,7 @@ class PaymentMethodConfigurationService {
 	 * Upload Payment Method icons
 	 *
 	 * @param string                                                      $id
-	 * @param \PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration $paymentMethodConfiguration
+	 * @param \WeArePlanet\Sdk\Model\PaymentMethodConfiguration $paymentMethodConfiguration
 	 * @param \Shopware\Core\Framework\Context                            $context
 	 *
 	 * @return string|null

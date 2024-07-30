@@ -1,0 +1,103 @@
+{
+  "sw-privileges": {
+	"permissions": {
+	  "parents": {
+		"weareplanet": "WeArePlanet plugin"
+	  },
+	  "weareplanet": {
+		"label": "WeArePlanet permissions"
+	  }
+	}
+  },
+  "weareplanet-settings": {
+	"general": {
+	  "descriptionTextModule": "WeArePlanet settings",
+	  "mainMenuItemGeneral": "WeArePlanet"
+	},
+	"header": "WeArePlanet",
+	"messageNotBlank": "This value should not be blank.",
+	"salesChannelCard": {
+	  "button": {
+		"description": "Click this button to set WeArePlanet as default payment handler in the selected SalesChannel",
+		"label": "Set WeArePlanet as default payment handler"
+	  }
+	},
+	"settingForm": {
+	  "credentials": {
+		"applicationKey": {
+		  "label": "Application Key",
+		  "tooltipText": "The Application Key is used to authenticate this plugin with the WeArePlanet API."
+		},
+		"cardTitle": "Credentials",
+		"spaceId": {
+		  "label": "Space ID",
+		  "tooltipText": "The space ID is used to authenticate this plugin with the WeArePlanet API."
+		},
+		"userId": {
+		  "label": "User ID",
+		  "tooltipText": "The user ID is used to authenticate this plugin with the WeArePlanet API."
+		},
+		"button": {
+		  "description": "Click this button to test the WeArePlanet API",
+		  "label": "API connection test"
+		},
+		"alert": {
+		  "title": "API Test",
+		  "successMessage": "The connection was successfully tested.",
+		  "errorMessage": "The connection was failed. Try it again."
+		}
+	  },
+	  "messageSaveSuccess": "WeArePlanet settings have been saved.",
+	  "messageOrderDeliveryStateError": "WeArePlanet OrderDeliveryState could not be saved.",
+	  "messageOrderDeliveryStateUpdated": "WeArePlanet OrderDeliveryState has been updated.",
+	  "messagePaymentMethodConfigurationError": "WeArePlanet PaymentMethodConfiguration could not be saved. Please check your credentials.",
+	  "messagePaymentMethodConfigurationUpdated": "WeArePlanet PaymentMethodConfiguration has been registered.",
+	  "messageWebHookError": "WeArePlanet WebHook could not be saved. Please check your credentials.",
+	  "messageWebHookUpdated": "WeArePlanet WebHook has been updated.",
+	  "options": {
+		"cardTitle": "Options",
+		"emailEnabled": {
+		  "label": "Send order confirmation email",
+		  "tooltipText": "If this setting is enabled your customers will receive an email from your store when their order payment is authorised"
+		},
+		"integration": {
+		  "label": "Integration",
+		  "options": {
+			"iframe": "Iframe",
+			"payment_page": "Payment Page"
+		  },
+		  "tooltipText": "Integration"
+		},
+		"lineItemConsistencyEnabled": {
+		  "label": "Line item consistency",
+		  "tooltipText": "If this option is enabled line item totals in WeArePlanetPayment will always match Shopware order total"
+		},
+		"spaceViewId": {
+		  "label": "Space View ID",
+		  "tooltipText": "Space View ID"
+		}
+	  },
+	  "save": "Save",
+	  "storefrontOptions": {
+		"cardTitle": "Storefront Options",
+		"invoiceDownloadEnabled": {
+		  "label": "Invoice Download",
+		  "tooltipText": "If this setting is enabled your customers will be able to download order invoices from WeArePlanet"
+		}
+	  },
+	  "advancedOptions": {
+		"cardTitle": "Advanced Options",
+		"webhooksUpdateEnabled": {
+			"label": "Webhooks Update",
+			"tooltipText": "If this setting is enabled webhook update will be triggered when you save settings"
+		},
+	    "paymentsUpdateEnabled": {
+		  "label": "Payments Update",
+		  "tooltipText": "If this setting is enabled payment methods update will be triggered when you save settings"
+	    }
+	  },
+	  "titleError": "Error",
+	  "titleSuccess": "Success"
+	}
+  }
+}

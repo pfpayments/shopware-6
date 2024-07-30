@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Migration;
+namespace WeArePlanetPayment\Migration;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Migration\MigrationStep;
@@ -8,7 +8,7 @@ use Shopware\Core\Framework\Migration\MigrationStep;
 /**
  * Class Migration1590646356RefundEntity
  *
- * @package PostFinanceCheckoutPayment\Migration
+ * @package WeArePlanetPayment\Migration
  */
 class Migration1590646356RefundEntity extends MigrationStep {
 	/**
@@ -30,7 +30,7 @@ class Migration1590646356RefundEntity extends MigrationStep {
 	public function update(Connection $connection): void
 	{
 		$connection->executeStatement('
-            CREATE TABLE IF NOT EXISTS `postfinancecheckout_refund` (
+            CREATE TABLE IF NOT EXISTS `weareplanet_refund` (
               `id` BINARY(16) NOT NULL,
               `data` JSON NOT NULL,
               `refund_id` INT UNSIGNED NOT NULL,
@@ -41,8 +41,8 @@ class Migration1590646356RefundEntity extends MigrationStep {
               `updated_at` DATETIME(3) DEFAULT NULL,
               PRIMARY KEY (`id`),
               UNIQUE KEY `refund_id_UNIQUE` (`refund_id`),
-              KEY `fk.pfc_refund.transaction_id` (`transaction_id`),
-              CONSTRAINT `fk.pfc_refund.transaction_id` FOREIGN KEY (`transaction_id`) REFERENCES `postfinancecheckout_transaction` (`transaction_id`) ON DELETE CASCADE
+              KEY `fk.pln_refund.transaction_id` (`transaction_id`),
+              CONSTRAINT `fk.pln_refund.transaction_id` FOREIGN KEY (`transaction_id`) REFERENCES `weareplanet_transaction` (`transaction_id`) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ');
 	}

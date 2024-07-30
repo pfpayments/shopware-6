@@ -1,23 +1,23 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Settings\Service;
+namespace WeArePlanetPayment\Core\Settings\Service;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
-use PostFinanceCheckoutPayment\Core\Settings\Struct\Settings;
+use WeArePlanetPayment\Core\Settings\Struct\Settings;
 
 
 /**
  * Class SettingsService
  *
- * @package PostFinanceCheckoutPayment\Core\Settings\Service
+ * @package WeArePlanetPayment\Core\Settings\Service
  */
 class SettingsService {
 
 	/**
-	 * Prefix to PostFinanceCheckout configs
+	 * Prefix to WeArePlanet configs
 	 */
-	public const SYSTEM_CONFIG_DOMAIN                       = 'PostFinanceCheckoutPayment.config.';
+	public const SYSTEM_CONFIG_DOMAIN                       = 'WeArePlanetPayment.config.';
 	public const CONFIG_APPLICATION_KEY                     = 'applicationKey';
 	public const CONFIG_EMAIL_ENABLED                       = 'emailEnabled';
 	public const CONFIG_INTEGRATION                         = 'integration';
@@ -82,7 +82,7 @@ class SettingsService {
 	 * Get valid settings
 	 *
 	 * @param string|null $salesChannelId
-	 * @return \PostFinanceCheckoutPayment\Core\Settings\Struct\Settings|null
+	 * @return \WeArePlanetPayment\Core\Settings\Struct\Settings|null
 	 */
 	public function getValidSettings(?string $salesChannelId = null): ?Settings
 	{
@@ -115,7 +115,7 @@ class SettingsService {
 	 * Get settings
 	 *
 	 * @param string|null $salesChannelId
-	 * @return \PostFinanceCheckoutPayment\Core\Settings\Struct\Settings
+	 * @return \WeArePlanetPayment\Core\Settings\Struct\Settings
 	 */
 	public function getSettings(?string $salesChannelId = null): Settings
 	{

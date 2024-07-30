@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Storefront\Checkout\Controller;
+namespace WeArePlanetPayment\Core\Storefront\Checkout\Controller;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
@@ -35,11 +35,11 @@ use Symfony\Component\{
 	Routing\Annotation\Route,
 	Routing\Generator\UrlGeneratorInterface
 };
-use PostFinanceCheckout\Sdk\{
+use WeArePlanet\Sdk\{
 	Model\Transaction,
 	Model\TransactionState
 };
-use PostFinanceCheckoutPayment\Core\{
+use WeArePlanetPayment\Core\{
 	Api\Transaction\Service\TransactionService,
 	Settings\Options\Integration,
 	Settings\Service\SettingsService,
@@ -51,7 +51,7 @@ use PostFinanceCheckoutPayment\Core\{
 /**
  * Class CheckoutController
  *
- * @package PostFinanceCheckoutPayment\Core\Storefront\Checkout\Controller
+ * @package WeArePlanetPayment\Core\Storefront\Checkout\Controller
  *
  * @Route(defaults={"_routeScope"={"storefront"}})
  */
@@ -68,17 +68,17 @@ class CheckoutController extends StorefrontController {
 	protected $cartService;
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
+	 * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
 	 */
 	protected $settingsService;
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Settings\Struct\Settings
+	 * @var \WeArePlanetPayment\Core\Settings\Struct\Settings
 	 */
 	protected $settings;
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService
+	 * @var \WeArePlanetPayment\Core\Api\Transaction\Service\TransactionService
 	 */
 	protected $transactionService;
 
@@ -102,8 +102,8 @@ class CheckoutController extends StorefrontController {
 	 *
 	 * @param \Shopware\Core\Checkout\Cart\LineItemFactoryRegistry                          $lineItemFactoryRegistry
 	 * @param \Shopware\Core\Checkout\Cart\SalesChannel\CartService                         $cartService
-	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService           $settingsService
-	 * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService $transactionService
+	 * @param \WeArePlanetPayment\Core\Settings\Service\SettingsService           $settingsService
+	 * @param \WeArePlanetPayment\Core\Api\Transaction\Service\TransactionService $transactionService
 	 * @param \Shopware\Storefront\Page\GenericPageLoaderInterface                          $genericLoader
 	 * @param \Shopware\Core\Checkout\Order\SalesChannel\AbstractOrderRoute                 $orderRoute
 	 */
@@ -141,13 +141,13 @@ class CheckoutController extends StorefrontController {
 	 * @param \Symfony\Component\HttpFoundation\Request              $request
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 *
 	 * @Route(
-	 *     "/postfinancecheckout/checkout/pay",
-	 *     name="frontend.postfinancecheckout.checkout.pay",
+	 *     "/weareplanet/checkout/pay",
+	 *     name="frontend.weareplanet.checkout.pay",
 	 *     options={"seo": "false"},
 	 *     methods={"GET"}
 	 *     )
@@ -165,7 +165,7 @@ class CheckoutController extends StorefrontController {
 
 		$transaction     = $this->getTransaction($orderId, $salesChannelContext->getContext());
 		$recreateCartUrl = $this->generateUrl(
-			'frontend.postfinancecheckout.checkout.recreate-cart',
+			'frontend.weareplanet.checkout.recreate-cart',
 			['orderId' => $orderId,],
 			UrlGeneratorInterface::ABSOLUTE_URL
 		);
@@ -176,7 +176,6 @@ class CheckoutController extends StorefrontController {
 				TransactionState::AUTHORIZED,
 				TransactionState::COMPLETED,
 				TransactionState::FULFILL,
-				TransactionState::PROCESSING,
 			]
 		)) {
 			return $this->redirect($transaction->getSuccessUrl(), Response::HTTP_MOVED_PERMANENTLY);
@@ -202,7 +201,7 @@ class CheckoutController extends StorefrontController {
 												 );
 
 		if (empty($possiblePaymentMethods)) {
-			$this->addFlash('danger', $this->trans('postfinancecheckout.paymentMethod.notAvailable'));
+			$this->addFlash('danger', $this->trans('weareplanet.paymentMethod.notAvailable'));
 			return $this->redirect($recreateCartUrl, Response::HTTP_MOVED_PERMANENTLY);
 		}
 
@@ -215,16 +214,16 @@ class CheckoutController extends StorefrontController {
 			->setDeviceJavascriptUrl($this->settings->getSpaceId(), Uuid::randomHex())
 			->setTransactionPossiblePaymentMethods($possiblePaymentMethods)
 			->setCheckoutUrl($this->generateUrl(
-				'frontend.postfinancecheckout.checkout.pay',
+				'frontend.weareplanet.checkout.pay',
 				['orderId' => $orderId,],
 				UrlGeneratorInterface::ABSOLUTE_URL
 			))
 			->setCartRecreateUrl($recreateCartUrl);
 		$page             = $this->load($request, $salesChannelContext);
-		$page->addExtension('postFinanceCheckoutData', $checkoutPageData);
+		$page->addExtension('weArePlanetData', $checkoutPageData);
 
 		return $this->renderStorefront(
-			'@PostFinanceCheckoutPayment/storefront/page/checkout/order/postfinancecheckout.html.twig',
+			'@WeArePlanetPayment/storefront/page/checkout/order/weareplanet.html.twig',
 			['page' => $page]
 		);
 	}
@@ -235,9 +234,9 @@ class CheckoutController extends StorefrontController {
 	 * @param int $transactionId
 	 *
 	 * @return string
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	private function getTransactionJavaScriptUrl(int $transactionId): string
 	{
@@ -262,10 +261,10 @@ class CheckoutController extends StorefrontController {
 	 * @param                                  $orderId
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
-	 * @return \PostFinanceCheckout\Sdk\Model\Transaction
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @return \WeArePlanet\Sdk\Model\Transaction
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	private function getTransaction($orderId, Context $context): Transaction
 	{
@@ -341,8 +340,8 @@ class CheckoutController extends StorefrontController {
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 *
 	 * @Route(
-	 *     "/postfinancecheckout/checkout/recreate-cart",
-	 *     name="frontend.postfinancecheckout.checkout.recreate-cart",
+	 *     "/weareplanet/checkout/recreate-cart",
+	 *     name="frontend.weareplanet.checkout.recreate-cart",
 	 *     options={"seo": "false"},
 	 *     methods={"GET"}
 	 *     )

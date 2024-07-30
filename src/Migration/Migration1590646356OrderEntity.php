@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Migration;
+namespace WeArePlanetPayment\Migration;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Migration\MigrationStep;
@@ -8,7 +8,7 @@ use Shopware\Core\Framework\Migration\MigrationStep;
 /**
  * Class Migration1590646356OrderEntity
  *
- * @package PostFinanceCheckoutPayment\Migration
+ * @package WeArePlanetPayment\Migration
  */
 class Migration1590646356OrderEntity extends MigrationStep {
 	/**
@@ -29,7 +29,7 @@ class Migration1590646356OrderEntity extends MigrationStep {
 	public function update(Connection $connection): void
 	{
 		try {
-			$connection->executeStatement('ALTER TABLE `order` ADD COLUMN `postfinancecheckout_lock` DATETIME DEFAULT NULL;');
+			$connection->executeStatement('ALTER TABLE `order` ADD COLUMN `weareplanet_lock` DATETIME DEFAULT NULL;');
 		}catch (\Exception $exception){
 			echo $exception->getMessage();
 		}

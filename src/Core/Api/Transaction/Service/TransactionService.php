@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Service;
+namespace WeArePlanetPayment\Core\Api\Transaction\Service;
 
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -15,21 +15,23 @@ use Shopware\Core\{Checkout\Cart\Exception\OrderNotFoundException,
 };
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use PostFinanceCheckout\Sdk\{Model\AddressCreate,
+use WeArePlanet\Sdk\{Model\AddressCreate,
     Model\ChargeAttempt,
     Model\CreationEntityState,
     Model\CriteriaOperator,
     Model\EntityQuery,
     Model\EntityQueryFilter,
     Model\EntityQueryFilterType,
+    Model\Gender,
     Model\LineItemAttributeCreate,
     Model\LineItemCreate,
     Model\LineItemType,
     Model\Transaction,
     Model\TransactionCreate,
-    Model\TransactionPending
+    Model\TransactionPending,
+    Model\TransactionState,
 };
-use PostFinanceCheckoutPayment\Core\{Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
+use WeArePlanetPayment\Core\{Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
     Api\Refund\Entity\RefundEntityCollection,
     Api\Refund\Entity\RefundEntityDefinition,
     Api\Transaction\Entity\TransactionEntity,
@@ -44,7 +46,7 @@ use PostFinanceCheckoutPayment\Core\{Api\OrderDeliveryState\Handler\OrderDeliver
 /**
  * Class TransactionService
  *
- * @package PostFinanceCheckoutPayment\Core\Api\Transaction\Service
+ * @package WeArePlanetPayment\Core\Api\Transaction\Service
  */
 class TransactionService
 {
@@ -54,7 +56,7 @@ class TransactionService
     protected $container;
 
     /**
-     * @var \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider
+     * @var \WeArePlanetPayment\Core\Util\LocaleCodeProvider
      */
     private $localeCodeProvider;
 
@@ -64,7 +66,7 @@ class TransactionService
     private $logger;
 
     /**
-     * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
+     * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
      */
     private $settingsService;
 
@@ -78,8 +80,8 @@ class TransactionService
      * TransactionService constructor.
      *
      * @param \Psr\Container\ContainerInterface $container
-     * @param \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider $localeCodeProvider
-     * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService $settingsService
+     * @param \WeArePlanetPayment\Core\Util\LocaleCodeProvider $localeCodeProvider
+     * @param \WeArePlanetPayment\Core\Settings\Service\SettingsService $settingsService
      */
     public function __construct(
         ContainerInterface $container,
@@ -114,9 +116,9 @@ class TransactionService
      * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
      *
      * @return string
-     * @throws \PostFinanceCheckout\Sdk\ApiException
-     * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-     * @throws \PostFinanceCheckout\Sdk\VersioningException
+     * @throws \WeArePlanet\Sdk\ApiException
+     * @throws \WeArePlanet\Sdk\Http\ConnectionException
+     * @throws \WeArePlanet\Sdk\VersioningException
      */
     public function create(
         AsyncPaymentTransactionStruct $transaction,
@@ -127,7 +129,17 @@ class TransactionService
         $settings = $this->settingsService->getSettings($salesChannelId);
         $apiClient = $settings->getApiClient();
 
+        $failedStates = [
+            TransactionState::DECLINE,
+            TransactionState::FAILED,
+            TransactionState::VOIDED,
+        ];
         $pendingTransaction = $this->read($_SESSION['transactionId'], $salesChannelId);
+        if (in_array($pendingTransaction->getState(), $failedStates)) {
+            unset($_SESSION['transactionId']);
+            $pendingTransactionId = $this->createPendingTransaction($salesChannelContext);
+            $pendingTransaction = $this->read($pendingTransactionId, $salesChannelId);
+        }
 
         $transactionPayloadClass = (new TransactionPayload(
             $this->container,
@@ -142,7 +154,7 @@ class TransactionService
         $createdTransaction = $apiClient->getTransactionService()
             ->confirm($settings->getSpaceId(), $transactionPayload);
 
-        $this->addPostFinanceCheckoutTransactionId(
+        $this->addWeArePlanetTransactionId(
             $transaction,
             $salesChannelContext->getContext(),
             $createdTransaction->getId(),
@@ -150,7 +162,7 @@ class TransactionService
         );
 
         $redirectUrl = $this->container->get('router')->generate(
-            'frontend.postfinancecheckout.checkout.pay',
+            'frontend.weareplanet.checkout.pay',
             ['orderId' => $transaction->getOrder()->getId(),],
             UrlGeneratorInterface::ABSOLUTE_URL
         );
@@ -180,30 +192,30 @@ class TransactionService
     /**
      * @param \Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct $transaction
      * @param \Shopware\Core\Framework\Context $context
-     * @param int $postfinancecheckoutTransactionId
+     * @param int $weareplanetTransactionId
      * @param int $spaceId
      */
-    protected function addPostFinanceCheckoutTransactionId(
+    protected function addWeArePlanetTransactionId(
         AsyncPaymentTransactionStruct $transaction,
         Context                       $context,
-        int                           $postfinancecheckoutTransactionId,
+        int                           $weareplanetTransactionId,
         int                           $spaceId
     ): void
     {
         $data = [
             'id' => $transaction->getOrderTransaction()->getId(),
             'customFields' => [
-                TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_TRANSACTION_ID => $postfinancecheckoutTransactionId,
-                TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_SPACE_ID => $spaceId,
+                TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_WEAREPLANET_TRANSACTION_ID => $weareplanetTransactionId,
+                TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_WEAREPLANET_SPACE_ID => $spaceId,
             ],
         ];
         $this->container->get('order_transaction.repository')->update([$data], $context);
     }
 
     /**
-     * Persist PostFinanceCheckout transaction
+     * Persist WeArePlanet transaction
      *
-     * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
+     * @param \WeArePlanet\Sdk\Model\Transaction $transaction
      * @param \Shopware\Core\Framework\Context $context
      * @param string|null $paymentMethodId
      * @param string|null $salesChannelId
@@ -224,8 +236,8 @@ class TransactionService
                 $salesChannelId = $transactionMetaData['salesChannelId'] ?? '';
             }
 
-            $orderId = $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
-            $orderTransactionId = $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
+            $orderId = $transactionMetaData[TransactionPayload::WEAREPLANET_METADATA_ORDER_ID];
+            $orderTransactionId = $transactionMetaData[TransactionPayload::WEAREPLANET_METADATA_ORDER_TRANSACTION_ID];
 
             $dataParamValue = json_decode(strval($transaction), true);
             $brandName = '';
@@ -257,8 +269,8 @@ class TransactionService
                 $payId = $this->getChargeAttemptAdditionalData($chargeAttempt, self::PAY_ID_KEY);
                 $dataParamValue['payId'] = $payId ? $payId[0] : '';
 
-                $dataParamValue['customerName'] = isset($transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME])
-                    ? $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME]
+                $dataParamValue['customerName'] = isset($transactionMetaData[TransactionPayload::WEAREPLANET_METADATA_CUSTOMER_NAME])
+                    ? $transactionMetaData[TransactionPayload::WEAREPLANET_METADATA_CUSTOMER_NAME]
                     : '';
 
                 $creditCardValidity = $this->getChargeAttemptAdditionalData($chargeAttempt, self::CARD_VALIDITY_KEY);
@@ -353,7 +365,7 @@ class TransactionService
      * @param string $orderId
      * @param \Shopware\Core\Framework\Context $context
      *
-     * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity
+     * @return \WeArePlanetPayment\Core\Api\Transaction\Entity\TransactionEntity
      */
     public function getByOrderId(string $orderId, Context $context): TransactionEntity
     {
@@ -363,15 +375,15 @@ class TransactionService
     }
 
     /**
-     * Read transaction from PostFinanceCheckout API
+     * Read transaction from WeArePlanet API
      *
      * @param int $transactionId
      * @param string $salesChannelId
      *
-     * @return \PostFinanceCheckout\Sdk\Model\Transaction
-     * @throws \PostFinanceCheckout\Sdk\ApiException
-     * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-     * @throws \PostFinanceCheckout\Sdk\VersioningException
+     * @return \WeArePlanet\Sdk\Model\Transaction
+     * @throws \WeArePlanet\Sdk\ApiException
+     * @throws \WeArePlanet\Sdk\Http\ConnectionException
+     * @throws \WeArePlanet\Sdk\VersioningException
      */
     public function read(int $transactionId, string $salesChannelId): Transaction
     {
@@ -380,12 +392,12 @@ class TransactionService
     }
 
     /**
-     * Get transaction entity by PostFinanceCheckout transaction id
+     * Get transaction entity by WeArePlanet transaction id
      *
      * @param int $transactionId
      * @param \Shopware\Core\Framework\Context $context
      *
-     * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity|null
+     * @return \WeArePlanetPayment\Core\Api\Transaction\Entity\TransactionEntity|null
      */
     public function getByTransactionId(int $transactionId, Context $context): ?TransactionEntity
     {
@@ -398,12 +410,12 @@ class TransactionService
     }
 
     /**
-     * Get transaction entity by PostFinanceCheckout order transaction id
+     * Get transaction entity by WeArePlanet order transaction id
      *
      * @param string $transactionId
      * @param \Shopware\Core\Framework\Context $context
      *
-     * @return \PostFinanceCheckoutPayment\Core\Api\Transaction\Entity\TransactionEntity|null
+     * @return \WeArePlanetPayment\Core\Api\Transaction\Entity\TransactionEntity|null
      */
     public function getByOrderTransactionId(string $orderTransactionId, Context $context): ?TransactionEntity
     {
@@ -416,12 +428,12 @@ class TransactionService
     }
 
     /**
-     * Get transaction entity by PostFinanceCheckout transaction id
+     * Get transaction entity by WeArePlanet transaction id
      *
      * @param int $transactionId
      * @param \Shopware\Core\Framework\Context $context
      *
-     * @return \PostFinanceCheckoutPayment\Core\Api\Refund\Entity\RefundEntityCollection
+     * @return \WeArePlanetPayment\Core\Api\Refund\Entity\RefundEntityCollection
      */
     public function getRefundEntityCollectionByTransactionId(int $transactionId, Context $context): ?RefundEntityCollection
     {
@@ -463,39 +475,112 @@ class TransactionService
     }
 
     /**
-     * @param CheckoutConfirmPageLoadedEvent $event
+     * @param SalesChannelContext $salesChannelContext
+     * @param CheckoutConfirmPageLoadedEvent|null $event
      * @return int
      */
-    public function createPendingTransaction(CheckoutConfirmPageLoadedEvent $event): int
+    public function createPendingTransaction(SalesChannelContext $salesChannelContext, ?CheckoutConfirmPageLoadedEvent $event = null): int
     {
+        $expiredTransaction = true;
         $transactionId = $_SESSION['transactionId'] ?? null;
-        if (!$transactionId) {
-            $salesChannelContext = $event->getSalesChannelContext();
+        $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
+
+        if ($transactionId) {
+            $transactionService = $settings->getApiClient()->getTransactionService();
+            $pendingTransaction = $transactionService->read($settings->getSpaceId(), $transactionId);
+            $failedStates = [
+                TransactionState::DECLINE,
+                TransactionState::FAILED,
+                TransactionState::VOIDED,
+            ];
+            if (!in_array($pendingTransaction->getState(), $failedStates)) {
+                $expiredTransaction = false;
+            }
+        }
+
+        if (!$transactionId || $expiredTransaction) {
             $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
-            $customerBillingAddress = $salesChannelContext->getCustomer()->getActiveBillingAddress();
+
+            $customer = $salesChannelContext->getCustomer();
+            $customerBillingAddress = $customer->getActiveBillingAddress();
 
             $billingAddress = new AddressCreate();
-            $billingAddress->setStreet($customerBillingAddress->getStreet());
-            $billingAddress->setCity($customerBillingAddress->getCity());
-            $billingAddress->setCountry($customerBillingAddress->getCountry()->getIso());
-            $billingAddress->setPostCode($customerBillingAddress->getZipcode());
 
+            $customerAddressEntity = $customer->getActiveBillingAddress();
+
+            $familyName = "";
+            if (!empty($customerAddressEntity->getLastName())) {
+                $familyName = $customerAddressEntity->getLastName();
+            } else {
+                if (!empty($customer->getLastName())) {
+                    $familyName = $customer->getLastName();
+                }
+            }
+            $billingAddress->setFamilyName($familyName);
+
+            $givenName = "";
+            if (!empty($customerAddressEntity->getFirstName())) {
+                $givenName = $customerAddressEntity->getFirstName();
+            } else {
+                if (!empty($customer->getFirstName())) {
+                    $givenName = $customer->getFirstName();
+                }
+            }
+            $billingAddress->setGivenName($givenName);
+            $billingAddress->setOrganizationName($customerBillingAddress->getCompany());
+            $billingAddress->setPhoneNumber($customerAddressEntity->getPhoneNumber());
+            $billingAddress->setCountry($customerBillingAddress->getCountry()->getIso());
             $postalState = $customerBillingAddress?->getCountryState()?->getName() ?? '';
             if (empty($postalState)) {
                 $postalState = $customerBillingAddress?->getCountryState()?->getShortCode() ?? '';
             }
             $billingAddress->setPostalState($postalState);
-            $billingAddress->setOrganizationName($customerBillingAddress->getCompany());
+            $billingAddress->setPostCode($customerBillingAddress->getZipcode());
+            $billingAddress->setStreet($customerBillingAddress->getStreet());
+            $billingAddress->setEmailAddress($customer->getEmail());
 
-            $cartLineItems = $event->getPage()->getCart()->getLineItems()->getElements();
-            $lineItems = [];
-            foreach ($cartLineItems as $cartLineItem) {
-                if ($cartLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
-                    continue;
-                }
-                $lineItems[] = $this->createTempLineItem($cartLineItem);
+
+            if (!empty($customer->getBirthday())) {
+                $birthday = new \DateTime();
+                $birthday->setTimestamp($customer->getBirthday()->getTimestamp());
+                $birthday = $birthday->format('Y-m-d');
+                $billingAddress->setDateOfBirth($birthday);
             }
 
+            $salutation = "";
+            if (!(
+                empty($customerAddressEntity->getSalutation()) ||
+                empty($customerAddressEntity->getSalutation()->getDisplayName())
+            )) {
+                $salutation = $customerAddressEntity->getSalutation()->getDisplayName();
+            } else {
+                if (!empty($customer->getSalutation())) {
+                    $salutation = $customer->getSalutation()->getDisplayName();
+
+                }
+            }
+
+            $billingAddress->setGender(strtolower($customerAddressEntity->getSalutation()->getSalutationKey()) === 'mr' ? Gender::MALE : Gender::FEMALE);
+            $billingAddress->setSalutation($salutation);
+
+            $lineItems = [];
+            if ($event) {
+                $cartLineItems = $event->getPage()->getCart()->getLineItems()->getElements();
+                foreach ($cartLineItems as $cartLineItem) {
+                    if ($cartLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
+                        continue;
+                    }
+                    $lineItems[] = $this->createTempLineItem($cartLineItem);
+                }
+            }
+
+            $customerId = "";
+            if ($customer->getGuest() === false) {
+                $customerId = $customer->getCustomerNumber();
+            }
+
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+            $homeUrl = $protocol . $_SERVER['HTTP_HOST'];
             $currency = $salesChannelContext->getCurrency()->getIsoCode();
             $transactionPayload = (new TransactionCreate())
                 ->setBillingAddress($billingAddress)
@@ -503,7 +588,11 @@ class TransactionService
                 ->setCurrency($currency)
                 ->setSpaceViewId($settings->getSpaceViewId())
                 ->setAutoConfirmationEnabled(false)
-                ->setChargeRetryEnabled(false);
+                ->setChargeRetryEnabled(false)
+                ->setCustomerEmailAddress($customer->getEmail())
+                ->setCustomerId($customerId)
+                ->setSuccessUrl($homeUrl . '?success')
+                ->setFailedUrl($homeUrl . '?fail');
 
             $transactionService = $settings->getApiClient()->getTransactionService();
             $transaction = $transactionService->create($settings->getSpaceId(), $transactionPayload);

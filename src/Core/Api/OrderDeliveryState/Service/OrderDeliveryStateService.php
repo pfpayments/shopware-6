@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Service;
+namespace WeArePlanetPayment\Core\Api\OrderDeliveryState\Service;
 
 use Psr\Container\ContainerInterface;
 use Shopware\Core\{
@@ -9,14 +9,14 @@ use Shopware\Core\{
 	Framework\DataAbstractionLayer\Search\Criteria,
 	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
 	Framework\Uuid\Uuid};
-use PostFinanceCheckoutPayment\Core\{
+use WeArePlanetPayment\Core\{
 	Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
 	Util\LocaleCodeProvider};
 
 /**
  * Class OrderDeliveryStateService
  *
- * @package PostFinanceCheckoutPayment\Core\Api\OrderDeliveryState\Service
+ * @package WeArePlanetPayment\Core\Api\OrderDeliveryState\Service
  */
 class OrderDeliveryStateService {
 
@@ -26,7 +26,7 @@ class OrderDeliveryStateService {
 	protected $container;
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider
+	 * @var \WeArePlanetPayment\Core\Util\LocaleCodeProvider
 	 */
 	protected $localeCodeProvider;
 
@@ -104,7 +104,7 @@ class OrderDeliveryStateService {
 		$holdStateId = is_null($holdStateMachineStateEntity) ? Uuid::randomHex() : $holdStateMachineStateEntity->getId();
 
 		if (is_null($holdStateMachineStateEntity)) {
-			$translations = $this->localeCodeProvider->getAvailableTranslations('postfinancecheckout.deliveryState.hold', 'Hold', $context);
+			$translations = $this->localeCodeProvider->getAvailableTranslations('weareplanet.deliveryState.hold', 'Hold', $context);
 			$data         = [
 				'id'             => $holdStateId,
 				'technicalName'  => OrderDeliveryStateHandler::STATE_HOLD,
@@ -142,7 +142,7 @@ class OrderDeliveryStateService {
 	 */
 	protected function upsertHoldTransition(string $stateMachineId, string $openStateId, string $holdStateId, Context $context): void
 	{
-		$translations = $this->localeCodeProvider->getAvailableTranslations('postfinancecheckout.deliveryState.hold','Hold', $context);
+		$translations = $this->localeCodeProvider->getAvailableTranslations('weareplanet.deliveryState.hold','Hold', $context);
 
 		$this->upsertTransition(OrderDeliveryStateHandler::ACTION_HOLD, $stateMachineId, $openStateId, $holdStateId, $translations, $context);
 	}
@@ -190,7 +190,7 @@ class OrderDeliveryStateService {
 	 */
 	protected function upsertUnholdTransition(string $stateMachineId, string $holdStateId, string $openStateId, Context $context): void
 	{
-		$translations = $this->localeCodeProvider->getAvailableTranslations('postfinancecheckout.deliveryState.unhold','Unhold',$context);
+		$translations = $this->localeCodeProvider->getAvailableTranslations('weareplanet.deliveryState.unhold','Unhold',$context);
 
 		$this->upsertTransition(OrderDeliveryStateHandler::ACTION_UNHOLD, $stateMachineId, $holdStateId, $openStateId, $translations, $context);
 	}

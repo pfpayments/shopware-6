@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Api\WebHooks\Controller;
+namespace WeArePlanetPayment\Core\Api\WebHooks\Controller;
 
 use Doctrine\DBAL\{
 	Connection,
@@ -27,13 +27,13 @@ use Symfony\Component\{HttpFoundation\JsonResponse,
 	HttpFoundation\Request,
 	HttpFoundation\Response,
 	Routing\Annotation\Route};
-use PostFinanceCheckout\Sdk\{
+use WeArePlanet\Sdk\{
 	Model\RefundState,
 	Model\Transaction,
 	Model\TransactionInvoiceState,
 	Model\TransactionState,
 	Model\TransactionInvoice,};
-use PostFinanceCheckoutPayment\Core\{
+use WeArePlanetPayment\Core\{
 	Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
 	Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService,
 	Api\Refund\Service\RefundService,
@@ -46,7 +46,7 @@ use PostFinanceCheckoutPayment\Core\{
 /**
  * Class WebHookController
  *
- * @package PostFinanceCheckoutPayment\Core\Api\WebHooks\Controller
+ * @package WeArePlanetPayment\Core\Api\WebHooks\Controller
  *
  * @Route(defaults={"_routeScope"={"api"}})
  */
@@ -63,7 +63,7 @@ class WebHookController extends AbstractController {
 	protected $logger;
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\OrderMailService
+	 * @var \WeArePlanetPayment\Core\Api\Transaction\Service\OrderMailService
 	 */
 	protected $orderMailService;
 
@@ -73,27 +73,27 @@ class WebHookController extends AbstractController {
 	protected $orderTransactionStateHandler;
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
+	 * @var \WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
 	 */
 	protected $paymentMethodConfigurationService;
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Settings\Struct\Settings
+	 * @var \WeArePlanetPayment\Core\Settings\Struct\Settings
 	 */
 	protected $settings;
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
+	 * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
 	 */
 	protected $settingsService;
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Api\Refund\Service\RefundService
+	 * @var \WeArePlanetPayment\Core\Api\Refund\Service\RefundService
 	 */
 	protected $refundService;
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService
+	 * @var \WeArePlanetPayment\Core\Api\Transaction\Service\TransactionService
 	 */
 	protected $transactionService;
 
@@ -118,7 +118,7 @@ class WebHookController extends AbstractController {
 		TransactionState::VOIDED,
 	];
 
-	protected $postfinancecheckoutTransactionSuccessStates = [
+	protected $weareplanetTransactionSuccessStates = [
 		TransactionState::AUTHORIZED,
 		TransactionState::COMPLETED,
 		TransactionState::FULFILL,
@@ -142,11 +142,11 @@ class WebHookController extends AbstractController {
 	 * @param \Doctrine\DBAL\Connection                                                                                   $connection
 	 * @param \Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler                       $orderTransactionStateHandler
 	 * @param \Shopware\Core\Checkout\Order\SalesChannel\OrderService                                                     $orderService
-	 * @param \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService $paymentMethodConfigurationService
-	 * @param \PostFinanceCheckoutPayment\Core\Api\Refund\Service\RefundService                                         $refundService
-	 * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\OrderMailService                                 $orderMailService
-	 * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService                               $transactionService
-	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService                                         $settingsService
+	 * @param \WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService $paymentMethodConfigurationService
+	 * @param \WeArePlanetPayment\Core\Api\Refund\Service\RefundService                                         $refundService
+	 * @param \WeArePlanetPayment\Core\Api\Transaction\Service\OrderMailService                                 $orderMailService
+	 * @param \WeArePlanetPayment\Core\Api\Transaction\Service\TransactionService                               $transactionService
+	 * @param \WeArePlanetPayment\Core\Settings\Service\SettingsService                                         $settingsService
 	 */
 	public function __construct(
 		Connection $connection,
@@ -182,7 +182,7 @@ class WebHookController extends AbstractController {
 	}
 
 	/**
-	 * This is the method PostFinanceCheckout calls
+	 * This is the method WeArePlanet calls
 	 *
 	 * @param \Symfony\Component\HttpFoundation\Request $request
 	 * @param \Shopware\Core\Framework\Context          $context
@@ -190,8 +190,8 @@ class WebHookController extends AbstractController {
 	 *
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse|\Symfony\Component\HttpFoundation\Response
 	 * @Route(
-	 *     "/api/_action/postfinancecheckout/webHook/callback/{salesChannelId}",
-	 *     name="api.action.postfinancecheckout.webhook.update",
+	 *     "/api/_action/weareplanet/webHook/callback/{salesChannelId}",
+	 *     name="api.action.weareplanet.webhook.update",
 	 *     options={"seo": "false"},
 	 *     defaults={"csrf_protected"=false, "XmlHttpRequest"=true, "auth_required"=false},
 	 *     methods={"POST"}
@@ -228,15 +228,15 @@ class WebHookController extends AbstractController {
 	}
 
 	/**
-	 * Handle PostFinanceCheckout Payment Method Configuration callback
+	 * Handle WeArePlanet Payment Method Configuration callback
 	 *
 	 * @param \Shopware\Core\Framework\Context $context
 	 * @param string                           $salesChannelId
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	private function updatePaymentMethodConfiguration(Context $context, string $salesChannelId = null): Response
 	{
@@ -246,9 +246,9 @@ class WebHookController extends AbstractController {
 	}
 
 	/**
-	 * Handle PostFinanceCheckout Refund callback
+	 * Handle WeArePlanet Refund callback
 	 *
-	 * @param \PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct\WebHookRequest $callBackData
+	 * @param \WeArePlanetPayment\Core\Api\WebHooks\Struct\WebHookRequest $callBackData
 	 * @param \Shopware\Core\Framework\Context                                      $context
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
@@ -259,11 +259,11 @@ class WebHookController extends AbstractController {
 
 		try {
 			/**
-			 * @var \PostFinanceCheckout\Sdk\Model\Transaction $transaction
+			 * @var \WeArePlanet\Sdk\Model\Transaction $transaction
 			 */
 			$refund  = $this->settings->getApiClient()->getRefundService()
 									  ->read($callBackData->getSpaceId(), $callBackData->getEntityId());
-			$orderId = $refund->getTransaction()->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
+			$orderId = $refund->getTransaction()->getMetaData()[TransactionPayload::WEAREPLANET_METADATA_ORDER_ID];
 
 			if(!empty($orderId)) {
 
@@ -271,7 +271,7 @@ class WebHookController extends AbstractController {
 
 					$this->refundService->upsert($refund, $context);
 
-					$orderTransactionId = $refund->getTransaction()->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
+					$orderTransactionId = $refund->getTransaction()->getMetaData()[TransactionPayload::WEAREPLANET_METADATA_ORDER_TRANSACTION_ID];
 					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
 					if (
 						in_array(
@@ -350,7 +350,7 @@ class WebHookController extends AbstractController {
 
 			$data = [
 				'id'                         => $orderId,
-				'postfinancecheckout_lock' => date('Y-m-d H:i:s'),
+				'weareplanet_lock' => date('Y-m-d H:i:s'),
 			];
 
 			$order = $this->container->get('order.repository')->search(new Criteria([$orderId]), $context)->first();
@@ -415,9 +415,9 @@ class WebHookController extends AbstractController {
 	}
 
 	/**
-	 * Handle PostFinanceCheckout Transaction callback
+	 * Handle WeArePlanet Transaction callback
 	 *
-	 * @param \PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct\WebHookRequest $callBackData
+	 * @param \WeArePlanetPayment\Core\Api\WebHooks\Struct\WebHookRequest $callBackData
 	 * @param \Shopware\Core\Framework\Context                                      $context
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
@@ -428,17 +428,17 @@ class WebHookController extends AbstractController {
 
 		try {
 			/**
-			 * @var \PostFinanceCheckout\Sdk\Model\Transaction $transaction
+			 * @var \WeArePlanet\Sdk\Model\Transaction $transaction
 			 * @var \Shopware\Core\Checkout\Order\OrderEntity    $order
 			 */
 			$transaction = $this->settings->getApiClient()
 										  ->getTransactionService()
 										  ->read($callBackData->getSpaceId(), $callBackData->getEntityId());
-			$orderId     = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
+			$orderId     = $transaction->getMetaData()[TransactionPayload::WEAREPLANET_METADATA_ORDER_ID];
 			if(!empty($orderId) && !$transaction->getParent()) {
 				$this->executeLocked($orderId, $context, function () use ($orderId, $transaction, $context, $callBackData) {
 					$this->transactionService->upsert($transaction, $context);
-					$orderTransactionId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
+					$orderTransactionId = $transaction->getMetaData()[TransactionPayload::WEAREPLANET_METADATA_ORDER_TRANSACTION_ID];
 					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
 					$this->logger->info("OrderId: {$orderId} Current state: {$orderTransaction->getStateMachineState()->getTechnicalName()}");
 
@@ -485,21 +485,21 @@ class WebHookController extends AbstractController {
 	}
 
 	/**
-	 * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
+	 * @param \WeArePlanet\Sdk\Model\Transaction $transaction
 	 * @param \Shopware\Core\Framework\Context             $context
 	 */
 	protected function sendEmail(Transaction $transaction, Context $context): void
 	{
-		$orderId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
-		if ($this->settings->isEmailEnabled() && in_array($transaction->getState(), $this->postfinancecheckoutTransactionSuccessStates)) {
+		$orderId = $transaction->getMetaData()[TransactionPayload::WEAREPLANET_METADATA_ORDER_ID];
+		if ($this->settings->isEmailEnabled() && in_array($transaction->getState(), $this->weareplanetTransactionSuccessStates)) {
 			$this->orderMailService->send($orderId, $context);
 		}
 	}
 
 	/**
-	 * Handle PostFinanceCheckout TransactionInvoice callback
+	 * Handle WeArePlanet TransactionInvoice callback
 	 *
-	 * @param \PostFinanceCheckoutPayment\Core\Api\WebHooks\Struct\WebHookRequest $callBackData
+	 * @param \WeArePlanetPayment\Core\Api\WebHooks\Struct\WebHookRequest $callBackData
 	 * @param \Shopware\Core\Framework\Context                                      $context
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
@@ -510,7 +510,7 @@ class WebHookController extends AbstractController {
 
 		try {
 			/**
-			 * @var \PostFinanceCheckout\Sdk\Model\Transaction        $transaction
+			 * @var \WeArePlanet\Sdk\Model\Transaction        $transaction
 			 * @var TransactionInvoice $transactionInvoice
 			 */
 			$transactionInvoice = $this->settings->getApiClient()->getTransactionInvoiceService()
@@ -518,14 +518,14 @@ class WebHookController extends AbstractController {
 			$orderId            = $transactionInvoice->getCompletion()
 													 ->getLineItemVersion()
 													 ->getTransaction()
-													 ->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
+													 ->getMetaData()[TransactionPayload::WEAREPLANET_METADATA_ORDER_ID];
 			if(!empty($orderId)) {
 				$this->executeLocked($orderId, $context, function () use ($orderId, $transactionInvoice, $context) {
 
 					$orderTransactionId = $transactionInvoice->getCompletion()
 															 ->getLineItemVersion()
 															 ->getTransaction()
-															 ->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
+															 ->getMetaData()[TransactionPayload::WEAREPLANET_METADATA_ORDER_TRANSACTION_ID];
 					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
 					$this->updatePriceIfAdditionalItemsExist($transactionInvoice, $orderTransaction, $context);
 

@@ -4,26 +4,26 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-		<meta name="keywords" value="PostFinance Checkout, Shopware, Shopware Plugin, Payment, Payment Integration, Documentation"><meta name="description" value="The documentation for the Shopware 6 plugin that enables processing payments with PostFinance Checkout.">		
-		<link rel="canonical" href="https://plugin-documentation.weareplanet.com/weareplanet/opencart-3.0/1.0.57/docs/en/documentation.html" />
-		<title>PostFinance Checkout Shopware 6 Documentation</title>
+		<meta name="keywords" value="WeArePlanet, Shopware, Shopware Plugin, Payment, Payment Integration, Documentation"><meta name="description" value="The documentation for the Shopware 6 plugin that enables processing payments with WeArePlanet.">		
+		<link rel="canonical" href="@WalleeCanonicalPath(https://plugin-documentation.wallee.com/wallee-payment, WeArePlanetPayment/docs/en/documentation.html)" />
+		<title>WeArePlanet Shopware 6 Documentation</title>
 		<link href="assets/monokai-sublime.css" rel="stylesheet" />
 		<link href="assets/base.css" rel="stylesheet" />
 	</head>
 	<body class="documentation">
 		<div class="layout-wrapper">
 							<div class="layout-title">
-					<h1>PostFinance Checkout Shopware 6 Documentation</h1>
+					<h1>WeArePlanet Shopware 6 Documentation</h1>
 <h2>Documentation</h2>				</div>
 										<div class="layout-navigation">
 					<ul class="nav">
 	<li>
-		<a href="https://checkout.postfinance.ch/en-ch/user/signup">
+		<a href="https://www.weareplanet.com/contact/sales">
 			Sign Up
 		</a>
 	</li>
 	<li>
-		<a href="https://github.com/pfpayments/shopware-6/releases/tag/5.0.8/">
+		<a href="@WalleeReleasePath()">
 			Source
 		</a>
 	</li>
@@ -39,7 +39,7 @@
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p>If you don&#8217;t already have one, create a <a href="https://checkout.postfinance.ch/en-ch/user/signup/">PostFinance Checkout</a> account.</p>
+<p>If you don&#8217;t already have one, create a <a href="https://www.weareplanet.com/contact/sales/">WeArePlanet</a> account.</p>
 </div>					</div>
 </div>	<div class="chapter" id="_installation">
 	<div class="chapter-title">
@@ -76,7 +76,7 @@ You also have the possibility to install the plugin using composer.  See <a href
 </div>
 </li>
 <li>
-<p>Activate the PostFinance Checkout Payment plugin from the Plugin Manager.</p>
+<p>Activate the WeArePlanet Payment plugin from the Plugin Manager.</p>
 </li>
 </ol>
 </div>					</div>
@@ -89,7 +89,7 @@ You also have the possibility to install the plugin using composer.  See <a href
 					<div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Navigate to Settings &#8594; Plugins &#8594; PostFinanceCheckout in your Shopware backend. Enter the PostFinance Checkout Space ID, User ID and Authentication Key that you can create an <a href="https://checkout.postfinance.ch/en-us/doc/permission-concept#_create_application_users" target="_blank">application user</a>.</p>
+<p>Navigate to Settings &#8594; Plugins &#8594; WeArePlanet in your Shopware backend. Enter the WeArePlanet Space ID, User ID and Authentication Key that you can create an <a href="https://paymentshub.weareplanet.com/en-us/doc/permission-concept#_create_application_users" target="_blank">application user</a>.</p>
 <div class="imageblock">
 <div class="content">
 <img src="resource/plugin-configuration.png" alt="plugin configuration"/>
@@ -100,7 +100,7 @@ You also have the possibility to install the plugin using composer.  See <a href
 </div>
 </li>
 <li>
-<p>Optionally after saving your configuration you can click on <code>Set PostFinanceCheckout as default payment handler</code>. This will set PostFinanceCheckoutPayment as the default payment handler for the selected sales channel.</p>
+<p>Optionally after saving your configuration you can click on <code>Set WeArePlanet as default payment handler</code>. This will set WeArePlanetPayment as the default payment handler for the selected sales channel.</p>
 </li>
 </ol>
 </div><div class="paragraph">
@@ -119,7 +119,7 @@ You also have the possibility to install the plugin using composer.  See <a href
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>The PostFinance Checkout payment method configurations are synchronized automatically into the Shopware store. There are just a few payment method settings in the Shopware store in Settings &#8594; Store &#8594; Payment.</p>
+<p>The WeArePlanet payment method configurations are synchronized automatically into the Shopware store. There are just a few payment method settings in the Shopware store in Settings &#8594; Store &#8594; Payment.</p>
 </div><div class="imageblock">
 <div class="content">
 <img src="resource/payment-method-configuration.png" alt="payment method configuration"/>
@@ -191,7 +191,7 @@ Billing address: Country  | Is one of | Switzerland</p>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>If you want to change the payment method description, title, logo, etc you need to do this in the <a href="https://checkout.postfinance.ch/space/select?target=/payment/method-configuration/list" target="_blank">payment method configuration</a>. Changes will be synchronized automatically.</p>
+<p>If you want to change the payment method description, title, logo, etc you need to do this in the <a href="https://paymentshub.weareplanet.com/space/select?target=/payment/method-configuration/list" target="_blank">payment method configuration</a>. Changes will be synchronized automatically.</p>
 </div>					</div>
 </div>			</div>
 </div>	<div class="chapter" id="_state_graph">
@@ -201,11 +201,11 @@ Billing address: Country  | Is one of | Switzerland</p>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p>The Payment Process of PostFinance Checkout is <strong>completely standardized for every payment method</strong> you can process. This gives you the ability to simply add
-a payment method or processor without changes inside of your Shopware configuration. An overview about the states and the payment processes of PostFinance Checkout
-can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/transaction-process" target="_blank">Payment Documentation</a>.</p>
+<p>The Payment Process of WeArePlanet is <strong>completely standardized for every payment method</strong> you can process. This gives you the ability to simply add
+a payment method or processor without changes inside of your Shopware configuration. An overview about the states and the payment processes of WeArePlanet
+can be found in the <a href="https://paymentshub.weareplanet.com/en-us/doc/payment/transaction-process" target="_blank">Payment Documentation</a>.</p>
 </div><div class="paragraph">
-<p>In the following section we provide you an overview about how the PostFinance Checkout states are mapped into the Shopware State graph for orders and payment states.</p>
+<p>In the following section we provide you an overview about how the WeArePlanet states are mapped into the Shopware State graph for orders and payment states.</p>
 </div>							<div class="section" id="_state_mapping_of_shopware_orders">
 	<div class="section-title">
 		<h2>
@@ -239,7 +239,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div><div class="olist glossary">
 <ol class="glossary">
 <li>
-<p>If the transaction is <code>Authorized</code> in PostFinance Checkout, the Shopware order payment status is marked as <code>In Progress</code>.</p>
+<p>If the transaction is <code>Authorized</code> in WeArePlanet, the Shopware order payment status is marked as <code>In Progress</code>.</p>
 </li>
 <li>
 <p>If the transaction fails before or during the authorization process, the Shopware order payment status is marked as <code>Failed</code>.</p>
@@ -248,7 +248,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 <p>If the transaction fails after the authorization, the Shopware order payment status is marked as <code>Cancelled</code>.</p>
 </li>
 <li>
-<p>If the transaction invoice in PostFinance Checkout is marked as <code>Paid</code> or <code>Not Applicable</code>, the Shopware order payment status is marked as <code>Paid</code>.</p>
+<p>If the transaction invoice in WeArePlanet is marked as <code>Paid</code> or <code>Not Applicable</code>, the Shopware order payment status is marked as <code>Paid</code>.</p>
 </li>
 </ol>
 </div>							<div class="section" id="_general_remarks_regarding_payment_statuses">
@@ -276,10 +276,10 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div><div class="olist glossary">
 <ol class="glossary">
 <li>
-<p>If the transaction is <code>Confirmed</code> status in PostFinance Checkout, the Shopware order delivery status is marked as <code>Hold</code>.</p>
+<p>If the transaction is <code>Confirmed</code> status in WeArePlanet, the Shopware order delivery status is marked as <code>Hold</code>.</p>
 </li>
 <li>
-<p>If the transaction in PostFinance Checkout is marked as <code>Fulfill</code>, the Shopware order delivery status is marked as <code>Open</code>.</p>
+<p>If the transaction in WeArePlanet is marked as <code>Fulfill</code>, the Shopware order delivery status is marked as <code>Open</code>.</p>
 </li>
 <li>
 <p>If the transaction is in <code>Decline</code>, <code>Failed</code> or <code>Voided</code>, the Shopware order delivery status is marked as <code>Cancelled</code>.</p>
@@ -295,7 +295,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 	<div class="chapter-body">
 					<div class="paragraph">
 <p>You can capture, cancel and refund transactions directly from within the Shopware backend. Please note
-if you refund, void or capture transactions inside PostFinance Checkout the events will be synchronized into
+if you refund, void or capture transactions inside WeArePlanet the events will be synchronized into
 Shopware. However, there are some limitations (see below).</p>
 </div>							<div class="section" id="_complete_capture_an_order">
 	<div class="section-title">
@@ -304,7 +304,7 @@ Shopware. However, there are some limitations (see below).</p>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>You have the possibility for your transactions to have the payment only authorized after the order is placed. Inside the <a href="https://checkout.postfinance.ch/space/select?target=/payment/connector-configuration/list" target="_blank">connector configuration</a> you have the option, if the payment method supports it, to define whether the payment should be completed immediately or deferred.</p>
+<p>You have the possibility for your transactions to have the payment only authorized after the order is placed. Inside the <a href="https://paymentshub.weareplanet.com/space/select?target=/payment/connector-configuration/list" target="_blank">connector configuration</a> you have the option, if the payment method supports it, to define whether the payment should be completed immediately or deferred.</p>
 </div><div class="paragraph">
 <p>In order to capture a transaction, open the order and click on the <code>Complete</code> button.</p>
 </div><div class="admonitionblock note">
@@ -314,7 +314,7 @@ Shopware. However, there are some limitations (see below).</p>
 <div class="title">Note</div>
 </td>
 <td class="content">
-When the completion is pending in PostFinance Checkout the order will stay in pending state.
+When the completion is pending in WeArePlanet the order will stay in pending state.
 </td>
 </tr>
 </table>
@@ -325,11 +325,11 @@ When the completion is pending in PostFinance Checkout the order will stay in pe
 </div><div class="paragraph">
 <p><strong>Deferred payment completion</strong></p>
 </div><div class="paragraph">
-<p>Retailers often have the case that they want to authorize transactions only and start the fulfillment process once all items are shippable. This is also possible with PostFinance Checkout.</p>
+<p>Retailers often have the case that they want to authorize transactions only and start the fulfillment process once all items are shippable. This is also possible with WeArePlanet.</p>
 </div><div class="paragraph">
 <p>However, certain processes should be followed. If you have configured payment completion to be deferred you should capture the transaction before you initiate the shipment
 as it can always happen that a completion fails. If you want to be sure that you do not ship items for which you have not been paid you should postpone the shipment until
-the fulfill state is reached. Initially the transaction will be in the <code>Authorized</code> state in PostFinance Checkout and <code>In Progress</code> in Shopware. If you want to start the fulfillment process make sure you initiate the completion process as described above. Once the completion was successful the order will switch into the <code>Fulfill</code> state in PostFinance Checkout and into <code>Paid</code> state in Shopware. You can now start the fulfillment process.</p>
+the fulfill state is reached. Initially the transaction will be in the <code>Authorized</code> state in WeArePlanet and <code>In Progress</code> in Shopware. If you want to start the fulfillment process make sure you initiate the completion process as described above. Once the completion was successful the order will switch into the <code>Fulfill</code> state in WeArePlanet and into <code>Paid</code> state in Shopware. You can now start the fulfillment process.</p>
 </div>					</div>
 </div>					<div class="section" id="_void_a_transaction">
 	<div class="section-title">
@@ -389,7 +389,7 @@ It can take some time until you see the refund in Shopware. Refunds will only be
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>The delivery should not be done whilst the delivery state is <code>Hold</code>. This happens when the transaction in PostFinance Checkout
+<p>The delivery should not be done whilst the delivery state is <code>Hold</code>. This happens when the transaction in WeArePlanet
 has not reached the fulfill state.</p>
 </div><div class="paragraph">
 <p>There are essentially two reasons why this can happen:</p>
@@ -400,27 +400,27 @@ has not reached the fulfill state.</p>
 </li>
 <li>
 <p>We are not able to tell if you should fulfill the order. The delivery decision is done automatically. If this does not happen
-within the defined time frame, PostFinance Checkout will generate a manual task which you should observe and follow the instructions.</p>
+within the defined time frame, WeArePlanet will generate a manual task which you should observe and follow the instructions.</p>
 </li>
 </ul>
 </div><div class="paragraph">
-<p>You can find more information about manual tasks in our <a href="https://checkout.postfinance.ch/en-us/doc/manual-tasks" target="_blank">Manual Task Documentation</a>.</p>
+<p>You can find more information about manual tasks in our <a href="https://paymentshub.weareplanet.com/en-us/doc/manual-tasks" target="_blank">Manual Task Documentation</a>.</p>
 </div>					</div>
 </div>					<div class="section" id="_limitations_of_the_synchronization_between_whitelabelname_and_shopware">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">6.5</span>Limitations of the synchronization between PostFinance Checkout and Shopware					</h2>
+			<span class="title-number">6.5</span>Limitations of the synchronization between WeArePlanet and Shopware					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>Please note that captures, voids and refunds done in PostFinance Checkout are synchronized. However, there are some
-limitations. Inside PostFinance Checkout you are able to change the <strong>unit price</strong> and the <strong>quantity</strong> at once. This can not
+<p>Please note that captures, voids and refunds done in WeArePlanet are synchronized. However, there are some
+limitations. Inside WeArePlanet you are able to change the <strong>unit price</strong> and the <strong>quantity</strong> at once. This can not
 be done in the Shopware backend. We therefore recommend that you
-perform the refunds always inside the Shopware backend and not inside PostFinance Checkout. If a refund
+perform the refunds always inside the Shopware backend and not inside WeArePlanet. If a refund
 cannot be synchronized it will be sent to the processor but it could be that you do not see it inside
 your Shopware backend.</p>
 </div><div class="paragraph">
-<p>You can find more information about Refunds in PostFinance Checkout in our <a href="https://checkout.postfinance.ch/en-us/doc/payment/refund" target="_blank">Refund Documentation</a>.</p>
+<p>You can find more information about Refunds in WeArePlanet in our <a href="https://paymentshub.weareplanet.com/en-us/doc/payment/refund" target="_blank">Refund Documentation</a>.</p>
 </div>					</div>
 </div>					<div class="section" id="_tokenization">
 	<div class="section-title">
@@ -430,7 +430,7 @@ your Shopware backend.</p>
 	<div class="section-body">
 					<div class="paragraph">
 <p>In case the payment method supports tokenization you can store the payment details of your customer for future purchases.
-In order to use this feature make sure that the <strong>One-Click-Payment Mode</strong> in your <a href="https://checkout.postfinance.ch/space/select?target=/payment/method-configuration/list">payment method configuration</a> is set to <code>allow</code> or <code>force</code> storage.</p>
+In order to use this feature make sure that the <strong>One-Click-Payment Mode</strong> in your <a href="https://paymentshub.weareplanet.com/space/select?target=/payment/method-configuration/list">payment method configuration</a> is set to <code>allow</code> or <code>force</code> storage.</p>
 </div><div class="admonitionblock note">
 <table>
 <tr>
@@ -470,7 +470,7 @@ The extension will log various unexpected errors or information which can help i
 <p>You can install the plugin using composer by updating the <code>composer.json</code> file in the root directory of your Shopware store and wait for Composer to finish updating the dependencies.</p>
 </div><div class="listingblock">
 <div class="content">
-<pre>composer require postfinancecheckout/shopware-6</pre>
+<pre>composer require weareplanet/shopware-6</pre>
 </div>
 </div><div class="paragraph">
 <p>Once this done, continue with step 2 of the installation process. See <a href="#_installation">Installation</a>.</p>
@@ -482,7 +482,7 @@ The extension will log various unexpected errors or information which can help i
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>Make sure that you followed the <a href="#_configuration">Configuration</a> section by stating your PostFinance Checkout space ID and application user&#8217;s access information in the Shopware backend. By saving the configuration form the synchronization of the payment methods and the set up of the webhooks are initiated.</p>
+<p>Make sure that you followed the <a href="#_configuration">Configuration</a> section by stating your WeArePlanet space ID and application user&#8217;s access information in the Shopware backend. By saving the configuration form the synchronization of the payment methods and the set up of the webhooks are initiated.</p>
 </div><div class="paragraph">
 <p>If this does not solve the problem, it could be that you use a special fee or coupon module that we do not support. Try to disable this plugin and see if it helps.
 The payment methods are only displayed if the plugin&#8217;s total calculation matches the actual order total.</p>
@@ -526,7 +526,7 @@ The Webhooks have to be updated. Shopware is using an API Version for all "URLs"
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p>If you need help, feel free to contact our <a href="https://www.postfinance.ch/en/business/support.html">support</a>.</p>
+<p>If you need help, feel free to contact our <a href="https://paymentshub.weareplanet.com/space/select?target=/support">support</a>.</p>
 </div>					</div>
 </div>																			</div>
 															</div>
@@ -637,7 +637,7 @@ The Webhooks have to be updated. Shopware is using an API Version for all "URLs"
     </li>    		    			<li class="nav-level-2">
 	<a href="#_limitations_of_the_synchronization_between_whitelabelname_and_shopware">
 		<span class="item-number">6.5</span>
-		<span class="item-title">Limitations of the synchronization between PostFinance Checkout and Shopware</span>
+		<span class="item-title">Limitations of the synchronization between WeArePlanet and Shopware</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_tokenization">

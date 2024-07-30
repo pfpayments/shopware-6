@@ -1,36 +1,36 @@
 <?php declare(strict_types=1);
 
 
-namespace PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Command;
+namespace WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Command;
 
 use Shopware\Core\Framework\Context;
 use Symfony\Component\{
 	Console\Command\Command,
 	Console\Input\InputInterface,
 	Console\Output\OutputInterface};
-use PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService;
+use WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService;
 
 /**
  * Class PaymentMethodConfigurationCommand
  *
- * @package PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Command
+ * @package WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Command
  */
 class PaymentMethodConfigurationCommand extends Command {
 
 	/**
 	 * @var string
 	 */
-	protected static $defaultName = 'postfinancecheckout:payment-method:configuration';
+	protected static $defaultName = 'weareplanet:payment-method:configuration';
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
+	 * @var \WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService
 	 */
 	protected $paymentMethodConfigurationService;
 
 	/**
 	 * PaymentMethodConfigurationCommand constructor.
 	 *
-	 * @param \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService $paymentMethodConfigurationService
+	 * @param \WeArePlanetPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService $paymentMethodConfigurationService
 	 */
 	public function __construct(PaymentMethodConfigurationService $paymentMethodConfigurationService)
 	{
@@ -42,13 +42,13 @@ class PaymentMethodConfigurationCommand extends Command {
 	 * @param \Symfony\Component\Console\Input\InputInterface   $input
 	 * @param \Symfony\Component\Console\Output\OutputInterface $output
 	 * @return int
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$output->writeln('Fetch PostFinanceCheckoutPayment space available payment methods...');
+		$output->writeln('Fetch WeArePlanetPayment space available payment methods...');
 		$this->paymentMethodConfigurationService->synchronize(Context::createDefaultContext());
 		return 0;
 	}
@@ -58,8 +58,8 @@ class PaymentMethodConfigurationCommand extends Command {
 	 */
 	protected function configure()
 	{
-		$this->setDescription('Fetches PostFinanceCheckoutPayment space available payment methods.')
-			 ->setHelp('This command fetches PostFinanceCheckoutPayment space available payment methods.');
+		$this->setDescription('Fetches WeArePlanetPayment space available payment methods.')
+			 ->setHelp('This command fetches WeArePlanetPayment space available payment methods.');
 	}
 
 }

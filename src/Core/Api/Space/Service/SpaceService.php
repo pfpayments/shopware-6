@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Api\Space\Service;
+namespace WeArePlanetPayment\Core\Api\Space\Service;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\PlatformRequest;
-use PostFinanceCheckout\Sdk\{
+use WeArePlanet\Sdk\{
 	ApiClient,
 	Model\Space
 };
@@ -12,12 +12,12 @@ use PostFinanceCheckout\Sdk\{
 /**
  * Class SpaceService
  *
- * @package PostFinanceCheckoutPayment\Core\Api\Space\Service
+ * @package WeArePlanetPayment\Core\Api\Space\Service
  */
 class SpaceService {
 
 	/**
-	 * @var \PostFinanceCheckout\Sdk\ApiClient
+	 * @var \WeArePlanet\Sdk\ApiClient
 	 */
 	protected $apiClient;
 
@@ -61,7 +61,7 @@ class SpaceService {
 	}
 
 	/**
-	 * @return \PostFinanceCheckout\Sdk\ApiClient
+	 * @return \WeArePlanet\Sdk\ApiClient
 	 */
 	public function getApiClient(): ApiClient
 	{
@@ -69,9 +69,9 @@ class SpaceService {
 	}
 
 	/**
-	 * @param \PostFinanceCheckout\Sdk\ApiClient $apiClient
+	 * @param \WeArePlanet\Sdk\ApiClient $apiClient
 	 *
-	 * @return \PostFinanceCheckoutPayment\Core\Api\Space\Service\SpaceService
+	 * @return \WeArePlanetPayment\Core\Api\Space\Service\SpaceService
 	 */
 	public function setApiClient(ApiClient $apiClient): SpaceService
 	{
@@ -90,7 +90,7 @@ class SpaceService {
 	/**
 	 * @param int $spaceId
 	 *
-	 * @return \PostFinanceCheckoutPayment\Core\Api\Space\Service\SpaceService
+	 * @return \WeArePlanetPayment\Core\Api\Space\Service\SpaceService
 	 */
 	public function setSpaceId(int $spaceId): SpaceService
 	{
@@ -110,7 +110,7 @@ class SpaceService {
 	/**
 	 * @param int $userId
 	 *
-	 * @return \PostFinanceCheckoutPayment\Core\Api\Space\Service\SpaceService
+	 * @return \WeArePlanetPayment\Core\Api\Space\Service\SpaceService
 	 */
 	public function setUserId(int $userId): SpaceService
 	{
@@ -130,7 +130,7 @@ class SpaceService {
 	/**
 	 * @param string $applicationId
 	 *
-	 * @return \PostFinanceCheckoutPayment\Core\Api\Space\Service\SpaceService
+	 * @return \WeArePlanetPayment\Core\Api\Space\Service\SpaceService
 	 */
 	public function setApplicationId(string $applicationId): SpaceService
 	{
@@ -147,9 +147,9 @@ class SpaceService {
 	 * @see On the portal /doc/api/web-service#space-service--read
 	 *
 	 * @return Space|null
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 */
 	public function checkSpace(): ?Space
 	{

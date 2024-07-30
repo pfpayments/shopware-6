@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Util\Payload\CustomProducts;
+namespace WeArePlanetPayment\Core\Util\Payload\CustomProducts;
 
 class CustomProductsLineItemTypes {
 

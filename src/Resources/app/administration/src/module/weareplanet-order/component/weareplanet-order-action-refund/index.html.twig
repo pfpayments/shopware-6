@@ -1,0 +1,30 @@
+{% block weareplanet_order_action_refund %}
+<sw-modal variant="small"
+		  :title="$tc(`weareplanet-order.modal.title.refund`)"
+		  @modal-close="$emit('modal-close')">
+
+	{% block weareplanet_order_action_refund_amount %}
+
+		<sw-number-field v-model="refundQuantity"
+						 :max="this.$parent.refundableQuantity"
+						 :min="1"
+						 :label="$tc('weareplanet-order.refund.refundQuantity.label')">
+		</sw-number-field>
+
+		<div>
+			{{ $tc('weareplanet-order.refundAction.maxAvailableItemsToRefund') }}:
+			<b>{{ this.$parent.refundableQuantity }}</b>
+		</div>
+	{% endblock %}
+
+	{% block weareplanet_order_action_refund_confirm_button %}
+	<template #modal-footer>
+		<sw-button variant="primary" @click="refund()">
+			{{ $tc('weareplanet-order.refundAction.confirmButton.text') }}
+		</sw-button>
+	</template>
+	{% endblock %}
+
+	<sw-loader v-if="isLoading"></sw-loader>
+</sw-modal>
+{% endblock %}

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Migration;
+namespace WeArePlanetPayment\Migration;
 
 use Doctrine\DBAL\Connection;
 use Shopware\Core\Framework\Migration\MigrationStep;
@@ -8,7 +8,7 @@ use Shopware\Core\Framework\Migration\MigrationStep;
 /**
  * Class Migration1605701047PaymentMethodConfigurationEntity
  *
- * @package PostFinanceCheckoutPayment\Migration
+ * @package WeArePlanetPayment\Migration
  */
 class Migration1605701047PaymentMethodConfigurationEntity extends MigrationStep {
 	/**
@@ -29,7 +29,7 @@ class Migration1605701047PaymentMethodConfigurationEntity extends MigrationStep 
 	 */
 	public function update(Connection $connection): void
 	{
-		$connection->executeStatement('ALTER TABLE `postfinancecheckout_payment_method_configuration` CHANGE `payment_method_configuration_id` `payment_method_configuration_id` bigint unsigned NOT NULL AFTER `data`;');
+		$connection->executeStatement('ALTER TABLE `weareplanet_payment_method_configuration` CHANGE `payment_method_configuration_id` `payment_method_configuration_id` bigint unsigned NOT NULL AFTER `data`;');
 	}
 
 	/**

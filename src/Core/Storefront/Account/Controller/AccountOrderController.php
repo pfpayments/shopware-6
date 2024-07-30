@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PostFinanceCheckoutPayment\Core\Storefront\Account\Controller;
+namespace WeArePlanetPayment\Core\Storefront\Account\Controller;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
@@ -16,7 +16,7 @@ use Symfony\Component\{
 	HttpFoundation\Response,
 	Routing\Annotation\Route,
 	Security\Core\Exception\AccessDeniedException};
-use PostFinanceCheckoutPayment\Core\{
+use WeArePlanetPayment\Core\{
 	Api\Transaction\Service\TransactionService,
 	Settings\Service\SettingsService};
 
@@ -26,7 +26,7 @@ use PostFinanceCheckoutPayment\Core\{
 class AccountOrderController extends StorefrontController {
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
+	 * @var \WeArePlanetPayment\Core\Settings\Service\SettingsService
 	 */
 	protected $settingsService;
 
@@ -36,14 +36,14 @@ class AccountOrderController extends StorefrontController {
 	protected $logger;
 
 	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService
+	 * @var \WeArePlanetPayment\Core\Api\Transaction\Service\TransactionService
 	 */
 	protected $transactionService;
 
 	/**
 	 * AccountOrderController constructor.
-	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService           $settingsService
-	 * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService $transactionService
+	 * @param \WeArePlanetPayment\Core\Settings\Service\SettingsService           $settingsService
+	 * @param \WeArePlanetPayment\Core\Api\Transaction\Service\TransactionService $transactionService
 	 */
 	public function __construct(SettingsService $settingsService, TransactionService $transactionService)
 	{
@@ -70,12 +70,12 @@ class AccountOrderController extends StorefrontController {
 	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 *
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @throws \WeArePlanet\Sdk\ApiException
+	 * @throws \WeArePlanet\Sdk\Http\ConnectionException
+	 * @throws \WeArePlanet\Sdk\VersioningException
 	 * @Route(
-	 *     "/postfinancecheckout/account/order/download/invoice/document/{orderId}",
-	 *     name="frontend.postfinancecheckout.account.order.download.invoice.document",
+	 *     "/weareplanet/account/order/download/invoice/document/{orderId}",
+	 *     name="frontend.weareplanet.account.order.download.invoice.document",
 	 *     methods={"GET"}
 	 *     )
 	 */
