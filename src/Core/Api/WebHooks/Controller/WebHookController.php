@@ -24,7 +24,7 @@ use Shopware\Core\Checkout\Order\OrderStates;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Shopware\Core\Framework\Log\Package;
 use Symfony\Component\{
-    HttpFoundation\JsonResponse,
+	HttpFoundation\JsonResponse,
 	HttpFoundation\ParameterBag,
 	HttpFoundation\Request,
 	HttpFoundation\Response,
@@ -35,12 +35,16 @@ use PostFinanceCheckout\Sdk\{
 	Model\TransactionInvoiceState,
 	Model\TransactionState,
 	Model\TransactionInvoice,};
-use PostFinanceCheckoutPayment\Core\{
-	Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
+use PostFinanceCheckoutPayment\Core\{Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
 	Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService,
 	Api\Refund\Service\RefundService,
 	Api\Transaction\Service\OrderMailService,
 	Api\Transaction\Service\TransactionService,
+	Api\WebHooks\Strategy\WebHookPaymentMethodConfigurationStrategy,
+	Api\WebHooks\Strategy\WebHookRefundStrategy,
+	Api\WebHooks\Strategy\WebHookStrategyManager,
+	Api\WebHooks\Strategy\WebHookTransactionInvoiceStrategy,
+	Api\WebHooks\Strategy\WebHookTransactionStrategy,
 	Api\WebHooks\Struct\WebHookRequest,
 	Settings\Service\SettingsService,
 	Util\Payload\TransactionPayload};
@@ -137,6 +141,11 @@ class WebHookController extends AbstractController {
 	 */
 	private $orderService;
 
+	/**
+	 * @var \PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookStrategyManager
+	 */
+	private $webHookStrategyManager;
+
 	const LINE_ITEM_TYPE_FEE = 'FEE';
 
 	/**
@@ -150,6 +159,7 @@ class WebHookController extends AbstractController {
 	 * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\OrderMailService                                 $orderMailService
 	 * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService                               $transactionService
 	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService                                         $settingsService
+	 * @param \PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookStrategyManager                                         $settingsService
 	 */
 	public function __construct(
 		Connection $connection,
@@ -159,7 +169,8 @@ class WebHookController extends AbstractController {
 		RefundService $refundService,
 		OrderMailService $orderMailService,
 		TransactionService $transactionService,
-		SettingsService $settingsService
+		SettingsService $settingsService,
+		WebHookStrategyManager $webHookStrategyManager
 	)
 	{
 		$this->connection                        = $connection;
@@ -170,6 +181,7 @@ class WebHookController extends AbstractController {
 		$this->transactionService                = $transactionService;
 		$this->settingsService                   = $settingsService;
 		$this->orderService                      = $orderService;
+		$this->webHookStrategyManager            = $webHookStrategyManager;
 	}
 
 	/**
@@ -193,18 +205,17 @@ class WebHookController extends AbstractController {
 	 *
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse|\Symfony\Component\HttpFoundation\Response
 	 */
-    #[Route(
-        path: "/api/_action/postfinancecheckout/webHook/callback/{salesChannelId}",
-        name: "api.action.postfinancecheckout.webhook.update",
-        options: ["seo" => false],
-        defaults: [
-            "csrf_protected" => false,
-            "XmlHttpRequest" => true,
-            "auth_required" => false,
-        ],
-        methods: ["POST"],
-    )]
-
+	#[Route(
+		path: "/api/_action/postfinancecheckout/webHook/callback/{salesChannelId}",
+		name: "api.action.postfinancecheckout.webhook.update",
+		options: ["seo" => false],
+		defaults: [
+			"csrf_protected" => false,
+			"XmlHttpRequest" => true,
+			"auth_required" => false,
+		],
+		methods: ["POST"],
+	)]
 	public function callback(Request $request, Context $context, string $salesChannelId): Response
 	{
 		$status       = Response::HTTP_UNPROCESSABLE_ENTITY;
@@ -213,21 +224,34 @@ class WebHookController extends AbstractController {
 			// Configuration
 			$salesChannelId = $salesChannelId == 'null' ? null : $salesChannelId;
 			$this->settings = $this->settingsService->getSettings($salesChannelId);
+			$signature      = $request->server->get('HTTP_X_SIGNATURE');
+			$requestJson    = json_decode($request->getContent(), true);
+			$apiClient      = $this->settings->getApiClient();
+			$callBackData->assign($requestJson);
 
-			$callBackData->assign(json_decode($request->getContent(), true));
-
-			switch ($callBackData->getListenerEntityTechnicalName()) {
-				case WebHookRequest::PAYMENT_METHOD_CONFIGURATION:
-					return $this->updatePaymentMethodConfiguration($context, $salesChannelId);
-				case WebHookRequest::REFUND:
-					return $this->updateRefund($callBackData, $context);
-				case WebHookRequest::TRANSACTION:
-					return $this->updateTransaction($callBackData, $context);
-				case WebHookRequest::TRANSACTION_INVOICE:
-					return $this->updateTransactionInvoice($callBackData, $context);
-				default:
-					$this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : Listener not implemented : ', $callBackData->jsonSerialize());
+			// Handling of payloads without a signature (legacy method).
+			// Deprecated since 3.0.12
+			if (empty($signature)) {
+				switch ($callBackData->getListenerEntityTechnicalName()) {
+					case WebHookRequest::PAYMENT_METHOD_CONFIGURATION:
+						return $this->updatePaymentMethodConfiguration($context, $salesChannelId);
+					case WebHookRequest::REFUND:
+						return $this->updateRefund($callBackData, $context);
+					case WebHookRequest::TRANSACTION:
+						return $this->updateTransaction($callBackData, $context);
+					case WebHookRequest::TRANSACTION_INVOICE:
+						return $this->updateTransactionInvoice($callBackData, $context);
+					default:
+						$this->logger->warning(__CLASS__ . ' : ' . __FUNCTION__ . ' : Listener not implemented : ', $callBackData->jsonSerialize());
+				}
 			}
+
+			// Handling of payloads with a valid signature.
+			// This payload signed has the transaction state
+			if (!empty($signature) && $apiClient->getWebhookEncryptionService()->isContentValid($signature, $request->getContent())) {
+				return $this->webHookStrategyManager->process($callBackData, $context, $salesChannelId);
+			}
+
 			$status = Response::HTTP_OK;
 		} catch (\Exception $exception) {
 			$this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage(), $callBackData->jsonSerialize());
@@ -245,6 +269,8 @@ class WebHookController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
+	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
+	 * @see WebHookPaymentMethodConfigurationStrategy
 	 */
 	private function updatePaymentMethodConfiguration(Context $context, string $salesChannelId = null): Response
 	{
@@ -260,6 +286,8 @@ class WebHookController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context                                      $context
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
+	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
+	 * @see WebHookRefundStrategy
 	 */
 	public function updateRefund(WebHookRequest $callBackData, Context $context): Response
 	{
@@ -384,6 +412,8 @@ class WebHookController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
 	 * @return OrderTransactionEntity
+	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
+	 * @see WebHookTransactionStrategy
 	 */
 	private function getOrderTransaction(String $orderId, Context $context): OrderTransactionEntity
 	{
@@ -397,6 +427,8 @@ class WebHookController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
 	 * @return \Shopware\Core\Checkout\Order\OrderEntity
+	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
+	 * @see WebHookTransactionStrategy
 	 */
 	private function getOrderEntity(string $orderId, Context $context): OrderEntity
 	{
@@ -429,6 +461,8 @@ class WebHookController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context                                      $context
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
+	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
+	 * @see WebHookTransactionStrategy
 	 */
 	private function updateTransaction(WebHookRequest $callBackData, Context $context): Response
 	{
@@ -495,6 +529,7 @@ class WebHookController extends AbstractController {
 	/**
 	 * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
 	 * @param \Shopware\Core\Framework\Context             $context
+	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
 	 */
 	protected function sendEmail(Transaction $transaction, Context $context): void
 	{
@@ -511,6 +546,8 @@ class WebHookController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context                                      $context
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
+	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
+	 * @see WebHookTransactionInvoiceStrategy
 	 */
 	public function updateTransactionInvoice(WebHookRequest $callBackData, Context $context): Response
 	{

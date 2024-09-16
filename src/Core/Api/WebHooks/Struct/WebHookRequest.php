@@ -52,6 +52,13 @@ class WebHookRequest extends Struct {
 	protected $timestamp;
 
 	/**
+	 * Entity state.
+	 *
+	 * @var mixed
+	 */
+	protected $state;
+
+	/**
 	 * @return int
 	 */
 	public function getEventId(): int
@@ -174,6 +181,24 @@ class WebHookRequest extends Struct {
 	public function setTimestamp(string $timestamp): WebHookRequest
 	{
 		$this->timestamp = $timestamp;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getState(): string
+	{
+		return $this->state;
+	}
+
+	/**
+	 * @param string $state
+	 * @return WebHookRequest
+	 */
+	public function setState(string $state): WebHookRequest
+	{
+		$this->state = $state;
 		return $this;
 	}
 }

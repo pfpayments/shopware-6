@@ -1,3 +1,10 @@
+# 6.1.8
+- Schlüsselsignatur implementiert
+- Steuersatzanpassung, wenn Produkte unterschiedliche Steuersätze haben
+
+# 6.1.7
+- Meldung behoben, die anzeigte, dass Versand- und Rechnungsadresse immer identisch waren
+
 # 6.1.6
 - Versionserhöhung für das SDK
 

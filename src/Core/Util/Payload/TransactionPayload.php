@@ -209,7 +209,7 @@ class TransactionPayload extends AbstractPayload
 
         return $transactionPayload;
     }
-
+    
     /**
      * Get transaction line items
      *
@@ -218,55 +218,155 @@ class TransactionPayload extends AbstractPayload
      */
     protected function getLineItems(): array
     {
-        /**
-         * @var \PostFinanceCheckout\Sdk\Model\LineItemCreate[] $lineItems
-         */
         $lineItems = [];
-
-        /**
-         * @var \Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity $shopLineItem
-         */
-        foreach ($this->transaction->getOrder()->getLineItems() as $shopLineItem) {
-
-            if ($shopLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
+        $items = $this->transaction->getOrder()->getLineItems();
+        
+        foreach ($items as $shopLineItem) {
+            if ($this->shouldSkipLineItem($shopLineItem)) {
                 continue;
             }
-
-            if ($shopLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS_OPTION) {
-                $customProductOptionParentLabel = $this->getCustomProductOptionLabel($shopLineItem->getParentId());
-                $label = $customProductOptionParentLabel . ': ' . $shopLineItem->getLabel();
-                $shopLineItem->setLabel($label);
+            
+            if ($this->isCustomProductOption($shopLineItem)) {
+                $shopLineItem = $this->updateCustomProductOptionLabel($shopLineItem);
             }
-
+            
             $lineItem = $this->createLineItem($shopLineItem);
-
-            if (!$lineItem->valid()) {
-                $this->logger->critical('LineItem payload invalid:', $lineItem->listInvalidProperties());
-                throw new InvalidPayloadException('LineItem payload invalid:' . json_encode($lineItem->listInvalidProperties()));
-            }
-
+            $this->validateLineItem($lineItem);
+            
             $lineItems[] = $lineItem;
         }
+        
+        $this->processDiscounts($items, $lineItems);
+        $this->sortLineItemsByName($lineItems);
+        
+        $this->addOptionalLineItems($lineItems);
+        
+        return $lineItems;
+    }
+    
+    /**
+     * Determine if a line item should be skipped.
+     */
+    protected function shouldSkipLineItem($shopLineItem): bool
+    {
+        return in_array($shopLineItem->getType(), [
+          CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS,
+          'promotion'
+        ]);
+    }
 
-        usort($lineItems, function ($shopLineItem1, $shopLineItem2) {
-            if ($shopLineItem1->getName() == $shopLineItem2->getName()) {
-                return 0;
-            }
+    /**
+     * Check if the line item is a custom product option.
+     */
+    protected function isCustomProductOption($shopLineItem): bool
+    {
+        return $shopLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS_OPTION;
+    }
 
-            return ($shopLineItem1->getName() < $shopLineItem2->getName()) ? -1 : 1;
-        });
-
-        $shippingLineItem = $this->getShippingLineItem();
-        if (!is_null($shippingLineItem)) {
-            $lineItems[] = $shippingLineItem;
+    /**
+     * Update the label of a custom product option.
+     */
+    protected function updateCustomProductOptionLabel($shopLineItem)
+    {
+        $customProductOptionParentLabel = $this->getCustomProductOptionLabel($shopLineItem->getParentId());
+        $shopLineItem->setLabel($customProductOptionParentLabel . ': ' . $shopLineItem->getLabel());
+        return $shopLineItem;
+    }
+    
+    /**
+     * Validate the created line item.
+     */
+    protected function validateLineItem($lineItem): void
+    {
+        if (!$lineItem->valid()) {
+            $this->logger->critical('LineItem payload invalid:', $lineItem->listInvalidProperties());
+            throw new InvalidPayloadException('LineItem payload invalid: ' . json_encode($lineItem->listInvalidProperties()));
         }
+    }
+    
+    /**
+     * Process discounts from the order items and add them to the line items array.
+     */
+    protected function processDiscounts($items, array &$lineItems): void
+    {
+        $itemsArray = is_array($items) ? $items : iterator_to_array($items);
+        $discounts = array_filter($itemsArray, function ($orderItem) {
+            return $orderItem->getType() === 'promotion';
+        });
+        
+        if ($discounts) {
+            $this->addDiscountLineItem(current($discounts), $lineItems);
+        }
+    }
+    
+    /**
+     * Add discount line item.
+     */
+    protected function addDiscountLineItem($discount, array &$lineItems): void
+    {
+        $calculatedPrice = $discount->getPrice();
+        $calculatedTaxesCollection = $calculatedPrice->getCalculatedTaxes();
+        
+        foreach ($calculatedTaxesCollection as $calculatedTax) {
+            $rate = $calculatedTax->getTaxRate();
+            $lineItem = new LineItemCreate();
+            $amount = $this->calculateDiscountAmount($calculatedTax);
+            
+            $lineItem->setAmountIncludingTax($amount)
+              ->setName(sprintf('DISCOUNT: %s (%s%% tax)', $discount->getLabel(), $rate))
+              ->setQuantity(1)
+              ->setShippingRequired(false)
+              ->setSku('sku-discount-' . $rate, 200)
+              ->setType(LineItemType::DISCOUNT)
+              ->setUniqueId('coupon-sku-discount-' . $rate . '-' . $rate);
+            
+            $taxRate = new TaxCreate(['title' => 'Discount Tax: ' . $rate, 'rate' => $rate]);
+            $lineItem->setTaxes([$taxRate]);
+            
+            $lineItems[] = $lineItem;
+        }
+    }
 
-        $adjustmentLineItem = $this->getAdjustmentLineItem($lineItems);
-        if (!is_null($adjustmentLineItem)) {
+    /**
+     * Calculate discount amount including tax if necessary.
+     */
+    protected function calculateDiscountAmount($calculatedTax): float
+    {
+        $amount = self::round($calculatedTax->getPrice());
+        if ($this->transaction->getOrder()->getTaxStatus() === 'net') {
+            $amount = self::round($amount + $calculatedTax->getTax());
+        }
+        return $amount;
+    }
+
+    /**
+     * Sort line items by name.
+     */
+    protected function sortLineItemsByName(array &$lineItems): void
+    {
+        usort($lineItems, function ($lineItem1, $lineItem2) {
+            return strcmp($lineItem1->getName(), $lineItem2->getName());
+        });
+    }
+    
+    /**
+     * Add optional shipping and adjustment line items.
+     */
+    protected function addOptionalLineItems(array &$lineItems): void
+    {
+        if (count($this->transaction->getOrder()->getShippingCosts()->getCalculatedTaxes()) === 1) {
+            if ($shippingLineItem = $this->getShippingLineItem()) {
+                $lineItems[] = $shippingLineItem;
+            }
+        } else {
+            if ($multipleShippingLineItems = $this->getMultipleShippingLineItems()) {
+                $lineItems = array_merge($lineItems, $multipleShippingLineItems);
+            }
+        }
+        
+        if ($adjustmentLineItem = $this->getAdjustmentLineItem($lineItems)) {
             $lineItems[] = $adjustmentLineItem;
         }
-
-        return $lineItems;
     }
 
     /**
@@ -294,9 +394,6 @@ class TransactionPayload extends AbstractPayload
      */
     protected function createLineItem(OrderLineItemEntity $shopLineItem): ?LineItemCreate
     {
-        $productAttributes = null;
-        $taxes = null;
-
         $uniqueId = $shopLineItem->getId();
         $sku = $shopLineItem->getProductId() ? $shopLineItem->getProductId() : $uniqueId;
         $payLoad = $shopLineItem->getPayload();
@@ -429,6 +526,10 @@ class TransactionPayload extends AbstractPayload
                     $this->transaction->getOrder()->getShippingCosts()->getCalculatedTaxes(),
                     $shippingName
                 );
+                if ($this->transaction->getOrder()->getTaxStatus() === 'net') {
+                    $amount = self::round($amount + $this->transaction->getOrder()->getShippingCosts()->getCalculatedTaxes()->getAmount());
+                }
+
 
                 $lineItem = (new LineItemCreate())
                     ->setAmountIncludingTax($amount)
@@ -452,6 +553,55 @@ class TransactionPayload extends AbstractPayload
             $this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage());
         }
         return null;
+    }
+    
+    /**
+     * @return array
+     */
+    protected function getMultipleShippingLineItems(): array
+    {
+        try {
+            if ($this->transaction->getOrder()->getShippingTotal() > 0) {
+                $lineItems = [];
+                $shippingName = $this->salesChannelContext->getShippingMethod()->getName() ?? $this->translator->trans('postfinancecheckout.payload.shipping.name');
+                
+                $isFirst = true;
+                
+                foreach ($this->transaction->getOrder()->getShippingCosts()->getCalculatedTaxes() as $taxItem) {
+                    $amount = self::round($taxItem->getPrice());
+                    if ($this->transaction->getOrder()->getTaxStatus() === 'net') {
+                        $amount = self::round($amount + $taxItem->getTax());
+                    }
+                    $taxRate = $taxItem->getTaxRate();
+                    $tax = (new TaxCreate())
+                      ->setRate($taxRate)
+                      ->setTitle('Tax rate: '.$taxRate);
+                    
+                    $name = $taxRate . '%-' . $shippingName;
+                    $lineItem = (new LineItemCreate())
+                      ->setAmountIncludingTax($amount)
+                      ->setName($this->fixLength($name . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
+                      ->setQuantity($this->transaction->getOrder()->getShippingCosts()->getQuantity() ?? 1)
+                      ->setTaxes([$tax])
+                      ->setSku($this->fixLength($name . '-Shipping', 200))
+                      ->setType($isFirst ? LineItemType::SHIPPING : LineItemType::FEE) // First item as SHIPPING, rest as FEE
+                      ->setUniqueId($this->fixLength($name . '-Shipping', 200));
+                    
+                    if (!$lineItem->valid()) {
+                        $this->logger->critical('Shipping LineItem payload invalid:', $lineItem->listInvalidProperties());
+                        throw new InvalidPayloadException('Shipping LineItem payload invalid:' . json_encode($lineItem->listInvalidProperties()));
+                    }
+                    
+                    $lineItems[] = $lineItem;
+                    $isFirst = false;
+                }
+                return $lineItems;
+            }
+            
+        } catch (\Exception $exception) {
+            $this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage());
+        }
+        return [];
     }
 
     /**

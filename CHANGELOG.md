@@ -1,3 +1,10 @@
+# 6.1.8
+- Implemented key signing
+- Tax rate adjustment when products have different tax rates
+
+# 6.1.7
+- Fixed messaging which showed that shipping and billing address were always the same
+
 # 6.1.6
 - Bumped sdk version
 

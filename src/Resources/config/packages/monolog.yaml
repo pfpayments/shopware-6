@@ -1,2 +1,9 @@
 monolog:
     channels: ['postfinancecheckout_payment']
+    handlers:
+        security:
+            # log all messages (since debug is the lowest level)
+            level: debug
+            type: stream
+            path: '%kernel.logs_dir%/postfinancecheckout.log'
+            channels: [ 'postfinancecheckout_payment' ]
