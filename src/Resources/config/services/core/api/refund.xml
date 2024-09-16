@@ -11,7 +11,7 @@
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Refund\Service\RefundService"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
 			<call method="setLogger">
-				<argument type="service" id="monolog.logger.postfinancecheckout_payment"/>
+				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
 			</call>
 			<call method="setContainer">
 				<argument type="service" id="service_container"/>
@@ -28,7 +28,7 @@
 			<argument type="service" id="service_container"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
 			<call method="setLogger">
-				<argument type="service" id="monolog.logger.postfinancecheckout_payment"/>
+				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
 			</call>
 		</service>
 

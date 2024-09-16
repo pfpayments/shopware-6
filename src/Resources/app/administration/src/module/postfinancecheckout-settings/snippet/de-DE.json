@@ -20,9 +20,7 @@
 	  "button": {
 		"description": "Klicken Sie auf diese Schaltfläche, um PostFinanceCheckout als Standard-Zahlungsabwickler im ausgewählten Vertriebskanal festzulegen",
 		"label": "PostFinanceCheckout als Standard-Zahlungsabwickler festlegen"
-	  },
-	  "messageDefaultPaymentError": "PostFinanceCheckout als Standard-Zahlungsabwickler konnte nicht festgelegt werden..",
-	  "messageDefaultPaymentUpdated": "PostFinanceCheckout als Standard-Zahlungsabwickler wurde festgelegt."
+	  }
 	},
 	"settingForm": {
 	  "credentials": {

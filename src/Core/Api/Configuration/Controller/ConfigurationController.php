@@ -5,13 +5,13 @@ namespace PostFinanceCheckoutPayment\Core\Api\Configuration\Controller;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
 	Framework\Context,
-    Framework\Log\Package};
+	Framework\Routing\Annotation\RouteScope,};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\{
 	HttpFoundation\JsonResponse,
 	HttpFoundation\Request,
 	HttpFoundation\Response,
-	Routing\Attribute\Route};
+	Routing\Annotation\Route};
 use PostFinanceCheckoutPayment\Core\{
 	Api\OrderDeliveryState\Service\OrderDeliveryStateService,
 	Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService,
@@ -26,9 +26,8 @@ use PostFinanceCheckoutPayment\Core\{
  * This class handles web calls that are made via the PostFinanceCheckoutPayment settings page.
  *
  * @package PostFinanceCheckoutPayment\Core\Api\Config\Controller
+ * @Route(defaults={"_routeScope"={"api"}})
  */
-#[Package('system-settings')]
-#[Route(defaults: ['_routeScope' => ['api']])]
 class ConfigurationController extends AbstractController {
 
 	/**
@@ -101,10 +100,12 @@ class ConfigurationController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context          $context
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 *
+	 * @Route(
+	 *     "/api/_action/postfinancecheckout/configuration/set-postfinancecheckout-as-sales-channel-payment-default",
+	 *     name="api.action.postfinancecheckout.configuration.set-postfinancecheckout-as-sales-channel-payment-default",
+	 *     methods={"POST"}
+	 *     )
 	 */
-    #[Route("/api/_action/postfinancecheckout/configuration/set-postfinancecheckout-as-sales-channel-payment-default",
-    	name: "api.action.postfinancecheckout.configuration.set-postfinancecheckout-as-sales-channel-payment-default",
-        methods: ['POST'])]
 	public function setPostFinanceCheckoutAsSalesChannelPaymentDefault(Request $request, Context $context): JsonResponse
 	{
 		$salesChannelId = $request->request->get('salesChannelId');
@@ -123,10 +124,12 @@ class ConfigurationController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
+	 * @Route(
+	 *     "/api/_action/postfinancecheckout/configuration/register-web-hooks",
+	 *     name="api.action.postfinancecheckout.configuration.register-web-hooks",
+	 *     methods={"POST"}
+	 *   )
 	 */
-    #[Route("/api/_action/postfinancecheckout/configuration/register-web-hooks",
-        name: "api.action.postfinancecheckout.configuration.register-web-hooks",
-        methods: ['POST'])]
 	public function registerWebHooks(Request $request): JsonResponse
 	{
 		$settings = $this->settingsService->getSettings();
@@ -154,10 +157,12 @@ class ConfigurationController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 *
+	 * @Route(
+	 *     "/api/_action/postfinancecheckout/configuration/check-api-connection",
+	 *     name="api.action.postfinancecheckout.configuration.check-api-connection",
+	 *     methods={"POST"}
+	 *   )
 	 */
-    #[Route("/api/_action/postfinancecheckout/configuration/check-api-connection",
-        name: "api.action.postfinancecheckout.configuration.check-api-connection",
-        methods: ['POST'])]
 	public function checkApiConnection(Request $request): JsonResponse
 	{
 		$spaceId = (int)$request->request->getInt('spaceId');
@@ -186,10 +191,12 @@ class ConfigurationController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context          $context
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 *
+	 * @Route(
+	 *     "/api/_action/postfinancecheckout/configuration/synchronize-payment-method-configuration",
+	 *     name="api.action.postfinancecheckout.configuration.synchronize-payment-method-configuration",
+	 *     methods={"POST"}
+	 *   )
 	 */
-    #[Route("/api/_action/postfinancecheckout/configuration/synchronize-payment-method-configuration",
-        name: "api.action.postfinancecheckout.configuration.synchronize-payment-method-configuration",
-        methods: ['POST'])]
 	public function synchronizePaymentMethodConfiguration(Request $request, Context $context): JsonResponse
 	{
 		$settings = $this->settingsService->getSettings();
@@ -221,10 +228,12 @@ class ConfigurationController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context $context
 	 * @return \Symfony\Component\HttpFoundation\JsonResponse
 	 *
+	 * @Route(
+	 *     "/api/_action/postfinancecheckout/configuration/install-order-delivery-states",
+	 *     name="api.action.postfinancecheckout.configuration.install-order-delivery-states",
+	 *     methods={"POST"}
+	 *   )
 	 */
-    #[Route("/api/_action/postfinancecheckout/configuration/install-order-delivery-states",
-        name: "api.action.postfinancecheckout.configuration.install-order-delivery-states",
-        methods: ['POST'])]
 	public function installOrderDeliveryStates(Context $context): JsonResponse
 	{
 		/**

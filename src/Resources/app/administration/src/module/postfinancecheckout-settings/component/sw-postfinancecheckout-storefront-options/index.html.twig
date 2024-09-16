@@ -3,7 +3,7 @@
 	<sw-container>
 		<div v-if="actualConfigData" class="postfinancecheckout-settings-storefront-options-fields">
 			<sw-inherit-wrapper
-					v-model:value="actualConfigData[CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED]"
+					v-model="actualConfigData[CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED]"
 					:inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null'][CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED]"
 					:customInheritationCheckFunction="checkBoolFieldInheritance">
 				<template #content="props">
@@ -15,7 +15,7 @@
 							:helpText="$tc('postfinancecheckout-settings.settingForm.storefrontOptions.invoiceDownloadEnabled.tooltipText')"
 							:disabled="props.isInherited"
 							:value="props.currentValue"
-							@update:value="props.updateCurrentValue">
+							@change="props.updateCurrentValue">
 					</sw-switch-field>
 				</template>
 			</sw-inherit-wrapper>

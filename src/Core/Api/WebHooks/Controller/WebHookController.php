@@ -230,7 +230,7 @@ class WebHookController extends AbstractController {
 			$callBackData->assign($requestJson);
 
 			// Handling of payloads without a signature (legacy method).
-			// Deprecated since 3.0.12
+			// Deprecated since 5.0.13 and 6.1.8
 			if (empty($signature)) {
 				switch ($callBackData->getListenerEntityTechnicalName()) {
 					case WebHookRequest::PAYMENT_METHOD_CONFIGURATION:
@@ -269,7 +269,7 @@ class WebHookController extends AbstractController {
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
-	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
+	 * @deprecated 5.0.13 and 6.1.8 No longer used by internal code and not recommended.
 	 * @see WebHookPaymentMethodConfigurationStrategy
 	 */
 	private function updatePaymentMethodConfiguration(Context $context, string $salesChannelId = null): Response
@@ -286,7 +286,7 @@ class WebHookController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context                                      $context
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
-	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
+	 * @deprecated 5.0.13 and 6.1.8 No longer used by internal code and not recommended.
 	 * @see WebHookRefundStrategy
 	 */
 	public function updateRefund(WebHookRequest $callBackData, Context $context): Response
@@ -412,7 +412,7 @@ class WebHookController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
 	 * @return OrderTransactionEntity
-	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
+	 * @deprecated 5.0.13 and 6.1.8 No longer used by internal code and not recommended.
 	 * @see WebHookTransactionStrategy
 	 */
 	private function getOrderTransaction(String $orderId, Context $context): OrderTransactionEntity
@@ -427,7 +427,7 @@ class WebHookController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context $context
 	 *
 	 * @return \Shopware\Core\Checkout\Order\OrderEntity
-	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
+	 * @deprecated 5.0.13 and 6.1.8 No longer used by internal code and not recommended.
 	 * @see WebHookTransactionStrategy
 	 */
 	private function getOrderEntity(string $orderId, Context $context): OrderEntity
@@ -461,7 +461,7 @@ class WebHookController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context                                      $context
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
-	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
+	 * @deprecated 5.0.13 and 6.1.8 No longer used by internal code and not recommended.
 	 * @see WebHookTransactionStrategy
 	 */
 	private function updateTransaction(WebHookRequest $callBackData, Context $context): Response
@@ -529,7 +529,7 @@ class WebHookController extends AbstractController {
 	/**
 	 * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
 	 * @param \Shopware\Core\Framework\Context             $context
-	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
+	 * @deprecated 5.0.13 and 6.1.8 No longer used by internal code and not recommended.
 	 */
 	protected function sendEmail(Transaction $transaction, Context $context): void
 	{
@@ -546,7 +546,7 @@ class WebHookController extends AbstractController {
 	 * @param \Shopware\Core\Framework\Context                                      $context
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
-	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
+	 * @deprecated 5.0.13 and 6.1.8 No longer used by internal code and not recommended.
 	 * @see WebHookTransactionInvoiceStrategy
 	 */
 	public function updateTransactionInvoice(WebHookRequest $callBackData, Context $context): Response
