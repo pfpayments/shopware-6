@@ -1,24 +1,37 @@
-# 5.0.13
+# 6.1.8
 - Schlüsselsignatur implementiert
 - Steuersatzanpassung, wenn Produkte unterschiedliche Steuersätze haben
 
-# 5.0.12
-- Meldung behoben, dass Liefer- und Rechnungsadresse immer identisch waren
+# 6.1.7
+- Meldung behoben, die anzeigte, dass Versand- und Rechnungsadresse immer identisch waren
 
-# 5.0.11
-- Plugin-Upgrade-Abhängigkeitsfehler behoben
+# 6.1.6
+- Versionserhöhung für das SDK
 
-# 5.0.10
+# 6.1.5
+- Unterstützung von Shopware 6.6.3.1 und Vue 3
+
+# 6.1.4
+- Das Einstellungsformular des Plugins wurde verbessert
+- Unterstützung von Shopware 6.6.2.0
+
+# 6.1.3
 - Unterstützung der Bonitätsprüfung für die Zahlungsmethoden Powerpay und MF Group Invoice
 - Verbesserte Handhabung abgebrochener Transaktionen
 
-# 5.0.9
+# 6.1.2
 - Die Weiterleitung zur Bestätigungsseite nach dem Neuladen wurde behoben
 
-# 5.0.8
+# 6.1.1
+- Fixed deprecated OrderNotFoundException
+
+# 6.1.0
 - Checkout-Probleme nach dem Deaktivieren/Aktivieren des Plugins behoben
 - Plugin-Deinstallationsaktion behoben
 - Die E-Mail-Funktion für die Rechnungszahlungsmethode beim Versand der Bestellung wurde korrigiert
+
+# 6.0.0
+- Unterstützung von Shopware 6.6
 
 # 5.0.7
 - Fix für Rückerstattungen, wenn ein Rabattcode verwendet wird

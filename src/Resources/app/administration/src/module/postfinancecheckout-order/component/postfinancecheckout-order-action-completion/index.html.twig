@@ -6,7 +6,8 @@
 	{% block postfinancecheckout_order_action_completion_amount %}
 		<sw-checkbox-field
 				:label="$tc('postfinancecheckout-order.captureAction.button.text')"
-				v-model="isCompletion"></sw-checkbox-field>
+				v-model:value="isCompletion">
+        </sw-checkbox-field>
 	{% endblock %}
 
 	{% block postfinancecheckout_order_action_completion_confirm_button %}

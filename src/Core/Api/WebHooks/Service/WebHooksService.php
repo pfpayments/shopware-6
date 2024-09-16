@@ -295,6 +295,7 @@ class WebHooksService {
 					->setNotifyEveryChange($data->isNotifyEveryChange())
 					->setState(CreationEntityState::CREATE)
 					->setEntityStates($data->getStates())
+					->setEnablePayloadSignatureAndState( true )
 					->setUrl($webHookUrlId);
 
 				$returnValue[] = $this->apiClient->getWebhookListenerService()->create($this->spaceId, $entity);

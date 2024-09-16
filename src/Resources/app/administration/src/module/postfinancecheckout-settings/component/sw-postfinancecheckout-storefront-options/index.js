@@ -38,9 +38,6 @@ Component.register('sw-postfinancecheckout-storefront-options', {
 		};
 	},
 
-	computed: {
-	},
-
 	methods: {
 		checkTextFieldInheritance(value) {
 			if (typeof value !== 'string') {

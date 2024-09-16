@@ -3,13 +3,22 @@
 PostFinanceCheckout Payment for Shopware 6
 =============================
 
-The PostFinanceCheckout Payment plugin wraps around the PostFinanceCheckout API. This library facilitates your interaction with various services such as transactions. Please not this plugin is for version 6.5.
-For the 6.4 plugin please visit https://github.com/pfpayments/shopware-6-4
+The PostFinanceCheckout Payment plugin wraps around the PostFinanceCheckout API. This library facilitates your interaction with various services such as transactions.
+Please note that this plugin is for versions 6.5 and 6.6. For the 6.4 plugin please visit [our Shopware 6.4 plugin](https://github.com/pfpayments/shopware-6-4).
 
 ## Requirements
 
-- PHP 7.4 - 8.2
-- Shopware 6.5.x
+- Shopware 6.5.x or Shopware 6.6.x. See table below.
+- PHP minimum version supported by the each shop version.
+
+## Supported versions
+
+___________________________________________________________________________________
+| Shopware 6 version            | Plugin major version   | Supported until        |
+|-------------------------------|------------------------|------------------------|
+| Shopware 6.6.x                | 6.x                    | Further notice         |
+| Shopware 6.5.x                | 5.x                    | October 2024           |
+-----------------------------------------------------------------------------------
 
 ## Installation
 
@@ -44,7 +53,7 @@ Uncompress the zip file you download, and include the autoloader in your project
 
 ```bash
 # unzip to ShopwareInstallDir/custom/plugins/PostFinanceCheckoutPayment
-composer require postfinancecheckout/sdk 4.5.0
+composer require postfinancecheckout/sdk 4.6.0
 php bin/console plugin:refresh
 php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment
 ```
@@ -62,7 +71,7 @@ tail -f var/log/postfinancecheckout_payment*.log
 
 ## Documentation
 
-[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/5.0.13/docs/en/documentation.html)
+[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.8/docs/en/documentation.html)
 
 ## License
 
