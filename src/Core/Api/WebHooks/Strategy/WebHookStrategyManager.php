@@ -107,7 +107,7 @@ class WebHookStrategyManager {
 			}
 
 			//This reduces the number of unnecessary api calls.
-			if (!$strategy->isRequestStateApplicable($request)) {
+			if (method_exists($strategy, "isRequestStateApplicable") && !$strategy->isRequestStateApplicable($request)) {
 				return new JsonResponse(['data' => $request->jsonSerialize()], Response::HTTP_OK);
 			}
 
