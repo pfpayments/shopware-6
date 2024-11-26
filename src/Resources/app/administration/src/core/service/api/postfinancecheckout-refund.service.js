@@ -75,6 +75,36 @@ class PostFinanceCheckoutRefundService extends ApiService {
 			return ApiService.handleResponse(response);
 		});
 	}
+
+	/**
+	 * Refund a transaction
+	 *
+	 * @param {String} salesChannelId
+	 * @param {int} transactionId
+	 * @param {float} refundableAmount
+	 * @param {String} lineItemId
+	 * @return {*}
+	 */
+	createPartialRefund(salesChannelId, transactionId, refundableAmount, lineItemId) {
+
+		const headers = this.getBasicHeaders();
+		const apiRoute = `${Shopware.Context.api.apiPath}/_action/${this.getApiBasePath()}/refund/create-partial-refund/`;
+
+		return this.httpClient.post(
+			apiRoute,
+			{
+				salesChannelId: salesChannelId,
+				transactionId: transactionId,
+				refundableAmount: refundableAmount,
+				lineItemId: lineItemId
+			},
+			{
+				headers: headers
+			}
+		).then((response) => {
+			return ApiService.handleResponse(response);
+		});
+	}
 }
 
 export default PostFinanceCheckoutRefundService;

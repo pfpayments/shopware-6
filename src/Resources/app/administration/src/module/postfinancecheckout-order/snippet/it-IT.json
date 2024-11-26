@@ -8,7 +8,9 @@
 		"refund": "Crea un nuovo rimborso",
 		"void": "Annulla autorizzazione",
 	    "refund-whole-line-item": "Rimborso intera riga",
-	    "refund-line-item-by-quantity": "Rimborso per quantità"
+	    "refund-line-item-by-quantity": "Rimborso per quantità",
+	    "refund-line-item-selected": "Rimborso selezionati",
+		"refund-line-item-parial": "Rimborso parziale"
 	  }
 	},
 	"captureAction": {
@@ -74,7 +76,8 @@
 	  },
 	  "successMessage": "Il tuo rimborso è andato a buon fine.",
 	  "successTitle": "Successo",
-	  "maxAvailableItemsToRefund": "Numero massimo di articoli disponibili da rimborsare"
+	  "maxAvailableItemsToRefund": "Numero massimo di articoli disponibili da rimborsare",
+	  "maxAvailableAmountToRefund": "Importo massimo disponibile per il rimborso"
 	},
 	"transactionHistory": {
 	  "cardTitle": "Dettagli",

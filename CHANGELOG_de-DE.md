@@ -1,3 +1,14 @@
+# 6.1.10
+- Mehrfache/gesammelte Rückerstattung für Einzelposten.
+- Teilweise Rückerstattung von Einzelposten.
+- Fehler bei der Rückerstattung durch die Option Einzelposten behoben.
+- Composer-Abhängigkeiten werden vom Shopware-System verwaltet
+
+# 6.1.9
+- Verhindert das Aufrufen einer nicht existierenden Methode bei der Webhook-Ausführung.
+- Verhindert einen Fehler, wenn Lieferdaten leer sind.
+- Composer.json überarbeitet und den Abschnitt "require" vervollständigt.
+
 # 6.1.8
 - Schlüsselsignatur implementiert
 - Steuersatzanpassung, wenn Produkte unterschiedliche Steuersätze haben

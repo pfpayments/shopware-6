@@ -8,7 +8,10 @@
 		"refund": "Create a new refund",
 		"void": "Cancel authorization",
 	    "refund-whole-line-item": "Refund whole line item",
-	    "refund-line-item-by-quantity": "Refund by quantity"
+	    "refund-line-item-by-quantity": "Refund by quantity",
+	    "refund-line-item-selected": "Rembourser sélectionnés",
+	    "refund-line-item-selected": "Refund selected",
+	    "refund-line-item-parial": "Partial refund"
 	  }
 	},
 	"captureAction": {
@@ -74,7 +77,8 @@
 	  },
 	  "successMessage": "Your refund was successful.",
 	  "successTitle": "Success",
-	  "maxAvailableItemsToRefund": "Maximum available items to refund"
+	  "maxAvailableItemsToRefund": "Maximum available items to refund",
+	  "maxAvailableAmountToRefund": "Maximum available amount to refund"
 	},
 	"transactionHistory": {
 	  "cardTitle": "Details",

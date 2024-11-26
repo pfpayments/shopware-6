@@ -9,6 +9,7 @@
 		<service id="PostFinanceCheckoutPayment\Core\Storefront\Account\Controller\AccountOrderController" public="true">
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService"/>
+			<argument type="service" id="Symfony\Component\HttpFoundation\RequestStack"/>
 			<call method="setLogger">
 				<argument type="service" id="monolog.logger.postfinancecheckout_payment"/>
 			</call>

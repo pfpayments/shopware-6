@@ -124,4 +124,13 @@ class PostFinanceCheckoutPayment extends Plugin {
 			],
 		];
 	}
+
+    /**
+     * {@inheritdoc}
+     */
+    public function executeComposerCommands(): bool
+    {
+        // The plugin needs the SDK to be installed via composer.
+        return true;
+    }
 }

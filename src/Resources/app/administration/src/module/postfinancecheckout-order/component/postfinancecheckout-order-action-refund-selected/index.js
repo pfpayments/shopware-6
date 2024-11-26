@@ -4,7 +4,7 @@ import template from './index.html.twig';
 
 const {Component, Mixin, Filter, Utils} = Shopware;
 
-Component.register('postfinancecheckout-order-action-refund', {
+Component.register('postfinancecheckout-order-action-refund-selected', {
 	template,
 
 	inject: ['PostFinanceCheckoutRefundService'],
@@ -27,9 +27,10 @@ Component.register('postfinancecheckout-order-action-refund', {
 
 	data() {
 		return {
-			refundQuantity: 0,
 			isLoading: true,
-			currentLineItem: '',
+			currency: this.transactionData.transactions[0].currency,
+			refundAmount: 0,
+			refundableAmount: 0,
 		};
 	},
 
@@ -46,16 +47,17 @@ Component.register('postfinancecheckout-order-action-refund', {
 	methods: {
 		createdComponent() {
 			this.isLoading = false;
-			this.refundQuantity = 1;
+			this.currency = this.transactionData.transactions[0].currency;
+			this.refundAmount = Number(this.transactionData.transactions[0].amountIncludingTax);
+			this.refundableAmount = Number(this.transactionData.transactions[0].amountIncludingTax);
 		},
 
-		refund() {
+		refundSelected() {
 			this.isLoading = true;
-			this.PostFinanceCheckoutRefundService.createRefund(
+			this.PostFinanceCheckoutRefundService.createRefundByAmount(
 				this.transactionData.transactions[0].metaData.salesChannelId,
 				this.transactionData.transactions[0].id,
-				this.refundQuantity,
-				this.$parent.$parent.currentLineItem
+				this.refundAmount
 			).then(() => {
 				this.createNotificationSuccess({
 					title: this.$tc('postfinancecheckout-order.refundAction.successTitle'),

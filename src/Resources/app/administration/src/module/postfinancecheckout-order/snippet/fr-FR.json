@@ -8,7 +8,9 @@
 		"refund": "Créer un nouveau remboursement",
 		"void": "Annulez l'autorisation",
 	    "refund-whole-line-item": "Remboursement de la ligne entière",
-	    "refund-line-item-by-quantity": "Remboursement par quantité"
+	    "refund-line-item-by-quantity": "Remboursement par quantité",
+	    "refund-line-item-selected": "Rembourser sélectionnés",
+	    "refund-line-item-parial": "Remboursement partiel"
 	  }
 	},
 	"captureAction": {
@@ -74,7 +76,8 @@
 	  },
 	  "successMessage": "Votre remboursement a été effectué avec succès.",
 	  "successTitle": "Succès",
-	  "maxAvailableItemsToRefund": "Nombre maximum d'articles disponibles pour le remboursement"
+	  "maxAvailableItemsToRefund": "Nombre maximum d'articles disponibles pour le remboursement",
+	  "maxAvailableAmountToRefund": "Montant maximal disponible pour le remboursement"
 	},
 	"transactionHistory": {
 	  "cardTitle": "Détails",

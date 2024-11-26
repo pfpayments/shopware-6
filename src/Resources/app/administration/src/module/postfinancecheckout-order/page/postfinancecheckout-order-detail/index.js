@@ -2,6 +2,7 @@
 
 import '../../component/postfinancecheckout-order-action-completion';
 import '../../component/postfinancecheckout-order-action-refund';
+import '../../component/postfinancecheckout-order-action-refund-partial';
 import '../../component/postfinancecheckout-order-action-refund-by-amount';
 import '../../component/postfinancecheckout-order-action-void';
 import template from './index.html.twig';
@@ -32,14 +33,20 @@ Component.register('postfinancecheckout-order-detail', {
 			transaction: {},
 			lineItems: [],
 			refundableQuantity: 0,
+			itemRefundableQuantity: 0,
 			isLoading: true,
 			orderId: '',
 			currency: '',
 			modalType: '',
-			refundAmount: 0,
-			refundableAmount: 0,
+			refundAmount: 0.00,
+			refundableAmount: 0.00,
+			itemRefundedAmount: 0.00,
+			itemRefundedQuantity: 0,
+			itemRefundableAmount: 0.00,
 			currentLineItem: '',
-			refundLineItem: []
+			refundLineItemQuantity: [],
+			refundLineItemAmount: [],
+			selectedItems: []
 		};
 	},
 
@@ -92,6 +99,13 @@ Component.register('postfinancecheckout-order-detail', {
 
 		lineItemColumns() {
 			return [
+			    // It must be set in order to have correctly working checkbox mechanism
+				{
+					property: 'id',
+					rawData: true,
+					visible: false,
+					primary: true
+				},
 				{
 					property: 'uniqueId',
 					label: this.$tc('postfinancecheckout-order.lineItem.types.uniqueId'),
@@ -202,15 +216,36 @@ Component.register('postfinancecheckout-order-detail', {
 							);
 
 							refund.reductions.forEach((reduction) => {
-								if (this.refundLineItem[reduction.lineItemUniqueId] === undefined) {
-									this.refundLineItem[reduction.lineItemUniqueId] = reduction.quantityReduction;
-								} else {
-									this.refundLineItem[reduction.lineItemUniqueId] += reduction.quantityReduction;
-								}
+							    if (reduction.quantityReduction > 0) {
+                                    if (this.refundLineItemQuantity[reduction.lineItemUniqueId] === undefined) {
+                                        this.refundLineItemQuantity[reduction.lineItemUniqueId] = reduction.quantityReduction;
+                                    } else {
+                                        this.refundLineItemQuantity[reduction.lineItemUniqueId] += reduction.quantityReduction;
+                                    }
+							    }
+                                if (reduction.unitPriceReduction > 0) {
+                                    if (this.refundLineItemAmount[reduction.lineItemUniqueId] === undefined) {
+                                        this.refundLineItemAmount[reduction.lineItemUniqueId] = reduction.unitPriceReduction;
+                                    } else {
+                                        this.refundLineItemAmount[reduction.lineItemUniqueId] += reduction.unitPriceReduction;
+                                    }
+                                }
 							});
+
 						});
 
 						PostFinanceCheckoutTransaction.transactions[0].lineItems.forEach((lineItem) => {
+							if (!lineItem.id) {
+								lineItem.id = lineItem.uniqueId;
+                            }
+
+                            lineItem.itemRefundedAmount = parseFloat(this.refundLineItemAmount[lineItem.uniqueId] || 0) * parseInt(lineItem.quantity);
+                            lineItem.amountIncludingTax = parseFloat(lineItem.amountIncludingTax) || 0;
+
+                            lineItem.itemRefundedQuantity = parseInt(this.refundLineItemQuantity[lineItem.uniqueId]) || 0;
+                            lineItem.refundableAmount = parseFloat(
+                              (lineItem.amountIncludingTax - lineItem.itemRefundedAmount).toFixed(2)
+                            );
 
 							lineItem.amountIncludingTax = Utils.format.currency(
 								lineItem.amountIncludingTax,
@@ -225,8 +260,9 @@ Component.register('postfinancecheckout-order-detail', {
 							totalAmountTemp = parseFloat(parseFloat(totalAmountTemp) + parseFloat(lineItem.unitPriceIncludingTax * lineItem.quantity));
 
 							lineItem.refundableQuantity = parseInt(
-								parseInt(lineItem.quantity) - parseInt(this.refundLineItem[lineItem.uniqueId] || 0)
+								parseInt(lineItem.quantity) - parseInt(this.refundLineItemQuantity[lineItem.uniqueId] || 0)
 							);
+
 						});
 
 						this.lineItems = PostFinanceCheckoutTransaction.transactions[0].lineItems;
@@ -234,6 +270,7 @@ Component.register('postfinancecheckout-order-detail', {
 						this.transaction = this.transactionData.transactions[0];
 						this.refundAmount = Number(this.transactionData.transactions[0].amountIncludingTax);
 						this.refundableAmount = parseFloat(parseFloat(totalAmountTemp) - parseFloat(refundsAmountTemp));
+
 					}).catch((errorResponse) => {
 					try {
 						this.createNotificationError({
@@ -279,14 +316,16 @@ Component.register('postfinancecheckout-order-detail', {
 				refunds: []
 			};
 			this.lineItems = [];
-			this.refundLineItem = [];
+			this.refundLineItemQuantity = [];
+			this.refundLineItemAmount = [];
 			this.isLoading = true;
 		},
 
-		spawnModal(modalType, lineItemId, refundableQuantity) {
+		spawnModal(modalType, lineItemId, refundableQuantity, itemRefundableAmount) {
 			this.modalType = modalType;
 			this.currentLineItem = lineItemId;
-			this.refundableQuantity = refundableQuantity;
+			this.itemRefundableQuantity = refundableQuantity;
+            this.itemRefundableAmount = !isNaN(itemRefundableAmount) ? Math.round(itemRefundableAmount * 100) / 100 : 0;
 		},
 
 		closeModal() {
@@ -305,11 +344,11 @@ Component.register('postfinancecheckout-order-detail', {
 					title: this.$tc('postfinancecheckout-order.refundAction.successTitle'),
 					message: this.$tc('postfinancecheckout-order.refundAction.successMessage')
 				});
-				this.isLoading = false;
-				this.$emit('modal-close');
-				this.$nextTick(() => {
-					this.$router.replace(`${this.$route.path}?hash=${Utils.createId()}`);
-				});
+                this.isLoading = false;
+                this.$emit('modal-close');
+                this.$nextTick(() => {
+                    this.$router.replace(`${this.$route.path}?hash=${Utils.createId()}`);
+                });
 			}).catch((errorResponse) => {
 				try {
 					this.createNotificationError({
@@ -320,17 +359,90 @@ Component.register('postfinancecheckout-order-detail', {
 				} catch (e) {
 					this.createNotificationError({
 						title: errorResponse.title,
-						message: errorResponse.message,
+						message: errorResponse.response.data,
 						autoClose: false
 					});
 				} finally {
-					this.isLoading = false;
-					this.$emit('modal-close');
-					this.$nextTick(() => {
-						this.$router.replace(`${this.$route.path}?hash=${Utils.createId()}`);
-					});
+                    this.isLoading = false;
+                    this.$emit('modal-close');
+                    this.$nextTick(() => {
+                        this.$router.replace(`${this.$route.path}?hash=${Utils.createId()}`);
+                    });
 				}
 			});
-		}
+		},
+		isSelectable(item) {
+			return item.refundableQuantity > 0 && item.refundableAmount > 0 && item.itemRefundedAmount == 0 && item.itemRefundedQuantity == 0;
+		},
+		onSelectionChanged(selection) {
+			this.selectedItems = Object.values(selection);
+		},
+        onPerformBulkAction() {
+            if (this.selectedItems.length) {
+                // Set isLoading to true to show the loader
+                this.isLoading = true;
+
+                // Force the DOM to update before proceeding with the asynchronous operations
+                this.$nextTick(() => {
+                    const refundPromises = this.selectedItems.map((item) => {
+                        return this.lineItemRefundBulk(item.uniqueId); // Simulated refund action with delay
+                    });
+
+                    // Wait for all refund promises to complete
+                    Promise.all(refundPromises)
+                        .then(() => {
+                            // Once all promises are resolved, hide the loader and close the modal
+                            this.isLoading = false;
+                            this.$emit('modal-close');
+                            this.$nextTick(() => {
+                                this.$router.replace(`${this.$route.path}?hash=${Utils.createId()}`);
+                            });
+                        })
+                        .catch((error) => {
+                            // Handle any errors during the refund process
+                            this.createNotificationError({
+                                title: 'Error',
+                                message: 'Something went wrong with the refunds',
+                                autoClose: false
+                            });
+                            this.isLoading = false; // Ensure the loader is hidden even on error
+                        });
+                });
+            }
+        },
+        lineItemRefundBulk(lineItemId) {
+            return new Promise((resolve, reject) => {
+                this.PostFinanceCheckoutRefundService.createRefund(
+                    this.transactionData.transactions[0].metaData.salesChannelId,
+                    this.transactionData.transactions[0].id,
+                    0,
+                    lineItemId
+                )
+                .then(() => {
+                    this.createNotificationSuccess({
+                        title: this.$tc('postfinancecheckout-order.refundAction.successTitle'),
+                        message: this.$tc('postfinancecheckout-order.refundAction.successMessage')
+                    });
+                    resolve();
+                })
+                .catch((errorResponse) => {
+                    try {
+                        this.createNotificationError({
+                            title: errorResponse.response.data.errors[0].title,
+                            message: errorResponse.response.data.errors[0].detail,
+                            autoClose: false
+                        });
+                    } catch (e) {
+                        this.createNotificationError({
+                            title: errorResponse.title,
+                            message: errorResponse.response.data,
+                            autoClose: false
+                        });
+                    } finally {
+                        reject();
+                    }
+                });
+            });
+        },
 	}
 });

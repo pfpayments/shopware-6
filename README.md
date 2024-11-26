@@ -30,7 +30,7 @@ The preferred method is via [composer](https://getcomposer.org). Follow the
 [installation instructions](https://getcomposer.org/doc/00-intro.md) if you do not already have
 composer installed.
 
-Once composer is installed, execute the following command in your project root to install this library:
+Once composer is installed, execute the following command from the shop root to install the plugin:
 
 ```bash
 composer require postfinancecheckout/shopware-6
@@ -53,6 +53,8 @@ Uncompress the zip file you download, and include the autoloader in your project
 
 ```bash
 # unzip to ShopwareInstallDir/custom/plugins/PostFinanceCheckoutPayment
+# For versions 6.1.10 and older, the SDK is installed automatically when installing the plugin in the shop, so you don't need to
+# run the following command.
 composer require postfinancecheckout/sdk 4.6.0
 php bin/console plugin:refresh
 php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment
@@ -71,7 +73,7 @@ tail -f var/log/postfinancecheckout_payment*.log
 
 ## Documentation
 
-[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.9/docs/en/documentation.html)
+[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.10/docs/en/documentation.html)
 
 ## License
 

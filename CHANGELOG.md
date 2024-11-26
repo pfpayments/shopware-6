@@ -1,3 +1,14 @@
+# 6.1.10
+- Multiple/bulk refund for line item.
+- Partial line item refund.
+- Fixed refund by line item option.
+- Composer dependencies are managed by Shopware system
+
+# 6.1.9
+- Prevents calling a non existing method in webhook invocation.
+- Prevents error if delivery data is empty
+- Refactored composer.json, completing its require section.
+
 # 6.1.8
 - Implemented key signing
 - Tax rate adjustment when products have different tax rates

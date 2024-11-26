@@ -5,15 +5,16 @@
 
 	{% block postfinancecheckout_order_action_refund_amount %}
 
-		<sw-number-field v-model:value="refundQuantity"
-						 :max="this.$parent.$parent.refundableQuantity"
-						 :min="1"
-						 :label="$tc('postfinancecheckout-order.refund.refundQuantity.label')">
+		<sw-number-field
+			:max="this.$parent.$parent.itemRefundableQuantity"
+			:min="0"
+			 v-model:value="refundQuantity"
+			 :label="$tc('postfinancecheckout-order.refund.refundQuantity.label')">
 		</sw-number-field>
 
 		<div>
 			{{ $tc('postfinancecheckout-order.refundAction.maxAvailableItemsToRefund') }}:
-			<b>{{ this.$parent.$parent.refundableQuantity }}</b>
+			<b>{{ this.$parent.$parent.itemRefundableQuantity }}</b>
 		</div>
 	{% endblock %}
 

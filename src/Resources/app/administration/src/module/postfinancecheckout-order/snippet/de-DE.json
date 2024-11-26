@@ -8,7 +8,9 @@
 		"refund": "Eine neue Rückerstattung erstellen",
 		"void": "Genehmigung annullieren",
 	    "refund-whole-line-item": "Gesamte Werbebuchung erstatten",
-	    "refund-line-item-by-quantity": "Rückerstattung nach Menge"
+	    "refund-line-item-by-quantity": "Rückerstattung nach Menge",
+	    "refund-line-item-selected": "Rückerstattung auswählen",
+	    "refund-line-item-parial": "Teilweise Rückerstattung"
 	  }
 	},
 	"captureAction": {
@@ -74,7 +76,8 @@
 	  },
 	  "successMessage": "Ihre Rückerstattung war erfolgreich",
 	  "successTitle": "Erfolg",
-	  "maxAvailableItemsToRefund": "Maximal Verfügbare Artikel zum Erstatten"
+	  "maxAvailableItemsToRefund": "Maximal Verfügbare Artikel zum Erstatten",
+	  "maxAvailableAmountToRefund": "Maximal verfügbarer Erstattungsbetrag"
 	},
 	"transactionHistory": {
 	  "cardTitle": "Einzelheiten",
