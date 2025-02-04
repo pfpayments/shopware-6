@@ -42,12 +42,12 @@ Component.register('sw-postfinancecheckout-options', {
 		integrationOptions() {
 			return [
 				{
-					id: 'iframe',
-					name: this.$tc('postfinancecheckout-settings.settingForm.options.integration.options.iframe')
-				},
-				{
 					id: 'payment_page',
 					name: this.$tc('postfinancecheckout-settings.settingForm.options.integration.options.payment_page')
+				},
+				{
+					id: 'iframe',
+					name: this.$tc('postfinancecheckout-settings.settingForm.options.integration.options.iframe')
 				}
 			];
 		}

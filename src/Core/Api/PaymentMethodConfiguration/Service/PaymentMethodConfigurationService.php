@@ -10,7 +10,9 @@ use Shopware\Core\{
 	Content\ImportExport\Struct\Config,
 	Content\Media\MediaDefinition,
 	Framework\Context,
+	Framework\DataAbstractionLayer\EntityRepository,
 	Framework\DataAbstractionLayer\Search\Criteria,
+	Framework\DataAbstractionLayer\Search\EntitySearchResult,
 	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
 	Framework\Plugin\Util\PluginIdProvider,
 	Framework\Uuid\Uuid};
@@ -31,7 +33,6 @@ use PostFinanceCheckoutPayment\Core\{
 	Settings\Service\SettingsService,
 	Util\LocaleCodeProvider};
 use PostFinanceCheckoutPayment\PostFinanceCheckoutPayment;
-
 
 /**
  * Class PaymentMethodConfigurationService
@@ -103,27 +104,70 @@ class PaymentMethodConfigurationService {
 	private $paymentMethodRepository;
 
 	/**
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 */
+	private $salesChannelPaymentRepository;
+
+	/**
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 */
+	private $mediaRepository;
+
+	/**
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 */
+	private $mediaFolderRepository;
+
+	/**
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 */
+	private $mediaDefaultFolderRepository;
+
+	/**
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 */
+	private $postFinanceCheckoutPaymentMethodConfigurationRepository;
+
+	/**
 	 * PaymentMethodConfigurationService constructor.
 	 *
 	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService                        $settingsService
 	 * @param \Symfony\Component\DependencyInjection\ContainerInterface                                  $container
 	 * @param \Shopware\Core\Content\ImportExport\DataAbstractionLayer\Serializer\Entity\MediaSerializer $mediaSerializer
 	 * @param \Shopware\Core\Content\ImportExport\DataAbstractionLayer\Serializer\SerializerRegistry     $serializerRegistry
+	 * @param \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository                             $salesChannelPaymentRepository
+	 * @param \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository                             $paymentMethodRepository
+	 * @param \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository                             $mediaRepository
+	 * @param \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository                             $mediaFolderRepository
+	 * @param \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository                             $mediaDefaultFolderRepository
+	 * @param \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository                             $ruleRepository
+	 * @param \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository                             $postFinanceCheckoutPaymentMethodConfigurationRepository
 	 */
 	public function __construct(
 		SettingsService $settingsService,
 		ContainerInterface $container,
 		MediaSerializer $mediaSerializer,
-		SerializerRegistry $serializerRegistry
-	)
-	{
-		$this->container               = $container;
-		$this->ruleRepository          = $this->container->get('rule.repository');
+		SerializerRegistry $serializerRegistry,
+		EntityRepository $salesChannelPaymentRepository,
+		EntityRepository $paymentMethodRepository,
+		EntityRepository $mediaRepository,
+		EntityRepository $mediaFolderRepository,
+		EntityRepository $mediaDefaultFolderRepository,
+		EntityRepository $ruleRepository,
+		EntityRepository $postFinanceCheckoutPaymentMethodConfigurationRepository,
+	) {
 		$this->settingsService         = $settingsService;
+		$this->container               = $container;
 		$this->mediaSerializer         = $mediaSerializer;
 		$this->serializerRegistry      = $serializerRegistry;
+		$this->salesChannelPaymentRepository = $salesChannelPaymentRepository;
+		$this->paymentMethodRepository = $paymentMethodRepository;
+		$this->mediaRepository         = $mediaRepository;
+		$this->mediaFolderRepository   = $mediaFolderRepository;
+		$this->mediaDefaultFolderRepository = $mediaDefaultFolderRepository;
+		$this->ruleRepository          = $ruleRepository;
+		$this->postFinanceCheckoutPaymentMethodConfigurationRepository = $postFinanceCheckoutPaymentMethodConfigurationRepository;
 		$this->localeCodeProvider      = $this->container->get(LocaleCodeProvider::class);
-		$this->paymentMethodRepository = $this->container->get('payment_method.repository');
 	}
 
 	/**
@@ -212,15 +256,7 @@ class PaymentMethodConfigurationService {
 
 		$criteria = (new Criteria())->addFilter(new EqualsFilter('spaceId', $this->getSpaceId()));
 
-		/**
-		 * @var $postFinanceCheckoutPMConfigurationRepository
-		 */
-		$postFinanceCheckoutPMConfigurationRepository = $this->container->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository');
-
-		/** @var EntityRepositoryInterface $salesChannelPaymentRepository */
-		$salesChannelPaymentRepository = $this->container->get('sales_channel_payment_method.repository');
-
-		$paymentMethodConfigurationEntities = $postFinanceCheckoutPMConfigurationRepository
+		$paymentMethodConfigurationEntities = $this->postFinanceCheckoutPaymentMethodConfigurationRepository
 			->search($criteria, $context)
 			->getEntities();
 
@@ -246,9 +282,9 @@ class PaymentMethodConfigurationService {
 			}
 
 			try {
-				$postFinanceCheckoutPMConfigurationRepository->update($data, $context);
+				$this->postFinanceCheckoutPaymentMethodConfigurationRepository->update($data, $context);
 				$this->paymentMethodRepository->update($paymentMethodData, $context);
-				$salesChannelPaymentRepository->delete($salesChannelPaymentMethodData, $context);
+				$this->salesChannelPaymentRepository->delete($salesChannelPaymentMethodData, $context);
 			} catch (\Exception $exception) {
 				$this->logger->critical($exception->getMessage());
 			}
@@ -333,11 +369,7 @@ class PaymentMethodConfigurationService {
 			];
 
 			$this->upsertPaymentMethod($id, $paymentMethodConfiguration, $context);
-
-
-			$this->container->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository')
-							->upsert([$data], $context);
-
+			$this->postFinanceCheckoutPaymentMethodConfigurationRepository->upsert([$data], $context);
 		}
 	}
 
@@ -408,27 +440,27 @@ class PaymentMethodConfigurationService {
 			new EqualsFilter('paymentMethodConfigurationId', $paymentMethodConfigurationId)
 		);
 
-		return $this->container->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository')
+		return $this->postFinanceCheckoutPaymentMethodConfigurationRepository
 							   ->search($criteria, $context)
 							   ->getEntities()
 							   ->first();
 	}
 
-    /**
-     * @param int $spaceId
-     * @param Context $context
-     * @return array
-     */
-    public function getAllPaymentMethodConfigurations(int $spaceId, Context $context): array
-    {
-        $criteria = (new Criteria())->addFilter(new EqualsFilter('spaceId', $spaceId));
+	/**
+	 * @param int $spaceId
+	 * @param Context $context
+	 * @return array
+	 */
+	public function getAllPaymentMethodConfigurations(int $spaceId, Context $context): array
+	{
+		$criteria = (new Criteria())->addFilter(new EqualsFilter('spaceId', $spaceId));
 
-        $configurations = $this->container->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository')
-            ->search($criteria, $context)
-            ->getEntities();
+		$configurations = $this->postFinanceCheckoutPaymentMethodConfigurationRepository
+			->search($criteria, $context)
+			->getEntities();
 
-        return $configurations->getElements();
-    }
+		return $configurations->getElements();
+	}
 
 	/**
 	 * Update or insert Payment Method
@@ -573,8 +605,13 @@ class PaymentMethodConfigurationService {
 	protected function upsertMedia(string $id, PaymentMethodConfiguration $paymentMethodConfiguration, Context $context): ?string
 	{
 		try {
-			$mediaDefaultFolderRepository = $this->container->get('media_default_folder.repository');
-			$mediaDefaultFolderRepository->upsert([
+			$existingRecord = $this->getMediaDefaultFolderForPaymentMethod($paymentMethodConfiguration, $context);
+
+			if ($existingRecord->count() > 0) {
+				$id = $existingRecord->first()->getId();
+			}
+
+			$this->mediaDefaultFolderRepository->upsert([
 				[
 					'id'                => $id,
 					'associationFields' => [],
@@ -582,8 +619,7 @@ class PaymentMethodConfigurationService {
 				],
 			], $context);
 
-			$mediaFolderRepository = $this->container->get('media_folder.repository');
-			$mediaFolderRepository->upsert([
+			$this->mediaFolderRepository->upsert([
 				[
 					'id'                     => $id,
 					'defaultFolderId'        => $id,
@@ -605,7 +641,7 @@ class PaymentMethodConfigurationService {
 				'mediaFolderId' => $id,
 			];
 			$data = $this->mediaSerializer->deserialize(new Config([], [], []), $mediaDefinition, $data);
-			$this->container->get('media.repository')->upsert([$data], $context);
+			$this->mediaRepository->upsert([$data], $context);
 			return $id;
 		} catch (\Exception $e) {
 			$this->logger->critical($e->getMessage(), [$e->getTraceAsString()]);
@@ -613,5 +649,19 @@ class PaymentMethodConfigurationService {
 		}
 	}
 
+	/**
+	 * Retrieves media default folder for a given payment method configuration.
+	 *
+	 * @param PaymentMethodConfiguration $paymentMethodConfiguration The payment method configuration to check.
+	 * @param Context $context The current context.
+	 *
+	 * @return EntitySearchResult The search result for the media default folder.
+	 */
+	private function getMediaDefaultFolderForPaymentMethod(PaymentMethodConfiguration $paymentMethodConfiguration, Context $context): ?EntitySearchResult
+	{
+		$criteria = new Criteria();
+		$criteria->addFilter(new EqualsFilter('entity', 'payment_method_' . $paymentMethodConfiguration->getId()));
+		return $this->mediaDefaultFolderRepository->search($criteria, $context);
+	}
 
 }

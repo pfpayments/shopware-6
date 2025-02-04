@@ -1,3 +1,7 @@
+# 6.1.11
+- Implement payment page integration.
+- Fixed bug with duplicate payment methods appearing
+
 # 6.1.10
 - Multiple/bulk refund for line item.
 - Partial line item refund.

@@ -95,7 +95,7 @@ class SettingsCommand extends Command {
 				 SettingsService::CONFIG_INTEGRATION,
 				 InputOption::VALUE_OPTIONAL,
 				 SettingsService::CONFIG_INTEGRATION,
-				 Integration::IFRAME
+				 Integration::PAYMENT_PAGE
 			 )
 			 ->addOption(
 				 SettingsService::CONFIG_LINE_ITEM_CONSISTENCY_ENABLED,

@@ -1,3 +1,7 @@
+# 6.1.11
+- Integration der Zahlungsseite implementieren.
+- Fehler mit doppelten angezeigten Zahlungsmethoden behoben
+
 # 6.1.10
 - Mehrfache/gesammelte Rückerstattung für Einzelposten.
 - Teilweise Rückerstattung von Einzelposten.

@@ -41,7 +41,7 @@ Component.register('postfinancecheckout-settings', {
             isSetDefaultPaymentSuccessful: false,
             isSettingDefaultPaymentMethods: false,
 
-            configIntegrationDefaultValue: 'iframe',
+            configIntegrationDefaultValue: 'payment_page',
             configEmailEnabledDefaultValue: true,
             configLineItemConsistencyEnabledDefaultValue: true,
             configStorefrontInvoiceDownloadEnabledEnabledDefaultValue: true,

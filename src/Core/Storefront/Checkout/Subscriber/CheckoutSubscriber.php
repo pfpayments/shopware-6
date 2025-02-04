@@ -196,7 +196,11 @@ class CheckoutSubscriber implements EventSubscriberInterface
     private function getAvailablePaymentMethods(Settings $settings, int $createdTransactionId): void
     {
         $transactionService = $settings->getApiClient()->getTransactionService();
-        $possiblePaymentMethods = $transactionService->fetchPaymentMethods($settings->getSpaceId(), $createdTransactionId, 'iframe');
+        $possiblePaymentMethods = $transactionService->fetchPaymentMethods(
+            $settings->getSpaceId(),
+            $createdTransactionId,
+            $settings->getIntegration()
+        );
         $arrayOfPossibleMethods = [];
         foreach ($possiblePaymentMethods as $possiblePaymentMethod) {
             $arrayOfPossibleMethods[] = $possiblePaymentMethod->getid();
