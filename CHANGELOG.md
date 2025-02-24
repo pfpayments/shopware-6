@@ -1,3 +1,10 @@
+# 5.0.14
+- Fix for duplicate payment methods in the database
+
+# 5.0.13
+- Implemented key signing
+- Tax rate adjustment when products have different tax rates
+
 # 5.0.12
 - Fixed messaging which showed that shipping and billing address were always the same
 

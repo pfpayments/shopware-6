@@ -1,3 +1,10 @@
+# 5.0.14
+- Fix für doppelte Zahlungsmethoden in der Datenbank
+
+# 5.0.13
+- Schlüsselsignatur implementiert
+- Steuersatzanpassung, wenn Produkte unterschiedliche Steuersätze haben
+
 # 5.0.12
 - Meldung behoben, dass Liefer- und Rechnungsadresse immer identisch waren
 
