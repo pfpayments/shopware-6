@@ -662,7 +662,7 @@ class PaymentMethodConfigurationService {
 	 *
 	 * @return @return EntitySearchResult The search result for the media default folder.
 	 */
-	private function getMediaDefaultFolderForPaymentMethod(PaymentMethodConfiguration $paymentMethodConfiguration, Context $context): bool
+	private function getMediaDefaultFolderForPaymentMethod(PaymentMethodConfiguration $paymentMethodConfiguration, Context $context): EntitySearchResult
 	{
 		$criteria = new Criteria();
 		$criteria->addFilter(new EqualsFilter('entity', 'payment_method_' . $paymentMethodConfiguration->getId()));
