@@ -638,25 +638,46 @@ class WebHookController extends AbstractController {
 	private function unholdDelivery(string $orderId, Context $context): void
 	{
 		try {
-			/**
-			 * @var OrderDeliveryStateHandler $orderDeliveryStateHandler
-			 */
-			$order = $this->getOrderEntity($orderId, $context);
-			/**
-			 * @var OrderDeliveryEntity $orderDelivery
-			 */
+			$criteria = new Criteria([$orderId]);
+			$criteria->addAssociation('deliveries.stateMachineState');
+			$order = $this->container->get('order.repository')
+			  ->search($criteria, $context)
+			  ->first();
+
+			if (!$order) {
+				$this->logger->info('Order not found: ' . $orderId);
+				return;
+			}
+
+			/** @var OrderDeliveryEntity|null $orderDelivery */
 			$orderDelivery = $order->getDeliveries()?->last();
-			
+
 			if (null === $orderDelivery) {
+				$this->logger->info('No deliveries found for order: ' . $orderId);
 				return;
 			}
-			if ($orderDelivery->getStateMachineState()?->getTechnicalName() !== OrderDeliveryStateHandler::STATE_HOLD){
+
+			$orderDeliveryState = $orderDelivery->getStateMachineState();
+			if (!$orderDeliveryState) {
+				$this->logger->info('Order delivery state is null for order: ' . $orderId);
 				return;
 			}
+
+			$technicalName = $orderDeliveryState->getTechnicalName();
+			$this->logger->info('Order delivery state: ' . $technicalName);
+
+			if ($technicalName !== OrderDeliveryStateHandler::STATE_HOLD) {
+				$this->logger->info('Order delivery is not on hold, skipping unhold process.');
+				return;
+			}
+
+			/** @var OrderDeliveryStateHandler $orderDeliveryStateHandler */
 			$orderDeliveryStateHandler = $this->container->get(OrderDeliveryStateHandler::class);
 			$orderDeliveryStateHandler->unhold($orderDelivery->getId(), $context);
+
+			$this->logger->info('Successfully unheld order delivery for order: ' . $orderId);
 		} catch (\Exception $exception) {
-			$this->logger->info($exception->getMessage(), $exception->getTrace());
+			$this->logger->error('Error unholding order delivery: ' . $exception->getMessage(), $exception->getTrace());
 		}
 	}
 
@@ -689,7 +710,7 @@ class WebHookController extends AbstractController {
 			 * @var OrderDeliveryEntity $orderDelivery
 			 */
 			$orderDelivery = $order->getDeliveries()?->last();
-			
+
 			if (null === $orderDelivery) {
 				return;
 			}

@@ -125,41 +125,21 @@ class WebHookRefundStrategy extends WebHookStrategyBase implements WebhookStrate
 			$orderId = $this->getOrderIdByTransaction($refund);
 
 			if(!empty($orderId)) {
-
 				$this->executeLocked($orderId, $context, function () use ($orderId, $refund, $context, $request) {
+					if ($request->getListenerEntityTechnicalName() == WebHookRequest::REFUND && $request->getState() == RefundState::SUCCESSFUL) {
+						$this->refundService->upsert($refund, $context);
+						$orderTransactionId = $refund->getTransaction()->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
+						$orderTransaction   = $this->getOrderTransaction($orderId, $context);
 
-					$this->refundService->upsert($refund, $context);
-
-					$orderTransactionId = $refund->getTransaction()->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
-					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
-					if (
-						in_array(
-							$orderTransaction->getStateMachineState()?->getTechnicalName(),
-							[
-								OrderTransactionStates::STATE_PAID,
-								OrderTransactionStates::STATE_PARTIALLY_PAID,
-							]
-						) &&
-						($request->getState() == RefundState::SUCCESSFUL)
-					) {
-						if ($refund->getAmount() == $orderTransaction->getAmount()->getTotalPrice()) {
-							$this->orderTransactionStateHandler->refund($orderTransactionId, $context);
-						} else {
-							if ($refund->getAmount() < $orderTransaction->getAmount()->getTotalPrice()) {
-								$this->orderTransactionStateHandler->refundPartially($orderTransactionId, $context);
-							}
-						}
-					} elseif ($orderTransaction->getStateMachineState()?->getTechnicalName() ===
-						OrderTransactionStates::STATE_PARTIALLY_REFUNDED &&
-						($request->getState() == RefundState::SUCCESSFUL)
-					) {
 						$transactionByOrderTransactionId = $this->transactionService->getByOrderTransactionId($orderTransactionId, $context);
 						$totalRefundedAmount  = $this->getTotalRefundedAmount($transactionByOrderTransactionId->getTransactionId(), $context);
-						if (floatval($orderTransaction->getAmount()->getTotalPrice()) - $totalRefundedAmount <= 0) {
+						$leftToRefund = floatval($orderTransaction->getAmount()->getTotalPrice()) - $totalRefundedAmount;
+						if ($leftToRefund > 0) {
+							$this->orderTransactionStateHandler->refundPartially($orderTransactionId, $context);
+						} elseif ($leftToRefund === floatval(0)) { // This trick is used, because it's float type and 0 is int
 							$this->orderTransactionStateHandler->refund($orderTransactionId, $context);
 						}
 					}
-
 				});
 			}
 

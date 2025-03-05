@@ -1,3 +1,10 @@
+# 6.1.12
+- Compatibility with 6.6.10.x
+- Prevent duplicate transactions being created when the first times out
+- Fix for error when changing space credentials
+- Payment status now shows refunded/partially refunded
+- Order delivery status now shows 'open' instead of 'hold'
+
 # 6.1.11
 - Implement payment page integration.
 - Fixed bug with duplicate payment methods appearing

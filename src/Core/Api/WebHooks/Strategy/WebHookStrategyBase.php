@@ -314,25 +314,57 @@ abstract class WebHookStrategyBase implements WebHookStrategyInterface {
 	 * @param string $orderId The unique identifier of the order.
 	 * @param Context $context The context of the current operation, including scope and permissions.
 	 */
+	/**
+	 * Unholds the delivery of an order.
+	 *
+	 * This method changes the state of an order's last delivery from 'held' to 'released', allowing further processing like shipping.
+	 *
+	 * @param string $orderId The unique identifier of the order.
+	 * @param Context $context The context of the current operation, including scope and permissions.
+	 */
 	protected function unholdDelivery(string $orderId, Context $context): void
 	{
 		try {
-			$order = $this->getOrderEntity($orderId, $context);
-			/** @var OrderDeliveryEntity $orderDelivery */
-			$orderDelivery = $order->getDeliveries()?->last();
-			
-			if (null === $orderDelivery) {
+			$criteria = new Criteria([$orderId]);
+			$criteria->addAssociation('deliveries.stateMachineState');
+			$order = $this->container->get('order.repository')
+			  ->search($criteria, $context)
+			  ->first();
+
+			if (!$order) {
+				$this->logger->info('Order not found: ' . $orderId);
 				return;
 			}
 
-			if ($orderDelivery->getStateMachineState()?->getTechnicalName() !== OrderDeliveryStateHandler::STATE_HOLD){
+			/** @var OrderDeliveryEntity|null $orderDelivery */
+			$orderDelivery = $order->getDeliveries()?->last();
+
+			if (null === $orderDelivery) {
+				$this->logger->info('No deliveries found for order: ' . $orderId);
 				return;
 			}
+
+			$orderDeliveryState = $orderDelivery->getStateMachineState();
+			if (!$orderDeliveryState) {
+				$this->logger->info('Order delivery state is null for order: ' . $orderId);
+				return;
+			}
+
+			$technicalName = $orderDeliveryState->getTechnicalName();
+			$this->logger->info('Order delivery state: ' . $technicalName);
+
+			if ($technicalName !== OrderDeliveryStateHandler::STATE_HOLD) {
+				$this->logger->info('Order delivery is not on hold, skipping unhold process.');
+				return;
+			}
+
 			/** @var OrderDeliveryStateHandler $orderDeliveryStateHandler */
 			$orderDeliveryStateHandler = $this->container->get(OrderDeliveryStateHandler::class);
 			$orderDeliveryStateHandler->unhold($orderDelivery->getId(), $context);
+
+			$this->logger->info('Successfully unheld order delivery for order: ' . $orderId);
 		} catch (\Exception $exception) {
-			$this->logger->info($exception->getMessage(), $exception->getTrace());
+			$this->logger->error('Error unholding order delivery: ' . $exception->getMessage(), $exception->getTrace());
 		}
 	}
 
@@ -362,7 +394,7 @@ abstract class WebHookStrategyBase implements WebHookStrategyInterface {
 			$orderDeliveryStateHandler = $this->container->get(OrderDeliveryStateHandler::class);
 			/** @var OrderDeliveryEntity $orderDelivery */
 			$orderDelivery = $order->getDeliveries()?->last();
-			
+
 			if (null === $orderDelivery) {
 				return;
 			}

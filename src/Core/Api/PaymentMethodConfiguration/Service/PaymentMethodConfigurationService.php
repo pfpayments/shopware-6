@@ -213,8 +213,7 @@ class PaymentMethodConfigurationService {
 	{
 		// Configuration
 		$settings = $this->settingsService->getSettings($this->getSalesChannelId());
-		$this->setSpaceId($settings->getSpaceId())
-			 ->setApiClient($settings->getApiClient());
+		$this->setSpaceId($settings->getSpaceId())->setApiClient($settings->getApiClient());
 
 		$this->disablePaymentMethodConfigurations($context);
 		$this->enablePaymentMethodConfigurations($context);
@@ -254,9 +253,14 @@ class PaymentMethodConfigurationService {
 		$paymentMethodData             = [];
 		$salesChannelPaymentMethodData = [];
 
-		$criteria = (new Criteria())->addFilter(new EqualsFilter('spaceId', $this->getSpaceId()));
+		$criteria = (new Criteria())->addFilter(new EqualsFilter('state', 'ACTIVE'));
 
-		$paymentMethodConfigurationEntities = $this->postFinanceCheckoutPaymentMethodConfigurationRepository
+		/**
+		 * @var $postFinanceCheckoutPMConfigurationRepository
+		 */
+		$postFinanceCheckoutPMConfigurationRepository = $this->container->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository');
+
+		$paymentMethodConfigurationEntities = $postFinanceCheckoutPMConfigurationRepository
 			->search($criteria, $context)
 			->getEntities();
 
@@ -275,16 +279,11 @@ class PaymentMethodConfigurationService {
 					'id'     => $paymentMethodConfigurationEntity->getId(),
 					'active' => false,
 				];
-
-				$salesChannelPaymentMethodData[] = [
-					'paymentMethodId' => $paymentMethodConfigurationEntity->getId(),
-				];
 			}
 
 			try {
 				$this->postFinanceCheckoutPaymentMethodConfigurationRepository->update($data, $context);
 				$this->paymentMethodRepository->update($paymentMethodData, $context);
-				$this->salesChannelPaymentRepository->delete($salesChannelPaymentMethodData, $context);
 			} catch (\Exception $exception) {
 				$this->logger->critical($exception->getMessage());
 			}
@@ -369,7 +368,13 @@ class PaymentMethodConfigurationService {
 			];
 
 			$this->upsertPaymentMethod($id, $paymentMethodConfiguration, $context);
-			$this->postFinanceCheckoutPaymentMethodConfigurationRepository->upsert([$data], $context);
+
+            try {
+                $this->container->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository')->upsert([$data], $context);
+            } catch (\Exception $e) {
+                $this->logger->error($e->getMessage(), [$e->getTraceAsString()]);
+            }
+
 		}
 	}
 
@@ -500,7 +505,12 @@ class PaymentMethodConfigurationService {
 
 		$data = array_filter($data);
 
-		$this->paymentMethodRepository->upsert([$data], $context);
+        try {
+            $this->paymentMethodRepository->upsert([$data], $context);
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage(), [$e->getTraceAsString()]);
+        }
+
 	}
 
 	/**

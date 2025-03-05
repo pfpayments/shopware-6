@@ -1,3 +1,10 @@
+# 6.1.12
+- Kompatibilität mit 6.6.10.x
+- Verhindern Sie, dass beim ersten Timeout doppelte Transaktionen erstellt werden
+- Fehler beim Ändern der Space-Anmeldeinformationen behoben
+- Der Zahlungsstatus zeigt jetzt „erstattet/teilweise erstattet“ an
+- Der Lieferstatus der Bestellung wird jetzt „Offen“ statt „Halten“ angezeigt.
+
 # 6.1.11
 - Integration der Zahlungsseite implementieren.
 - Fehler mit doppelten angezeigten Zahlungsmethoden behoben

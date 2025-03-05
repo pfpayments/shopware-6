@@ -132,13 +132,12 @@ class TransactionService
         $settings = $this->settingsService->getSettings($salesChannelId);
         $apiClient = $settings->getApiClient();
 
-        $failedStates = [
-            TransactionState::DECLINE,
-            TransactionState::FAILED,
-            TransactionState::VOIDED,
-        ];
-        $pendingTransaction = $this->read($_SESSION['transactionId'], $salesChannelId);
-        if (in_array($pendingTransaction->getState(), $failedStates)) {
+        $transactionId = $_SESSION['transactionId'] ?? null;
+        if ($transactionId !== null) {
+            $pendingTransaction = $this->read($_SESSION['transactionId'], $salesChannelId);
+        }
+
+        if ($transactionId === null || $pendingTransaction === null || $pendingTransaction->getState() !== TransactionState::PENDING) {
             unset($_SESSION['transactionId']);
             $pendingTransactionId = $this->createPendingTransaction($salesChannelContext);
             $pendingTransaction = $this->read($pendingTransactionId, $salesChannelId);

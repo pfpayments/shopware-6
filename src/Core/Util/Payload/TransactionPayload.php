@@ -209,7 +209,7 @@ class TransactionPayload extends AbstractPayload
 
         return $transactionPayload;
     }
-    
+
     /**
      * Get transaction line items
      *
@@ -220,30 +220,30 @@ class TransactionPayload extends AbstractPayload
     {
         $lineItems = [];
         $items = $this->transaction->getOrder()->getLineItems();
-        
+
         foreach ($items as $shopLineItem) {
             if ($this->shouldSkipLineItem($shopLineItem)) {
                 continue;
             }
-            
+
             if ($this->isCustomProductOption($shopLineItem)) {
                 $shopLineItem = $this->updateCustomProductOptionLabel($shopLineItem);
             }
-            
+
             $lineItem = $this->createLineItem($shopLineItem);
             $this->validateLineItem($lineItem);
-            
+
             $lineItems[] = $lineItem;
         }
-        
+
         $this->processDiscounts($items, $lineItems);
         $this->sortLineItemsByName($lineItems);
-        
+
         $this->addOptionalLineItems($lineItems);
-        
+
         return $lineItems;
     }
-    
+
     /**
      * Determine if a line item should be skipped.
      */
@@ -272,7 +272,7 @@ class TransactionPayload extends AbstractPayload
         $shopLineItem->setLabel($customProductOptionParentLabel . ': ' . $shopLineItem->getLabel());
         return $shopLineItem;
     }
-    
+
     /**
      * Validate the created line item.
      */
@@ -283,7 +283,7 @@ class TransactionPayload extends AbstractPayload
             throw new InvalidPayloadException('LineItem payload invalid: ' . json_encode($lineItem->listInvalidProperties()));
         }
     }
-    
+
     /**
      * Process discounts from the order items and add them to the line items array.
      */
@@ -293,12 +293,14 @@ class TransactionPayload extends AbstractPayload
         $discounts = array_filter($itemsArray, function ($orderItem) {
             return $orderItem->getType() === 'promotion';
         });
-        
+
         if ($discounts) {
-            $this->addDiscountLineItem(current($discounts), $lineItems);
+            foreach ($discounts as $discount) {
+                $this->addDiscountLineItem($discount, $lineItems);
+            }
         }
     }
-    
+
     /**
      * Add discount line item.
      */
@@ -306,23 +308,24 @@ class TransactionPayload extends AbstractPayload
     {
         $calculatedPrice = $discount->getPrice();
         $calculatedTaxesCollection = $calculatedPrice->getCalculatedTaxes();
-        
+
         foreach ($calculatedTaxesCollection as $calculatedTax) {
             $rate = $calculatedTax->getTaxRate();
             $lineItem = new LineItemCreate();
             $amount = $this->calculateDiscountAmount($calculatedTax);
-            
+
+            $discountName = $discount->getLabel();
             $lineItem->setAmountIncludingTax($amount)
               ->setName(sprintf('DISCOUNT: %s (%s%% tax)', $discount->getLabel(), $rate))
               ->setQuantity(1)
               ->setShippingRequired(false)
-              ->setSku('sku-discount-' . $rate, 200)
+              ->setSku('sku-discount-' . $rate . '-' . $discountName, 200)
               ->setType(LineItemType::DISCOUNT)
-              ->setUniqueId('coupon-sku-discount-' . $rate . '-' . $rate);
-            
+              ->setUniqueId('coupon-sku-discount-' . $rate . '-' . $rate . '-' . $discountName);
+
             $taxRate = new TaxCreate(['title' => 'Discount Tax: ' . $rate, 'rate' => $rate]);
             $lineItem->setTaxes([$taxRate]);
-            
+
             $lineItems[] = $lineItem;
         }
     }
@@ -348,7 +351,7 @@ class TransactionPayload extends AbstractPayload
             return strcmp($lineItem1->getName(), $lineItem2->getName());
         });
     }
-    
+
     /**
      * Add optional shipping and adjustment line items.
      */
@@ -363,7 +366,7 @@ class TransactionPayload extends AbstractPayload
                 $lineItems = array_merge($lineItems, $multipleShippingLineItems);
             }
         }
-        
+
         if ($adjustmentLineItem = $this->getAdjustmentLineItem($lineItems)) {
             $lineItems[] = $adjustmentLineItem;
         }
@@ -554,7 +557,7 @@ class TransactionPayload extends AbstractPayload
         }
         return null;
     }
-    
+
     /**
      * @return array
      */
@@ -564,9 +567,9 @@ class TransactionPayload extends AbstractPayload
             if ($this->transaction->getOrder()->getShippingTotal() > 0) {
                 $lineItems = [];
                 $shippingName = $this->salesChannelContext->getShippingMethod()->getName() ?? $this->translator->trans('postfinancecheckout.payload.shipping.name');
-                
+
                 $isFirst = true;
-                
+
                 foreach ($this->transaction->getOrder()->getShippingCosts()->getCalculatedTaxes() as $taxItem) {
                     $amount = self::round($taxItem->getPrice());
                     if ($this->transaction->getOrder()->getTaxStatus() === 'net') {
@@ -576,7 +579,7 @@ class TransactionPayload extends AbstractPayload
                     $tax = (new TaxCreate())
                       ->setRate($taxRate)
                       ->setTitle('Tax rate: '.$taxRate);
-                    
+
                     $name = $taxRate . '%-' . $shippingName;
                     $lineItem = (new LineItemCreate())
                       ->setAmountIncludingTax($amount)
@@ -586,18 +589,18 @@ class TransactionPayload extends AbstractPayload
                       ->setSku($this->fixLength($name . '-Shipping', 200))
                       ->setType($isFirst ? LineItemType::SHIPPING : LineItemType::FEE) // First item as SHIPPING, rest as FEE
                       ->setUniqueId($this->fixLength($name . '-Shipping', 200));
-                    
+
                     if (!$lineItem->valid()) {
                         $this->logger->critical('Shipping LineItem payload invalid:', $lineItem->listInvalidProperties());
                         throw new InvalidPayloadException('Shipping LineItem payload invalid:' . json_encode($lineItem->listInvalidProperties()));
                     }
-                    
+
                     $lineItems[] = $lineItem;
                     $isFirst = false;
                 }
                 return $lineItems;
             }
-            
+
         } catch (\Exception $exception) {
             $this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage());
         }
