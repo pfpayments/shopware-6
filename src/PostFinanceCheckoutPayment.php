@@ -61,4 +61,12 @@ class PostFinanceCheckoutPayment extends Plugin {
 		$this->disablePaymentMethods($deactivateContext->getContext());
 	}
 
+    /**
+     * {@inheritdoc}
+     */
+    public function executeComposerCommands(): bool
+    {
+        // The plugin needs the SDK to be installed via composer.
+        return true;
+    }
 }

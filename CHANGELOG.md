@@ -1,3 +1,7 @@
+# 5.0.15
+- Fix for duplicate payment methods in the database
+- Fix for SDK install issue
+
 # 5.0.14
 - Fix for duplicate payment methods in the database
 

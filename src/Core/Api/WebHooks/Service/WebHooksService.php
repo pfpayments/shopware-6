@@ -31,6 +31,11 @@ use PostFinanceCheckoutPayment\Core\{
  * @package PostFinanceCheckoutPayment\Core\Api\WebHooks\Service
  */
 class WebHooksService {
+	
+	public const TRANSACTION = 1472041829003;
+	public const TRANSACTION_INVOICE = 1472041816898;
+	public const REFUND = 1472041839405;
+	public const PAYMENT_METHOD_CONFIGURATION = 1472041857405;
 
 	/**
 	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
@@ -69,7 +74,7 @@ class WebHooksService {
 		 * @link https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/doc/api/webhook-entity/view/1472041829003
 		 */
 		[
-			'id'                => '1472041829003',
+			'id'                => WebHooksService::TRANSACTION,
 			'name'              => 'Shopware6::WebHook::Transaction',
 			'states'            => [
 				TransactionState::AUTHORIZED,
@@ -89,7 +94,7 @@ class WebHooksService {
 		 * @link https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/doc/api/webhook-entity/view/1472041816898
 		 */
 		[
-			'id'                => '1472041816898',
+			'id'                => WebHooksService::TRANSACTION_INVOICE,
 			'name'              => 'Shopware6::WebHook::Transaction Invoice',
 			'states'            => [
 				TransactionInvoiceState::NOT_APPLICABLE,
@@ -104,7 +109,7 @@ class WebHooksService {
 		 * @link https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/doc/api/webhook-entity/view/1472041839405
 		 */
 		[
-			'id'                => '1472041839405',
+			'id'                => WebHooksService::REFUND,
 			'name'              => 'Shopware6::WebHook::Refund',
 			'states'            => [
 				RefundState::FAILED,
@@ -118,7 +123,7 @@ class WebHooksService {
 		 * @link https://postfinance.ch/en/business/products/e-commerce/postfinance-checkout-all-in-one.html/doc/api/webhook-entity/view/1472041857405
 		 */
 		[
-			'id'                => '1472041857405',
+			'id'                => WebHooksService::PAYMENT_METHOD_CONFIGURATION,
 			'name'              => 'Shopware6::WebHook::Payment Method Configuration',
 			'states'            => [
 				CreationEntityState::ACTIVE,

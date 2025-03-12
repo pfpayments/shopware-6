@@ -1,3 +1,7 @@
+# 5.0.15
+- Fix für doppelte Zahlungsmethoden in der Datenbank
+- Fix für SDK Herunterladen
+
 # 5.0.14
 - Fix für doppelte Zahlungsmethoden in der Datenbank
 

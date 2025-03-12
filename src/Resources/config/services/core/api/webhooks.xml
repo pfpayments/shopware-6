@@ -21,6 +21,7 @@
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\OrderMailService"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookStrategyManager"/>
 			<call method="setLogger">
 				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
 			</call>
@@ -36,6 +37,47 @@
 			<call method="setLogger">
 				<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
 			</call>
+		</service>
+
+		<!-- Strategies
+        Initializes the list of strategies for handling different types of webhook events.
+        Each strategy corresponds to a specific type of webhook event, ensuring that the appropriate
+        processing logic is applied based on the type of the incoming webhook request.
+        -->
+		<service id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookStrategyManager" public="true">
+			<argument type="tagged_iterator" tag="postfinancecheckout.webhook.strategy" />
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
+		</service>
+
+		<service id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookStrategyBase" abstract="true">
+			<argument type="service" id="Doctrine\DBAL\Connection"/>
+			<argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+			<argument type="service" id="Shopware\Core\Checkout\Order\SalesChannel\OrderService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Refund\Service\RefundService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\OrderMailService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
+			<argument type="service" id="service_container"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\Logger"/>
+		</service>
+
+		<!-- extends the PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookStrategyBase strategy -->
+		<service id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookTransactionStrategy"
+				 parent="PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookStrategyBase" public="true">
+			<tag name="postfinancecheckout.webhook.strategy"/>
+		</service>
+		<service id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookTransactionInvoiceStrategy"
+				 parent="PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookStrategyBase" public="true">
+			<tag name="postfinancecheckout.webhook.strategy"/>
+		</service>
+		<service id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookRefundStrategy"
+				 parent="PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookStrategyBase" public="true">
+			<tag name="postfinancecheckout.webhook.strategy"/>
+		</service>
+		<service id="PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookPaymentMethodConfigurationStrategy"
+				 parent="PostFinanceCheckoutPayment\Core\Api\WebHooks\Strategy\WebHookStrategyBase" public="true">
+			<tag name="postfinancecheckout.webhook.strategy"/>
 		</service>
 	</services>
 

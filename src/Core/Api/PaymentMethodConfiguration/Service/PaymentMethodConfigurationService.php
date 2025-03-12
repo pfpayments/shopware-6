@@ -256,7 +256,7 @@ class PaymentMethodConfigurationService {
 		$paymentMethodData             = [];
 		$salesChannelPaymentMethodData = [];
 
-		$criteria = (new Criteria())->addFilter(new EqualsFilter('spaceId', $this->getSpaceId()));
+		$criteria = (new Criteria())->addFilter(new EqualsFilter('state', 'ACTIVE'));
 
 		$paymentMethodConfigurationEntities = $this->postFinanceCheckoutPaymentMethodConfigurationRepository
 			->search($criteria, $context)
@@ -277,16 +277,11 @@ class PaymentMethodConfigurationService {
 					'id'     => $paymentMethodConfigurationEntity->getId(),
 					'active' => false,
 				];
-
-				$salesChannelPaymentMethodData[] = [
-					'paymentMethodId' => $paymentMethodConfigurationEntity->getId(),
-				];
 			}
 
 			try {
 				$this->postFinanceCheckoutPaymentMethodConfigurationRepository->update($data, $context);
 				$this->paymentMethodRepository->update($paymentMethodData, $context);
-				$this->salesChannelPaymentRepository->delete($salesChannelPaymentMethodData, $context);
 			} catch (\Exception $exception) {
 				$this->logger->critical($exception->getMessage());
 			}
@@ -372,9 +367,11 @@ class PaymentMethodConfigurationService {
 
 			$this->upsertPaymentMethod($id, $paymentMethodConfiguration, $context);
 
-
-			$this->postFinanceCheckoutPaymentMethodConfigurationRepository->upsert([$data], $context);
-
+            try {
+                $this->postFinanceCheckoutPaymentMethodConfigurationRepository->upsert([$data], $context);
+            } catch (\Exception $e) {
+                $this->logger->error($e->getMessage(), [$e->getTraceAsString()]);
+            }
 		}
 	}
 
@@ -505,8 +502,12 @@ class PaymentMethodConfigurationService {
 
 		$data = array_filter($data);
 
-		$this->paymentMethodRepository->upsert([$data], $context);
-	}
+        try {
+            $this->paymentMethodRepository->upsert([$data], $context);
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage(), [$e->getTraceAsString()]);
+        }
+    }
 
 	/**
 	 * @param \PostFinanceCheckout\Sdk\Model\PaymentMethodConfiguration $paymentMethodConfiguration

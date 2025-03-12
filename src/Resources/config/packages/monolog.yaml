@@ -1,0 +1,9 @@
+monolog:
+    channels: ['whitelabelmachinename_payment']
+    handlers:
+        security:
+            # log all messages (since debug is the lowest level)
+            level: debug
+            type: stream
+            path: '%kernel.logs_dir%/whitelabelmachinename.log'
+            channels: [ 'whitelabelmachinename_payment' ]
