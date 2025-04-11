@@ -646,6 +646,11 @@ class WebHookController extends AbstractController {
 			 * @var OrderDeliveryEntity $orderDelivery
 			 */
 			$orderDelivery = $order->getDeliveries()->last();
+            
+            if (is_null($orderDelivery)) {
+                return;
+            }
+
 			if ($orderDelivery->getStateMachineState()?->getTechnicalName() !== OrderDeliveryStateHandler::STATE_HOLD){
 				return;
 			}
