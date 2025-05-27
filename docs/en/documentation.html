@@ -23,7 +23,7 @@
 		</a>
 	</li>
 	<li>
-		<a href="https://github.com/pfpayments/shopware-6/releases/tag/6.1.12/">
+		<a href="https://github.com/pfpayments/shopware-6/releases/tag/6.1.13/">
 			Source
 		</a>
 	</li>
@@ -32,43 +32,86 @@
 												<div class="col-body">
 							<div class="col-body-wrapper">
 																	<div class="body-container">
-																						<div class="chapter" id="_prerequisites">
+																						<div class="chapter" id="_overview">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">1</span>Prerequisites					</h1>
+			<span class="title-number">1</span>Overview					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p>If you don&#8217;t already have one, create a <a href="https://checkout.postfinance.ch/en-ch/user/signup/">PostFinance Checkout</a> account.</p>
+<p>The PostFinance Checkout Payment Plugin integrates modern payment processing into Shopware 6, offering features like iFrame-based payments, refunds, captures, and PCI compliance. It supports seamless integration with the PostFinance Checkout Portal for managing transactions and payment methods.</p>
+</div><div class="paragraph">
+<p>Important: Please note that only Major (e.g. 6.x.0.0) and Minor (e.g. 6.0.x.0) update will be tested for compatibility within a 2 weeks after release.</p>
 </div>					</div>
+</div>	<div class="chapter" id="_requirements">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">2</span>Requirements					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>Shopware Version: 6.5.x or 6.6.x (see <a href="#compatibility">compatibility table</a>).</p>
+</div><div class="paragraph">
+<p>PHP: Minimum version as required by your Shopware installation (e.g., 7.4+).</p>
+</div><div class="paragraph">
+<p>PostFinance Checkout Account: Obtain Space ID, User ID, and API Key from PostFinance Checkout Portal (see <a href="#portal-startup-guide">Portal Start-up Guide</a>).</p>
+</div>					</div>
+</div>	<div class="chapter" id="compatibility">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">3</span>Compatibility					</h1>
+	</div>
+	<div class="chapter-body">
+					<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 25%;"/>
+<col style="width: 25%;"/>
+<col style="width: 25%;"/>
+<col style="width: 25%;"/>
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Shopware Version</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plugin Version</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>PHP Version</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Support Until</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6.6.x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6.x.x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 and 8.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ongoing</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6.5.x - Deprecated</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5.x.x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 and 8.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">October 2024</p></td>
+</tr>
+</tbody>
+</table>					</div>
 </div>	<div class="chapter" id="_installation">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">2</span>Installation					</h1>
+			<span class="title-number">4</span>Installation					</h1>
 	</div>
 	<div class="chapter-body">
+							<div class="section" id="_via_marketplace">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">4.1</span>Via Marketplace					</h2>
+	</div>
+	<div class="section-body">
 					<div class="olist arabic">
 <ol class="arabic">
-<li>
-<p>Install the plugin directly from the Shopware plugin store.</p>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-You also have the possibility to install the plugin using composer.  See <a href="#_faq">FAQ</a>.
-</td>
-</tr>
-</table>
-</div>
-</li>
 <li>
 <p>Log in to the backend of your Shopware store.</p>
 </li>
 <li>
-<p>Navigate to Settings &#8594; System &#8594; Plugins. Click on the menu caret and select the <code>Install</code> link of the plugin to install it.</p>
+<p>Navigate to Settings → System → Plugins.</p>
+</li>
+<li>
+<p>Click on the menu caret and select the Install link of the plugin to install</p>
 <div class="imageblock">
 <div class="content">
 <img src="resource/plugin-installation.png" alt="plugin installation"/>
@@ -80,124 +123,365 @@ You also have the possibility to install the plugin using composer.  See <a href
 </li>
 </ol>
 </div>					</div>
-</div>	<div class="chapter" id="_configuration">
+</div>					<div class="section" id="_via_composer_recommended">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">4.2</span>Via Composer (Recommended)					</h2>
+	</div>
+	<div class="section-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Navigate to your Shopware root directory.</p>
+</li>
+<li>
+<p>Run:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">composer require postfinancecheckout/shopware-6
+php bin/console plugin:refresh
+php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>					</div>
+</div>					<div class="section" id="_manual_installation">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">4.3</span>Manual Installation					</h2>
+	</div>
+	<div class="section-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Download the <a href="https://github.com/pfpayments/shopware-6/releases" target="_blank">latest release</a>.</p>
+</li>
+<li>
+<p>Extract the ZIP into <code>custom/plugins/</code></p>
+</li>
+<li>
+<p>Run</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">php bin/console plugin:refresh
+php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>					</div>
+</div>			</div>
+</div>	<div class="chapter" id="portal-startup-guide">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">3</span>Configuration					</h1>
+			<span class="title-number">5</span>Portal Startup Guide					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>Go to <a href="https://checkout.postfinance.ch/en-ch/user/signup/user/login">PostFinance Checkout</a> and create an Account if you do not already have one.</p>
+</div><div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+Please select the proper subscription plan - it should support ecommerce transaction.
+</td>
+</tr>
+</table>
+</div>							<div class="section" id="_create_the_api_key">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">5.1</span>Create the API key:					</h2>
+	</div>
+	<div class="section-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Once your account is activated; please navigate to Account → Application Users</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/application-users.png" alt="application users"/>
+</div>
+</div>
+</li>
+<li>
+<p>Click on Create application user</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/user.png" alt="user"/>
+</div>
+</div>
+</li>
+<li>
+<p>Specify a name for this API Key - I will put Test Shop and click on Create application user</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/api-key.png" alt="api key"/>
+</div>
+</div>
+</li>
+<li>
+<p>Your Application User will then be created. Please copy the User ID and Authentication Key as you will need them to link your shop to the portal.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/token.png" alt="token"/>
+</div>
+</div>
+</li>
+<li>
+<p>Finally; you will need to allow certain permission to this Application User so it can communicate with your space. To do so; under Role; navigate to Manage.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/roles.png" alt="roles"/>
+</div>
+</div>
+</li>
+<li>
+<p>Click on the + sign next to Space Roles</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/assign-role.png" alt="assign role"/>
+</div>
+</div>
+</li>
+<li>
+<p>Please add the role Space Admin and click on Assign Role.</p>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+Please note that Roles might be loading for few seconds
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="resource/loading-roles.png" alt="loading roles"/>
+</div>
+</div>
+</li>
+<li>
+<p>Finally click on Save Roles; you will need to enter your password to confirm.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/save-role.png" alt="save role"/>
+</div>
+</div>
+</li>
+</ol>
+</div>					</div>
+</div>					<div class="section" id="_setup_payment_methods">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">5.2</span>Setup Payment Methods					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>You can now setup the payment methods you would like to have; for testing purpose we will use the Bogus Processor. Please note that if you would like to run production transaction; you can use either our Payfac offering or connect directly to a specific PSP (Worldline; ACI; &#8230;&#8203;)</p>
+</div><div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Navigate to Space → Settings and click on Processors</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/payment-settings.png" alt="payment settings"/>
+</div>
+</div>
+</li>
+<li>
+<p>Click on Configure processor</p>
+</li>
+<li>
+<p>Select Bogus Processor and click on Continue</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/bogus-processor.png" alt="bogus processor"/>
+</div>
+</div>
+</li>
+<li>
+<p>Set up the name you would like to give to your processor - e.g. Test Processor - and click on Create</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/name-processor.png" alt="name processor"/>
+</div>
+</div>
+</li>
+<li>
+<p>Select all the Connectors that apply and click on Save</p>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+Please note that the connectors seems duplicated but it because one is for Physical Terminal payment and one for Ecommerce Payment
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="resource/connectors.png" alt="connectors"/>
+</div>
+</div>
+</li>
+</ol>
+</div><div class="paragraph">
+<p>Payments methods are now available in the portal</p>
+</div>					</div>
+</div>			</div>
+</div>	<div class="chapter" id="_shop_startup_guide">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">6</span>Shop Startup Guide					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Navigate to Settings &#8594; Plugins &#8594; PostFinanceCheckout in your Shopware backend. Enter the PostFinance Checkout Space ID, User ID and Authentication Key that you can create an <a href="https://checkout.postfinance.ch/en-us/doc/permission-concept#_create_application_users" target="_blank">application user</a>.</p>
+<p><strong>API Credentials</strong></p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Navigate to <strong>Shopware Admin</strong> → <strong>Settings</strong> → <strong>Extensions</strong> → <strong>PostFinance Checkout Payment</strong> and click on <strong>Save</strong>.</p>
+</li>
+<li>
+<p>Enter your <code>Space ID</code>, <code>User ID</code>, and <code>API Key</code></p>
+<div class="olist lowerroman">
+<ol class="lowerroman" type="i">
+<li>
+<p>For the Space id; you can navigate to Space and it will be provided - e.g. Space id =  76231</p>
 <div class="imageblock">
 <div class="content">
 <img src="resource/plugin-configuration.png" alt="plugin configuration"/>
 </div>
 </div>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><strong>Payment Methods</strong></p>
 <div class="paragraph">
-<p>If your store is configured for multiple sales channels, you may use different spaces for each store to configure different behaviours.</p>
+<p>The payment methods available at checkout are driven by the PostFinance Checkout Portal. If you would like to disable a payment method; you will need to disable such payment method from the portal.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+Please note that as there is a synchronisation between the portal and shop; you can do the same from the shop under <strong>Settings → Payment Methods</strong>
+</td>
+</tr>
+</table>
+</div>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Go to your <strong>Space</strong> → <strong>Settings</strong> → <strong>Payments</strong> → <strong>Payment</strong> Methods</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/payment-methods.png" alt="payment methods"/>
+</div>
 </div>
 </li>
 <li>
-<p>Optionally after saving your configuration you can click on <code>Set PostFinanceCheckout as default payment handler</code>. This will set PostFinanceCheckoutPayment as the default payment handler for the selected sales channel.</p>
+<p>Select the payment method you would like to disable. Click on the slider to disable it → it should become inactive.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/cc-enable.png" alt="cc enable"/>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="resource/cc-disable.png" alt="cc disable"/>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+If you would like to disable only a Connector from a Payment Method (e.g. Mastercard for a Credit Card); please go to the Connector section.
+</td>
+</tr>
+</table>
+</div>
 </li>
 </ol>
-</div><div class="paragraph">
-<p>The main configuration is finished now. You should see the payment methods in your checkout. To view the payment method configuration in the backend of Shopware go to Settings &#8594; Store &#8594; Payment.</p>
+</div>
+</li>
+<li>
+<p><strong>Options</strong></p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p><strong>Space View Id</strong>: This field allows you to apply custom styling to the payment form and payment page. The styling is defined in your Space settings in the Portal.</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+Please note that if you do not use the Space View Id; this option should stay empty
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p><strong>Integration</strong>: The Integration Options setting determines how the payment form is displayed during the checkout process. The following options are available:</p>
+<div class="olist lowerroman">
+<ol class="lowerroman" type="i">
+<li>
+<p><strong>IFrame</strong>: Embeds the payment form directly within the WooCommerce checkout page for a seamless experience.</p>
+</li>
+<li>
+<p><strong>Lightbox</strong>: Opens a secure popup window for customers to complete their payment without leaving the checkout page.</p>
+</li>
+<li>
+<p><strong>Payment Page</strong>: Redirects customers to a dedicated payment page hosted by the payment provider.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><strong>Line Item Consistency</strong>: Shopware calculates taxes at the line-item level, which may result in minor discrepancies (typically a few cents) between the order&#8217;s total tax and the displayed price. This discrepancy occurs due to rounding differences during individual line-item calculations.  If the "Enforce consistency" setting is enabled, the portal will automatically reject orders with such discrepancies. To avoid payment processing issues, we recommend disabling this setting unless strict tax total validation is required.</p>
+</li>
+<li>
+<p><strong>Send Order Confirmation Email</strong>: Enable this option to send order confirmation emails directly from Shopware instead of the Portal.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/order-confirmation-email.png" alt="order confirmation email"/>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+</ol>
 </div>					</div>
-</div>	<div class="chapter" id="_payment_method_configuration">
+</div>	<div class="chapter" id="_transaction_state_graph">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">4</span>Payment method configuration					</h1>
-	</div>
-	<div class="chapter-body">
-							<div class="section" id="_setup">
-	<div class="section-title">
-		<h2>
-			<span class="title-number">4.1</span>Setup					</h2>
-	</div>
-	<div class="section-body">
-					<div class="paragraph">
-<p>The PostFinance Checkout payment method configurations are synchronized automatically into the Shopware store. There are just a few payment method settings in the Shopware store in Settings &#8594; Store &#8594; Payment.</p>
-</div><div class="imageblock">
-<div class="content">
-<img src="resource/payment-method-configuration.png" alt="payment method configuration"/>
-</div>
-</div>					</div>
-</div>					<div class="section" id="_payment_method_rules">
-	<div class="section-title">
-		<h2>
-			<span class="title-number">4.2</span>Payment method rules					</h2>
-	</div>
-	<div class="section-body">
-					<div class="paragraph">
-<p>If you would like to restrict a payment method to certain conditions (B2B, cart amount, etc), you can create or choose a rule with the Availability Rule option in the shop backend.</p>
-</div><div class="imageblock">
-<div class="content">
-<img src="resource/payment-method-configuration-availability-rule.png" alt="payment method configuration availability rule"/>
-</div>
-</div><div class="paragraph">
-<p><strong>How to create a new Rule?</strong></p>
-</div><div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Click on “Create new rule…” in the Availability rule option and fill out the modal form with conditions, as shown below.</p>
-</li>
-</ol>
-</div><div class="imageblock">
-<div class="content">
-<img src="resource/payment-method-configuration-create-availability-rule.png" alt="payment method configuration create availability rule"/>
-</div>
-</div><div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>In this example the rule is as shown below:</p>
-<div class="ulist">
-<ul>
-<li>
-<p>Name: Payment method for B2B.</p>
-</li>
-<li>
-<p>Priority: 1 (if you wish to prioritise when using several shipping methods, please adjust the value accordingly).</p>
-</li>
-<li>
-<p>Conditions: 	Commercial customer | Yes
-Billing address: Country  | Is one of | Switzerland</p>
-</li>
-</ul>
-</div>
-</li>
-</ol>
-</div><div class="paragraph">
-<p>You can now select the rule in the desired payment method in the item availability rule.</p>
-</div><div class="paragraph">
-<p>It is also conceivable to add a further condition to the rule above, e.g. to make the payment method additionally possible only from a certain purchase value (e.g. 250.00).</p>
-</div><div class="paragraph">
-<p>In this case, add another condition using the AND link and insert the following in the second condition.</p>
-</div><div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Select the newly created rule and save the changes to the chosen payment method.</p>
-</li>
-</ol>
-</div><div class="paragraph">
-<p>Applying this rule to a payment method will result in only those customers who meet the configured conditions.</p>
-</div>					</div>
-</div>					<div class="section" id="_customization">
-	<div class="section-title">
-		<h2>
-			<span class="title-number">4.3</span>Customization					</h2>
-	</div>
-	<div class="section-body">
-					<div class="paragraph">
-<p>If you want to change the payment method description, title, logo, etc you need to do this in the <a href="https://checkout.postfinance.ch/space/select?target=/payment/method-configuration/list" target="_blank">payment method configuration</a>. Changes will be synchronized automatically.</p>
-</div>					</div>
-</div>			</div>
-</div>	<div class="chapter" id="_state_graph">
-	<div class="chapter-title">
-		<h1>
-			<span class="title-number">5</span>State graph					</h1>
+			<span class="title-number">7</span>Transaction State graph					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -209,7 +493,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div>							<div class="section" id="_state_mapping_of_shopware_orders">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">5.1</span>State mapping of Shopware orders					</h2>
+			<span class="title-number">7.1</span>State mapping of Shopware orders					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -217,7 +501,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div>							<div class="section" id="_general_remarks_regarding_order_statuses">
 	<div class="section-title">
 		<h3>
-			<span class="title-number">5.1.1</span>General remarks regarding order statuses					</h3>
+			<span class="title-number">7.1.1</span>General remarks regarding order statuses					</h3>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -227,11 +511,11 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div>					<div class="section" id="_state_mapping_of_shopware_payment_status">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">5.2</span>State mapping of Shopware payment status					</h2>
+			<span class="title-number">7.2</span>State mapping of Shopware payment status					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>Below you find a diagram that shows the state machine of Shopware for payment status including additional information for the state transitions.</p>
+<p>Below you can find a diagram that shows the state machine of Shopware for payment status including additional information for the state transitions.</p>
 </div><div class="imageblock">
 <div class="content">
 <img src="resource/shopware_6_stage_graph_order.svg" alt="shopware 6 stage graph order"/>
@@ -254,7 +538,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div>							<div class="section" id="_general_remarks_regarding_payment_statuses">
 	<div class="section-title">
 		<h3>
-			<span class="title-number">5.2.1</span>General remarks regarding payment statuses					</h3>
+			<span class="title-number">7.2.1</span>General remarks regarding payment statuses					</h3>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -264,7 +548,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div>					<div class="section" id="_state_mapping_of_shopware_delivery_status">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">5.3</span>State mapping of Shopware delivery status					</h2>
+			<span class="title-number">7.3</span>State mapping of Shopware delivery status					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -290,7 +574,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div>	<div class="chapter" id="_transaction_management">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">6</span>Transaction management					</h1>
+			<span class="title-number">8</span>Transaction management					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -300,7 +584,7 @@ Shopware. However, there are some limitations (see below).</p>
 </div>							<div class="section" id="_complete_capture_an_order">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">6.1</span>Complete (capture) an order					</h2>
+			<span class="title-number">8.1</span>Complete (capture) an order					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -334,7 +618,7 @@ the fulfill state is reached. Initially the transaction will be in the <code>Aut
 </div>					<div class="section" id="_void_a_transaction">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">6.2</span>Void a transaction					</h2>
+			<span class="title-number">8.2</span>Void a transaction					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -358,7 +642,7 @@ You can only void transactions that are not yet completed.
 </div>					<div class="section" id="_refund_of_a_transaction">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">6.3</span>Refund of a transaction					</h2>
+			<span class="title-number">8.3</span>Refund of a transaction					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -385,7 +669,7 @@ It can take some time until you see the refund in Shopware. Refunds will only be
 </div>					<div class="section" id="_on_hold_orders">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">6.4</span>On hold orders					</h2>
+			<span class="title-number">8.4</span>On hold orders					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -409,7 +693,7 @@ within the defined time frame, PostFinance Checkout will generate a manual task 
 </div>					<div class="section" id="_limitations_of_the_synchronization_between_whitelabelname_and_shopware">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">6.5</span>Limitations of the synchronization between PostFinance Checkout and Shopware					</h2>
+			<span class="title-number">8.5</span>Limitations of the synchronization between PostFinance Checkout and Shopware					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -425,12 +709,12 @@ your Shopware backend.</p>
 </div>					<div class="section" id="_tokenization">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">6.6</span>Tokenization					</h2>
+			<span class="title-number">8.6</span>Tokenization					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
 <p>In case the payment method supports tokenization you can store the payment details of your customer for future purchases.
-In order to use this feature make sure that the <strong>One-Click-Payment Mode</strong> in your <a href="https://checkout.postfinance.ch/space/select?target=/payment/method-configuration/list">payment method configuration</a> is set to <code>allow</code> or <code>force</code> storage.</p>
+In order to use this feature make sure that the <strong>One-Click-Payment Mode</strong> in your <a href="https://checkout.postfinance.ch/space/select?target=/payment/method-configuration/list" target="_blank">payment method configuration</a> is set to <code>allow</code> or <code>force</code> storage.</p>
 </div><div class="admonitionblock note">
 <table>
 <tr>
@@ -443,82 +727,111 @@ Tokenization is not available for guest checkouts.
 </tr>
 </table>
 </div>					</div>
-</div>			</div>
-</div>	<div class="chapter" id="_error_logging">
-	<div class="chapter-title">
-		<h1>
-			<span class="title-number">7</span>Error logging					</h1>
-	</div>
-	<div class="chapter-body">
-					<div class="paragraph">
-<p>The extension uses the Shopware logging functions which are automatically active in your Shopware store.
-The extension will log various unexpected errors or information which can help identify the cause of the error. You can find the logs on the server of your store in the var/log/ folder.</p>
-</div>					</div>
-</div>	<div class="chapter" id="_faq">
-	<div class="chapter-title">
-		<h1>
-			<span class="title-number">8</span>FAQ					</h1>
-	</div>
-	<div class="chapter-body">
-							<div class="section" id="_how_to_install_the_plugin_using_composer">
+</div>					<div class="section" id="_key_features">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.1</span>How to install the plugin using composer?					</h2>
+			<span class="title-number">8.7</span>Key Features					</h2>
+	</div>
+	<div class="section-body">
+					<div class="ulist">
+<ul>
+<li>
+<p><strong>iFrame Integration</strong>: Embed payment forms directly into your checkout.</p>
+</li>
+<li>
+<p><strong>Refunds &amp; Captures</strong>: Trigger full/partial refunds and captures from Shopware or the PostFinance Checkout Portal.</p>
+</li>
+<li>
+<p><strong>Multi-Store Support</strong>: Manage configurations across multiple stores.</p>
+</li>
+<li>
+<p><strong>Automatic Updates</strong>: Payment methods sync dynamically via the PostFinance Checkout API.</p>
+</li>
+</ul>
+</div>					</div>
+</div>					<div class="section" id="_troubleshooting">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.8</span>Troubleshooting					</h2>
+	</div>
+	<div class="section-body">
+					<div class="ulist">
+<ul>
+<li>
+<p>Logs: Check payment logs with:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">tail -f var/log/whitelabelname_payment*.log</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Common Issues:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Ensure <code>composer update whitelabelname/shopware-6</code> is run after updates.</p>
+</li>
+<li>
+<p>Verify API credentials match your PostFinance Checkout account.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>					</div>
+</div>					<div class="section" id="_faqs">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.9</span>FAQs					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>You can install the plugin using composer by updating the <code>composer.json</code> file in the root directory of your Shopware store and wait for Composer to finish updating the dependencies.</p>
-</div><div class="listingblock">
+<p><strong>Q: How to be sure that the connection between the portal and the shop is working?</strong></p>
+</div><div class="paragraph">
+<p>A: You will need to see if the webhooks were correctly created. To do so; please navigate to your space in the portal, go to Settings → General → Webhook Listeners</p>
+</div><div class="imageblock">
 <div class="content">
-<pre>composer require postfinancecheckout/shopware-6</pre>
+<img src="resource/webhooks.png" alt="webhooks"/>
+</div>
+</div><div class="imageblock">
+<div class="content">
+<img src="resource/webhook-listeners.png" alt="webhook listeners"/>
 </div>
 </div><div class="paragraph">
-<p>Once this done, continue with step 2 of the installation process. See <a href="#_installation">Installation</a>.</p>
-</div>					</div>
-</div>					<div class="section" id="_how_can_i_make_the_payment_methods_appear_in_the_checkout">
-	<div class="section-title">
-		<h2>
-			<span class="title-number">8.2</span>How can I make the payment methods appear in the checkout?					</h2>
-	</div>
-	<div class="section-body">
-					<div class="paragraph">
-<p>Make sure that you followed the <a href="#_configuration">Configuration</a> section by stating your PostFinance Checkout space ID and application user&#8217;s access information in the Shopware backend. By saving the configuration form the synchronization of the payment methods and the set up of the webhooks are initiated.</p>
+<p><strong>Q: Does this plugin support one-click payments?</strong></p>
 </div><div class="paragraph">
-<p>If this does not solve the problem, it could be that you use a special fee or coupon module that we do not support. Try to disable this plugin and see if it helps.
-The payment methods are only displayed if the plugin&#8217;s total calculation matches the actual order total.</p>
+<p>A: Yes, via tokenization in the PostFinance Checkout Portal.</p>
+</div><div class="paragraph">
+<p><strong>Q: How do I handle PCI compliance?</strong></p>
+</div><div class="paragraph">
+<p>A: The plugin uses iFrame integration, reducing PCI requirements to SAQ-A.</p>
+</div><div class="paragraph">
+<p><strong>Q: Does the plugin support Apple Pay?</strong></p>
+</div><div class="paragraph">
+<p>A: Yes, the plugin support wallet like Apple Pay.</p>
 </div>					</div>
 </div>			</div>
-</div>	<div class="chapter" id="_sending_emails_with_flow_builder">
+</div>	<div class="chapter" id="_changelog">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">9</span>Sending emails with Flow Builder					</h1>
+			<span class="title-number">9</span>Changelog					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p>In order for your emails to send when setting up custom flows using Flow Builder you must ensure that "Send order confirmation email" is disabled (located in the plugin settings).</p>
-</div><div class="paragraph">
-<p>If you you have already made seperate channel adjustments (using the channel dropdown in the plugin settings) you will have to ensure that the emails are disabled per channel accordingly.</p>
+<p>For version-specific updates, see the <a href="https://github.com/pfpayments/shopware-6/releases" target="_blank">GitHub Releases</a>.</p>
 </div>					</div>
-</div>	<div class="chapter" id="_troubleshooting">
+</div>	<div class="chapter" id="_contributing">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">10</span>Troubleshooting					</h1>
+			<span class="title-number">10</span>Contributing					</h1>
 	</div>
 	<div class="chapter-body">
-							<div class="section" id="_webhook_error_api_version_not_available">
-	<div class="section-title">
-		<h2>
-			<span class="title-number">10.1</span>Webhook error (API version not available)					</h2>
-	</div>
-	<div class="section-body">
 					<div class="paragraph">
-<p>Webhooks communication fails because of a reply saying HTTP 404 with this or a similar error in the response:
-<code>{"errors":[{"code":"0","status":"404","title":"Not Found","detail":"Requested api version v1 not available, available versions are v2, v3."}]}</code></p>
+<p>Report issues via <a href="https://github.com/pfpayments/shopware-6/issues" target="_blank">GitHub Issues</a>.</p>
 </div><div class="paragraph">
-<p>Solution:
-The Webhooks have to be updated. Shopware is using an API Version for all "URLs", which has to be updated in case shopware itself was updated.</p>
+<p>Follow the <a href="https://developer.shopware.com/docs/guides/plugins/plugins/plugin-base-guide.html" target="_blank">Shopware Plugin Base Guide</a> for development.</p>
 </div>					</div>
-</div>			</div>
 </div>	<div class="chapter" id="_support">
 	<div class="chapter-title">
 		<h1>
@@ -536,154 +849,162 @@ The Webhooks have to be updated. Shopware is using an API Version for all "URLs"
 							<div class="table-of-contents">
 	<ul class="nav">
 					<li class="nav-level-1">
-	<a href="#_prerequisites">
+	<a href="#_overview">
 		<span class="item-number">1</span>
-		<span class="item-title">Prerequisites</span>
+		<span class="item-title">Overview</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#_requirements">
+		<span class="item-number">2</span>
+		<span class="item-title">Requirements</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#compatibility">
+		<span class="item-number">3</span>
+		<span class="item-title">Compatibility</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_installation">
-		<span class="item-number">2</span>
-		<span class="item-title">Installation</span>
-			</a>
-    </li>					<li class="nav-level-1">
-	<a href="#_configuration">
-		<span class="item-number">3</span>
-		<span class="item-title">Configuration</span>
-			</a>
-    </li>					<li class="nav-level-1">
-	<a href="#_payment_method_configuration">
 		<span class="item-number">4</span>
-		<span class="item-title">Payment method configuration</span>
+		<span class="item-title">Installation</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-2">
-	<a href="#_setup">
+	<a href="#_via_marketplace">
 		<span class="item-number">4.1</span>
-		<span class="item-title">Setup</span>
+		<span class="item-title">Via Marketplace</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
-	<a href="#_payment_method_rules">
+	<a href="#_via_composer_recommended">
 		<span class="item-number">4.2</span>
-		<span class="item-title">Payment method rules</span>
+		<span class="item-title">Via Composer (Recommended)</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
-	<a href="#_customization">
+	<a href="#_manual_installation">
 		<span class="item-number">4.3</span>
-		<span class="item-title">Customization</span>
+		<span class="item-title">Manual Installation</span>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
-	<a href="#_state_graph">
+	<a href="#portal-startup-guide">
 		<span class="item-number">5</span>
-		<span class="item-title">State graph</span>
+		<span class="item-title">Portal Startup Guide</span>
+			</a>
+        	<ul  class="nav">
+    		    			<li class="nav-level-2">
+	<a href="#_create_the_api_key">
+		<span class="item-number">5.1</span>
+		<span class="item-title">Create the API key:</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_setup_payment_methods">
+		<span class="item-number">5.2</span>
+		<span class="item-title">Setup Payment Methods</span>
+			</a>
+    </li>    		    	</ul>
+    </li>					<li class="nav-level-1">
+	<a href="#_shop_startup_guide">
+		<span class="item-number">6</span>
+		<span class="item-title">Shop Startup Guide</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#_transaction_state_graph">
+		<span class="item-number">7</span>
+		<span class="item-title">Transaction State graph</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-2">
 	<a href="#_state_mapping_of_shopware_orders">
-		<span class="item-number">5.1</span>
+		<span class="item-number">7.1</span>
 		<span class="item-title">State mapping of Shopware orders</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-3">
 	<a href="#_general_remarks_regarding_order_statuses">
-		<span class="item-number">5.1.1</span>
+		<span class="item-number">7.1.1</span>
 		<span class="item-title">General remarks regarding order statuses</span>
 			</a>
     </li>    		    	</ul>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_state_mapping_of_shopware_payment_status">
-		<span class="item-number">5.2</span>
+		<span class="item-number">7.2</span>
 		<span class="item-title">State mapping of Shopware payment status</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-3">
 	<a href="#_general_remarks_regarding_payment_statuses">
-		<span class="item-number">5.2.1</span>
+		<span class="item-number">7.2.1</span>
 		<span class="item-title">General remarks regarding payment statuses</span>
 			</a>
     </li>    		    	</ul>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_state_mapping_of_shopware_delivery_status">
-		<span class="item-number">5.3</span>
+		<span class="item-number">7.3</span>
 		<span class="item-title">State mapping of Shopware delivery status</span>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
 	<a href="#_transaction_management">
-		<span class="item-number">6</span>
+		<span class="item-number">8</span>
 		<span class="item-title">Transaction management</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-2">
 	<a href="#_complete_capture_an_order">
-		<span class="item-number">6.1</span>
+		<span class="item-number">8.1</span>
 		<span class="item-title">Complete (capture) an order</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_void_a_transaction">
-		<span class="item-number">6.2</span>
+		<span class="item-number">8.2</span>
 		<span class="item-title">Void a transaction</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_refund_of_a_transaction">
-		<span class="item-number">6.3</span>
+		<span class="item-number">8.3</span>
 		<span class="item-title">Refund of a transaction</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_on_hold_orders">
-		<span class="item-number">6.4</span>
+		<span class="item-number">8.4</span>
 		<span class="item-title">On hold orders</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_limitations_of_the_synchronization_between_whitelabelname_and_shopware">
-		<span class="item-number">6.5</span>
+		<span class="item-number">8.5</span>
 		<span class="item-title">Limitations of the synchronization between PostFinance Checkout and Shopware</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_tokenization">
-		<span class="item-number">6.6</span>
+		<span class="item-number">8.6</span>
 		<span class="item-title">Tokenization</span>
 			</a>
-    </li>    		    	</ul>
-    </li>					<li class="nav-level-1">
-	<a href="#_error_logging">
-		<span class="item-number">7</span>
-		<span class="item-title">Error logging</span>
-			</a>
-    </li>					<li class="nav-level-1">
-	<a href="#_faq">
-		<span class="item-number">8</span>
-		<span class="item-title">FAQ</span>
-			</a>
-        	<ul  class="nav">
-    		    			<li class="nav-level-2">
-	<a href="#_how_to_install_the_plugin_using_composer">
-		<span class="item-number">8.1</span>
-		<span class="item-title">How to install the plugin using composer?</span>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_key_features">
+		<span class="item-number">8.7</span>
+		<span class="item-title">Key Features</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
-	<a href="#_how_can_i_make_the_payment_methods_appear_in_the_checkout">
-		<span class="item-number">8.2</span>
-		<span class="item-title">How can I make the payment methods appear in the checkout?</span>
-			</a>
-    </li>    		    	</ul>
-    </li>					<li class="nav-level-1">
-	<a href="#_sending_emails_with_flow_builder">
-		<span class="item-number">9</span>
-		<span class="item-title">Sending emails with Flow Builder</span>
-			</a>
-    </li>					<li class="nav-level-1">
 	<a href="#_troubleshooting">
-		<span class="item-number">10</span>
+		<span class="item-number">8.8</span>
 		<span class="item-title">Troubleshooting</span>
 			</a>
-        	<ul  class="nav">
-    		    			<li class="nav-level-2">
-	<a href="#_webhook_error_api_version_not_available">
-		<span class="item-number">10.1</span>
-		<span class="item-title">Webhook error (API version not available)</span>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_faqs">
+		<span class="item-number">8.9</span>
+		<span class="item-title">FAQs</span>
 			</a>
     </li>    		    	</ul>
+    </li>					<li class="nav-level-1">
+	<a href="#_changelog">
+		<span class="item-number">9</span>
+		<span class="item-title">Changelog</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#_contributing">
+		<span class="item-number">10</span>
+		<span class="item-title">Contributing</span>
+			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_support">
 		<span class="item-number">11</span>

@@ -1,3 +1,7 @@
+# 6.1.13
+- Updated English documentation
+- Added French, German and Italian documentation
+
 # 6.1.12
 - Compatibility with 6.6.10.x
 - Prevent duplicate transactions being created when the first times out

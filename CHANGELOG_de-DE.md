@@ -1,3 +1,7 @@
+# 6.1.13
+– Englische Dokumentation aktualisiert
+– Französische, deutsche und italienische Dokumentation hinzugefügt
+
 # 6.1.12
 - Kompatibilität mit 6.6.10.x
 - Verhindern Sie, dass beim ersten Timeout doppelte Transaktionen erstellt werden

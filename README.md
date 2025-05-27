@@ -1,17 +1,68 @@
 
 
-PostFinanceCheckout Payment for Shopware 6
+PostFinance Checkout Integration for Shopware 6
 =============================
 
-The PostFinanceCheckout Payment plugin wraps around the PostFinanceCheckout API. This library facilitates your interaction with various services such as transactions.
-Please note that this plugin is for versions 6.5 and 6.6. For the 6.4 plugin please visit [our Shopware 6.4 plugin](https://github.com/pfpayments/shopware-6-4).
+## **Overview**  
+The PostFinance Checkout Payment Plugin integrates modern payment processing into Shopware 6, offering features like iFrame-based payments, refunds, captures, and PCI compliance. It supports seamless integration with the [PostFinance Checkout Portal](https://checkout.postfinance.ch/) for managing transactions and payment methods.
 
 ## Requirements
 
-- Shopware 6.5.x or Shopware 6.6.x. See table below.
-- PHP minimum version supported by the each shop version.
+- **Shopware Version:** 6.5.x or 6.6.x (see [compatibility table](#compatibility)).  
+- **PHP:** Minimum version as required by your Shopware installation (e.g., 7.4+).  
+- **PostFinance Checkout Account:** Obtain `Space ID`, `User ID`, and `API Key` from the [PostFinance Checkout Dashboard](https://checkout.postfinance.ch/).
 
-## Supported versions
+## Documentation
+
+- For English documentation click [here](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.13/docs/en/documentation.html)
+- Für die deutsche Dokumentation klicken Sie [hier](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.13/docs/de/documentation.html)
+- Pour la documentation Française, cliquez [ici](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.13/docs/fr/documentation.html)
+- Per la documentazione in tedesco, clicca [qui](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.13/docs/it/documentation.html)
+
+## Installation
+
+### **Via Composer (Recommended)**  
+1. Navigate to your Shopware root directory.
+2. Run:
+
+```bash
+Copy
+composer require postfinancecheckout/shopware-6
+php bin/console plugin:refresh
+php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment
+```
+
+### Manual Installation
+
+1. Download the latest [Release](../../releases)
+2. Extract the ZIP to custom/plugins/PostFinanceCheckoutPayment.
+
+```bash
+Copy
+bin/console plugin:refresh  
+bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment  
+```
+
+## Configuration
+### API Credentials
+
+1. Navigate to Shopware Admin > Settings > PostFinanceCheckout Payment.
+2. Enter your Space ID, User ID, and API Key (obtained from the [PostFinance Checkout Portal](https://checkout.postfinance.ch/)).
+
+### Payment Methods
+
+Configure supported methods (e.g., credit cards, Apple Pay) via the [PostFinance Checkout Portal](https://checkout.postfinance.ch/).
+
+### Key Features
+**iFrame Integration**: Embed payment forms directly into your checkout.
+
+**Refunds & Captures**: Trigger full/partial refunds and captures from Shopware or the [PostFinance Checkout Portal](https://checkout.postfinance.ch/).
+
+**Multi-Store Support**: Manage configurations across multiple stores.
+
+**Automatic Updates**: Payment methods sync dynamically via the PostFinanceCheckout API.
+
+## Compatibiliity
 
 ___________________________________________________________________________________
 | Shopware 6 version            | Plugin major version   | Supported until        |
@@ -20,60 +71,35 @@ ________________________________________________________________________________
 | Shopware 6.5.x                | 5.x                    | October 2024           |
 -----------------------------------------------------------------------------------
 
-## Installation
-
-You can use **Composer** or **install manually**
-
-### Composer
-
-The preferred method is via [composer](https://getcomposer.org). Follow the
-[installation instructions](https://getcomposer.org/doc/00-intro.md) if you do not already have
-composer installed.
-
-Once composer is installed, execute the following command from the shop root to install the plugin:
+### Troubleshooting
+**Logs**: Check payment logs with:
 
 ```bash
-composer require postfinancecheckout/shopware-6
-php bin/console plugin:refresh
-php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment
-```
-
-#### Update via composer
-```bash
-composer update postfinancecheckout/shopware-6
-php bin/console plugin:refresh
-php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment
-```
-
-### Manual Installation
-
-Alternatively you can download the package in its entirety. The [Releases](../../releases) page lists all stable versions.
-
-Uncompress the zip file you download, and include the autoloader in your project:
-
-```bash
-# unzip to ShopwareInstallDir/custom/plugins/PostFinanceCheckoutPayment
-# For versions 6.1.10 and older, the SDK is installed automatically when installing the plugin in the shop, so you don't need to
-# run the following command.
-composer require postfinancecheckout/sdk 4.6.0
-php bin/console plugin:refresh
-php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment
-```
-
-## Usage
-The library needs to be configured with your account's space id, user id, and application key which are available in your PostFinanceCheckout
-account dashboard.
-
-### Logs and debugging
-To view the logs please run the command below:
-```bash
-cd shopware/install/dir
+Copy
 tail -f var/log/postfinancecheckout_payment*.log
 ```
+### Common Issues:
 
-## Documentation
+Ensure composer update postfinancecheckout/shopware-6 is run after updates.
 
-[Documentation](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.12/docs/en/documentation.html)
+Verify API credentials match your PostFinanceCheckout account.
+
+## FAQs
+**Q: Does this plugin support one-click payments?**
+A: Yes, via tokenization in the PostFinanceCheckout Portal.
+
+**Q: How do I handle PCI compliance?**
+A: The plugin uses iFrame integration, reducing PCI requirements to SAQ-A.
+
+### Changelog
+For version-specific updates, see the [GitHub Releases](https://github.com/pfpayments/shopware-6/releases).
+
+### Contributing
+Report issues via GitHub Issues.
+
+Follow the Shopware Plugin Base Guide for development.
+
+This template combines technical clarity with user-friendly guidance. For advanced customization (e.g., overriding templates or payment handlers), refer to the Shopware Documentation.
 
 ## License
 

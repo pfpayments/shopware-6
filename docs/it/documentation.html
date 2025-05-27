@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="it">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<meta name="keywords" value="PostFinance Checkout, Shopware, Shopware Plugin, Payment, Payment Integration, Documentation"><meta name="description" value="The documentation for the Shopware 6 plugin that enables processing payments with PostFinance Checkout.">		
+		<link rel="canonical" href="https://plugin-documentation.wallee.com/wallee-payment/shopware-6/master/PostFinanceCheckoutPayment/docs/it/documentation.html" />
+		<title>PostFinance Checkout Shopware 6 Documentation</title>
+		<link href="assets/monokai-sublime.css" rel="stylesheet" />
+		<link href="assets/base.css" rel="stylesheet" />
+	</head>
+	<body class="documentation">
+		<div class="layout-wrapper">
+							<div class="layout-title">
+					<h1>PostFinance Checkout Shopware 6 Documentation</h1>
+<h2>Documentation</h2>				</div>
+										<div class="layout-navigation">
+					<ul class="nav">
+	<li>
+		<a href="https://checkout.postfinance.ch/en-ch/user/signup">
+			Sign Up
+		</a>
+	</li>
+	<li>
+		<a href="https://github.com/pfpayments/shopware-6/releases/tag/6.1.13/">
+			Source
+		</a>
+	</li>
+</ul>				</div>
+										<div class="layout-content">
+												<div class="col-body">
+							<div class="col-body-wrapper">
+																	<div class="body-container">
+																						<div class="chapter" id="_panoramica">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">1</span>Panoramica					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>Il Wallee Payment Plugin integra l&#8217;elaborazione moderna dei pagamenti in Shopware 6, offrendo funzionalità come pagamenti basati su iFrame, rimborsi, acquisizioni e conformità PCI. Supporta l&#8217;integrazione perfetta con il [Portale PostFinance Checkout](<a href="https://checkout.postfinance.ch/" class="bare">https://checkout.postfinance.ch/</a>) per la gestione delle transazioni e dei metodi di pagamento.</p>
+</div><div class="paragraph">
+<p>Importante: Si prega di notare che solo gli aggiornamenti Major (ad es. 6.x.0.0) e Minor (ad es. 6.0.x.0) saranno testati per la compatibilità entro 2 settimane dal rilascio.</p>
+</div>					</div>
+</div>	<div class="chapter" id="_requisiti">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">2</span>Requisiti					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>Versione di Shopware: 6.5.x o 6.6.x (vedere la <a href="#compatibility">tabella di compatibilità</a>).</p>
+</div><div class="paragraph">
+<p>PHP: Versione minima richiesta dalla vostra installazione di Shopware (ad es. 7.4+).</p>
+</div><div class="paragraph">
+<p>Account Wallee: Ottenere Space ID, User ID e API Key dal <a href="#portal-startup-guide">Pannello di Controllo Wallee.</a>.</p>
+</div>					</div>
+</div>	<div class="chapter" id="compatibility">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">3</span>Compatibilità					</h1>
+	</div>
+	<div class="chapter-body">
+					<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 25%;"/>
+<col style="width: 25%;"/>
+<col style="width: 25%;"/>
+<col style="width: 25%;"/>
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Shopware Version</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plugin Version</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>PHP Version</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Support Until</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6.6.x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6.x.x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 and 8.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ongoing</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6.5.x - Deprecated</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5.x.x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 and 8.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">October 2024</p></td>
+</tr>
+</tbody>
+</table>					</div>
+</div>	<div class="chapter" id="_installazione">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">4</span>Installazione					</h1>
+	</div>
+	<div class="chapter-body">
+							<div class="section" id="_tramite_il_marketplace">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">4.1</span>Tramite il Marketplace					</h2>
+	</div>
+	<div class="section-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Accedete al backend del vostro negozio Shopware.</p>
+</li>
+<li>
+<p>Navigate su Impostazioni → Sistema → Plugin.</p>
+</li>
+<li>
+<p>Cliccate sul simbolo del menu a tendina e selezionate il link Installa del plugin per installarlo</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/plugin-installation.png" alt="plugin installation"/>
+</div>
+</div>
+</li>
+<li>
+<p>Attivate il plugin Wallee Payment dal Gestore Plugin.</p>
+</li>
+</ol>
+</div>					</div>
+</div>					<div class="section" id="_tramite_composer_raccomandato">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">4.2</span>Tramite Composer (Raccomandato)					</h2>
+	</div>
+	<div class="section-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Navigate nella directory principale del vostro Shopware.</p>
+</li>
+<li>
+<p>Eseguite:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">composer require postfinancecheckout/shopware-6
+php bin/console plugin:refresh
+php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>					</div>
+</div>					<div class="section" id="_installazione_manuale">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">4.3</span>Installazione manuale					</h2>
+	</div>
+	<div class="section-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Scaricate <a href="https://github.com/pfpayments/shopware-6/releases" target="_blank">l&#8217;ultima versione.</a>.</p>
+</li>
+<li>
+<p>Estraete il file ZIP in <code>custom/plugins/</code></p>
+</li>
+<li>
+<p>Eseguite</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">php bin/console plugin:refresh
+php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>					</div>
+</div>			</div>
+</div>	<div class="chapter" id="portal-startup-guide">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">5</span>Guida Rapida al Portale					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>Andate su <a href="https://checkout.postfinance.ch/en-ch/user/signup/user/login">PostFinance Checkout</a> e create un account se non ne avete già uno.</p>
+</div><div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+Selezionate il piano di abbonamento appropriato: dovrebbe supportare le transazioni di e-commerce.
+</td>
+</tr>
+</table>
+</div>							<div class="section" id="_create_la_chiave_api">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">5.1</span>Create la chiave API:					</h2>
+	</div>
+	<div class="section-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Una volta attivato il vostro account, navigate su Account → Utenti Applicazione.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/application-users.png" alt="application users"/>
+</div>
+</div>
+</li>
+<li>
+<p>Cliccate su Crea utente dell’aplicazione</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/user.png" alt="user"/>
+</div>
+</div>
+</li>
+<li>
+<p>Specificate un nome per questa chiave API – io inserirò Test Shop – e cliccate su Crea utente dell&#8217;applicazione.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/api-key.png" alt="api key"/>
+</div>
+</div>
+</li>
+<li>
+<p>Il vostro Utente dell&#8217;Applicazione verrà quindi creato. Copiate l&#8217;ID Utente e la Chiave di Autenticazione, poiché vi serviranno per collegare il vostro negozio al portale.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/token.png" alt="token"/>
+</div>
+</div>
+</li>
+<li>
+<p>Infine, dovrete concedere alcune autorizzazioni a questo Utente Applicazione in modo che possa comunicare con il vostro space. Per farlo, sotto Ruoli, navigate su Gestisci.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/roles.png" alt="roles"/>
+</div>
+</div>
+</li>
+<li>
+<p>Cliccate sul segno + accanto a Ruoli Spazio.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/assign-role.png" alt="assign role"/>
+</div>
+</div>
+</li>
+<li>
+<p>Aggiungete il ruolo Space Admin e cliccate su Assegna Ruolo .</p>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+Si prega di notare che il caricamento dei ruoli potrebbe richiedere alcuni secondi
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="resource/loading-roles.png" alt="loading roles"/>
+</div>
+</div>
+</li>
+<li>
+<p>Infine, cliccate su Salva i Ruoli; dovrete inserire la vostra password per confermare.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/save-role.png" alt="save role"/>
+</div>
+</div>
+</li>
+</ol>
+</div>					</div>
+</div>					<div class="section" id="_configurate_i_metodi_di_pagamento">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">5.2</span>Configurate i Metodi di Pagamento					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>Ora potete configurare i metodi di pagamento che desiderate avere; per scopi di test, utilizzeremo il Processore Fittizio (Bogus Processor). Si prega di notare che se desiderate eseguire transazioni di produzione, potete utilizzare la nostra offerta Payfac o connettervi direttamente a uno specifico PSP (Worldline; ACI; …).</p>
+</div><div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Navigate su Spazio → Impostazioni e cliccate su Processori.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/payment-settings.png" alt="payment settings"/>
+</div>
+</div>
+</li>
+<li>
+<p>Cliccate su Configura processore</p>
+</li>
+<li>
+<p>Selezionate il processore che desiderate e cliccate su Continua.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/bogus-processor.png" alt="bogus processor"/>
+</div>
+</div>
+</li>
+<li>
+<p>Impostate il nome che desiderate dare al vostro processore – ad es. Test Processor – e cliccate su Crea.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/name-processor.png" alt="name processor"/>
+</div>
+</div>
+</li>
+<li>
+<p>Selezionate tutti i Connettori applicabili e cliccate su Salva</p>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+Si prega di notare che i connettori sembrano duplicati, ma è perché uno è per il pagamento tramite terminale fisico e l&#8217;altro per il pagamento e-commerce.
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="resource/connectors.png" alt="connectors"/>
+</div>
+</div>
+</li>
+</ol>
+</div><div class="paragraph">
+<p>I metodi di pagamento sono ora disponibili nel portale</p>
+</div>					</div>
+</div>			</div>
+</div>	<div class="chapter" id="_guida_rapida_al_shop">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">6</span>Guida Rapida al Shop					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Credenziali API</strong></p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Navigate su <strong>Shopware Admin → Impostazioni → Estensioni → PostFinance Checkout Payment</strong> e cliccate su Salva.</p>
+</li>
+<li>
+<p>Inserite il vostro Space ID, User ID, e API Key</p>
+<div class="olist lowerroman">
+<ol class="lowerroman" type="i">
+<li>
+<p>Potete trovare lo Space ID navigando su Spazio – ad es. Space id = 76231</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/plugin-configuration.png" alt="plugin configuration"/>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><strong>Metodi di Pagamento</strong></p>
+<div class="paragraph">
+<p>I metodi di pagamento disponibili al checkout sono gestiti dal [Portale PostFinance Checkout](<a href="https://checkout.postfinance.ch/" class="bare">https://checkout.postfinance.ch/</a>). Se desiderate disabilitare un metodo di pagamento, dovrete disabilitarlo dal portale.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+Si prega di notare che, poiché esiste una sincronizzazione tra il portale e il shop, potete fare la stessa cosa dal shop in Impostazioni → Metodi di Pagamento.
+</td>
+</tr>
+</table>
+</div>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Andate su <strong>Space → Impostazioni → Pagamento → Modalita di pagamento</strong></p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/payment-methods.png" alt="payment methods"/>
+</div>
+</div>
+</li>
+<li>
+<p>Selezionate il metodo di pagamento che desiderate disabilitare. Cliccate sul cursore per disabilitarlo → dovrebbe diventare inattivo.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/cc-enable.png" alt="cc enable"/>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="resource/cc-disable.png" alt="cc disable"/>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+Se desiderate disabilitare solo un Connettore da un Metodo di Pagamento (ad es. Mastercard per una Carta di Credito), andate alla sezione Connettore
+</td>
+</tr>
+</table>
+</div>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><strong>Opzioni</strong></p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p><strong>Space View Id</strong>: Questo campo vi permette di applicare stili personalizzati al modulo di pagamento e alla pagina di pagamento. Lo stile è definito nelle impostazioni del vostro Spazio nel Portale</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+Si prega di notare che se non utilizzate lo Space View Id, questa opzione dovrebbe rimanere vuota.
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p><strong>Integrazione</strong>: L&#8217;impostazione Opzioni di Integrazione determina come viene visualizzato il modulo di pagamento durante il processo di checkout. Sono disponibili le seguenti opzioni:</p>
+<div class="olist lowerroman">
+<ol class="lowerroman" type="i">
+<li>
+<p><strong>IFrame</strong>: Incorpora il modulo di pagamento direttamente all&#8217;interno della pagina di checkout di Shopware per un&#8217;esperienza senza interruzioni.</p>
+</li>
+<li>
+<p><strong>Lightbox</strong>: Apre una finestra popup sicura in cui i clienti possono completare il pagamento senza lasciare la pagina di checkout.</p>
+</li>
+<li>
+<p><strong>Payment Page</strong>: Reindirizza i clienti a una pagina di pagamento dedicata ospitata dal fornitore di servizi di pagamento.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><strong>Line Item Consistency</strong>: Shopware calcola le tasse a livello di voce di riga, il che può comportare piccole discrepanze (tipicamente pochi centesimi) tra l&#8217;imposta totale dell&#8217;ordine e il prezzo visualizzato. Questa discrepanza si verifica a causa di differenze di arrotondamento durante i calcoli delle singole voci di riga. Se l&#8217;impostazione "Imponi coerenza" è abilitata, il portale rifiuterà automaticamente gli ordini con tali discrepanze. Per evitare problemi di elaborazione dei pagamenti, si consiglia di disabilitare questa impostazione a meno che non sia richiesta una rigorosa convalida del totale delle imposte.</p>
+</li>
+<li>
+<p><strong>Invia Email di Conferma Ordine</strong>: Abilitate questa opzione per inviare email di conferma dell&#8217;ordine direttamente da Shopware anziché dal Portale.</p>
+<div class="imageblock">
+<div class="content">
+<img src="resource/order-confirmation-email.png" alt="order confirmation email"/>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>					</div>
+</div>	<div class="chapter" id="_grafico_dello_stato_della_transazione">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">7</span>Grafico dello Stato della Transazione					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>Il processo di pagamento di Wallee è completamente standardizzato per ogni metodo di pagamento che potete elaborare. Questo vi dà la possibilità di aggiungere semplicemente un metodo di pagamento o un processore senza modifiche all&#8217;interno della vostra configurazione di Shopware. Una panoramica degli stati e dei processi di pagamento di Wallee è disponibile nella <a href="https://checkout.postfinance.ch/en-us/doc/payment/transaction-process" target="_blank">Documentazione sui Pagamenti</a>.</p>
+</div><div class="paragraph">
+<p>Nella sezione seguente, forniamo una panoramica di come gli stati di Wallee sono mappati nel grafico degli stati di Shopware per gli ordini e gli stati di pagamento.</p>
+</div>							<div class="section" id="_mappatura_degli_stati_degli_ordini_di_shopware">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">7.1</span>Mappatura degli Stati degli Ordini di Shopware					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>Attualmente non modifichiamo lo stato dell&#8217;Ordine. Modifichiamo solo lo stato del Pagamento e lo stato della Spedizione.</p>
+</div>							<div class="section" id="_osservazioni_generali_riguardo_agli_stati_degli_ordini">
+	<div class="section-title">
+		<h3>
+			<span class="title-number">7.1.1</span>Osservazioni Generali Riguardo agli Stati degli Ordini					</h3>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>Raccomandiamo di modificare lo stato dell&#8217;Ordine solo quando lo stato del Pagamento ha raggiunto uno stato finale.</p>
+</div>					</div>
+</div>			</div>
+</div>					<div class="section" id="_mappatura_dello_stato_di_pagamento_di_shopware">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">7.2</span>Mappatura dello Stato di Pagamento di Shopware					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>Di seguito trovate un diagramma che mostra la macchina a stati di Shopware per lo stato di pagamento, incluse informazioni aggiuntive per le transizioni di stato.</p>
+</div><div class="imageblock">
+<div class="content">
+<img src="resource/shopware_6_stage_graph_order.svg" alt="shopware 6 stage graph order"/>
+</div>
+</div><div class="olist glossary">
+<ol class="glossary">
+<li>
+<p>Se la transazione è <code>Authorized</code> in PostFinance Checkout, lo stato di pagamento dell&#8217;ordine di Shopware è contrassegnato come <code>In Progress</code>.</p>
+</li>
+<li>
+<p>Se la transazione fallisce prima o durante il processo di autorizzazione, lo stato di pagamento dell&#8217;ordine di Shopware è contrassegnato come <code>Failed</code>.</p>
+</li>
+<li>
+<p>Se la transazione fallisce dopo l&#8217;autorizzazione, lo stato di pagamento dell&#8217;ordine di Shopware è contrassegnato come <code>Cancelled</code>.</p>
+</li>
+<li>
+<p>Se la fattura della transazione in PostFinance Checkout è contrassegnata come Paid o Not Applicable, the lo stato di pagamento dell&#8217;ordine di Shopware è contrassegnato come Paid.</p>
+</li>
+</ol>
+</div>							<div class="section" id="_osservazioni_generali_riguardo_agli_stati_di_pagamento">
+	<div class="section-title">
+		<h3>
+			<span class="title-number">7.2.1</span>Osservazioni Generali Riguardo agli Stati di Pagamento					</h3>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>Raccomandiamo di non modificare manualmente lo stato di pagamento. Se lo fate, potrebbe essere modificato nuovamente dal plugin.</p>
+</div>					</div>
+</div>			</div>
+</div>					<div class="section" id="_mappatura_dello_stato_di_spedizione_di_shopware">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">7.3</span>Mappatura dello Stato di Spedizione di Shopware					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>Di seguito trovate un diagramma che mostra la macchina a stati di Shopware per lo stato di spedizione, incluse informazioni aggiuntive per le transizioni di stato.</p>
+</div><div class="imageblock">
+<div class="content">
+<img src="resource/shopware_6_stage_graph_delivery.svg" alt="shopware 6 stage graph delivery"/>
+</div>
+</div><div class="olist glossary">
+<ol class="glossary">
+<li>
+<p>Se la transazione ha lo stato <code>Confirmed</code> in PostFinance Checkout, lo stato di spedizione dell&#8217;ordine di Shopware è contrassegnato come <code>On Hold</code>..</p>
+</li>
+<li>
+<p>Se la transazione in PostFinance Checkout è contrassegnata come <code>Fulfill</code>, lo stato di spedizione dell&#8217;ordine di Shopware è contrassegnato come <code>Open</code>.</p>
+</li>
+<li>
+<p>Se la transazione è in stato <code>Decline</code>, <code>Failed</code> or <code>Voided</code>, lo stato di spedizione dell&#8217;ordine di Shopware è contrassegnato come <code>Cancelled</code>.</p>
+</li>
+</ol>
+</div>					</div>
+</div>			</div>
+</div>	<div class="chapter" id="_gestione_delle_transazioni">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">8</span>Gestione delle Transazioni					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>Potete acquisire, annullare e rimborsare le transazioni direttamente dal backend di Shopware. Si prega di notare che se rimborsate, annullate o acquisite transazioni all&#8217;interno di PostFinance Checkout, gli eventi verranno sincronizzati in Shopware. Tuttavia, ci sono alcune limitazioni (vedere sotto).</p>
+</div>							<div class="section" id="_completare_acquisire_un_ordine">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.1</span>Completare (Acquisire) un Ordine					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>YAvete la possibilità che per le vostre transazioni il pagamento venga autorizzato solo dopo l&#8217;inserimento dell&#8217;ordine. All&#8217;interno della <a href="https://checkout.postfinance.ch/space/select?target=/payment/connector-configuration/list" target="_blank">configurazione del connettore</a> avete l&#8217;opzione, se il metodo di pagamento lo supporta, di definire se il pagamento debba essere completato immediatamente o differito.</p>
+</div><div class="paragraph">
+<p>Per acquisire una transazione, aprite l&#8217;ordine e cliccate sul pulsante <code>Complete</code>.</p>
+</div><div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+Quando il completamento è in sospeso in Wallee, l&#8217;ordine rimarrà nello stato "in sospeso".
+</td>
+</tr>
+</table>
+</div><div class="imageblock">
+<div class="content">
+<img src="resource/capture-transaction.png" alt="capture transaction"/>
+</div>
+</div><div class="paragraph">
+<p><strong>Completamento Differito del Pagamento</strong></p>
+</div><div class="paragraph">
+<p>I rivenditori spesso si trovano nella situazione in cui desiderano solo autorizzare le transazioni e avviare il processo di evasione solo quando tutti gli articoli sono spedibili. Questo è possibile anche con PostFinance Checkout.</p>
+</div><div class="paragraph">
+<p>Tuttavia, è necessario seguire determinati processi. Se avete configurato il completamento del pagamento come differito, dovreste acquisire la transazione prima di avviare la spedizione, poiché può sempre accadere che un completamento fallisca. Se volete essere sicuri di non spedire articoli per i quali non siete stati pagati, dovreste posticipare la spedizione fino al raggiungimento dello stato di evasione. Inizialmente, la transazione sarà nello stato <code>Authorized</code> in PostFinance Checkout e <code>In Progress</code> in Shopware. Se desiderate avviare il processo di evasione, assicuratevi di avviare il processo di completamento come descritto sopra. Una volta che il completamento è andato a buon fine, l&#8217;ordine passerà allo stato <code>Fulfill</code> in PostFinance Checkout e allo stato <code>Paid</code> in Shopware. Ora potete avviare il processo di evasione.</p>
+</div>					</div>
+</div>					<div class="section" id="_annullare_una_transazione">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.2</span>Annullare una transazione					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>Per annullare una transazione, apri l&#8217;ordine e clicca sul pulsante <code>Cancel authorization</code>.</p>
+</div><div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+Puoi annullare solo le transazioni che non sono ancora state completate
+</td>
+</tr>
+</table>
+</div><div class="imageblock">
+<div class="content">
+<img src="resource/void-transaction.png" alt="void transaction"/>
+</div>
+</div>					</div>
+</div>					<div class="section" id="_rimborso_di_una_transazione">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.3</span>Rimborso di una Transazione					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>Avete la possibilità di rimborsare le transazioni già completate. Per farlo, aprite l&#8217;ordine acquisito. Cliccando sui 3 punti (…) su una voce di riga, potete rimborsare la voce di riga parzialmente (se ha una quantità superiore a 1) o potete rimborsare l&#8217;intera voce di riga. Nel caso in cui il metodo di pagamento non supporti i rimborsi, non vedrete la possibilità di emettere rimborsi online.</p>
+</div><div class="imageblock">
+<div class="content">
+<img src="resource/refund-transaction.png" alt="refund transaction"/>
+</div>
+</div><div class="paragraph">
+<p>Potete effettuare tutti i rimborsi individuali che desiderate fino a raggiungere l&#8217;importo totale dell&#8217;ordine originale. Lo stato dell&#8217;ordine passerà quindi automaticamente a "completato".</p>
+</div><div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+Potrebbe volerci un po' di tempo prima che vediate il rimborso in Shopware. I rimborsi saranno visibili solo una volta che saranno stati elaborati con successo.
+</td>
+</tr>
+</table>
+</div>					</div>
+</div>					<div class="section" id="_ordini_in_attesa">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.4</span>Ordini in Attesa					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>La spedizione non dovrebbe essere effettuata mentre lo stato di spedizione è Hold. Questo accade quando la transazione in Wallee non ha raggiunto lo stato di evasione.</p>
+</div><div class="paragraph">
+<p>Ci sono essenzialmente due motivi per cui questo può accadere:</p>
+</div><div class="ulist">
+<ul>
+<li>
+<p>La transazione non è completata. In questo caso, dovete completare la transazione come scritto sopra.</p>
+</li>
+<li>
+<p>Non siamo in grado di dire se dovete evadere l&#8217;ordine. La decisione di spedizione viene presa automaticamente. Se ciò non accade entro il periodo di tempo definito, Wallee genererà un&#8217;attività manuale che dovreste osservare e seguire le istruzioni.</p>
+</li>
+</ul>
+</div><div class="paragraph">
+<p>Potete trovare maggiori informazioni sulle attività manuali nella nostra <a href="https://checkout.postfinance.ch/en-us/doc/manual-tasks" target="_blank">Documentazione sulle Attività Manuali.</a>.</p>
+</div>					</div>
+</div>					<div class="section" id="_limitazioni_della_sincronizzazione_tra_wallee_e_shopware">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.5</span>Limitazioni della Sincronizzazione tra Wallee e Shopware					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>Si prega di notare che le acquisizioni, le annullazioni e i rimborsi effettuati in Wallee vengono sincronizzati. Tuttavia, ci sono alcune limitazioni. All&#8217;interno di Wallee, potete modificare contemporaneamente <strong>il prezzo unitario</strong> e <strong>la quantità</strong>. Questo non può essere fatto nel backend di Shopware. Raccomandiamo pertanto di effettuare sempre i rimborsi all&#8217;interno del backend di Shopware e non all&#8217;interno di Wallee. Se un rimborso non può essere sincronizzato, verrà inviato al processore, ma potrebbe essere che non lo vediate all&#8217;interno del vostro backend di Shopware.</p>
+</div><div class="paragraph">
+<p>Potete trovare maggiori informazioni sui Rimborsi in Wallee nella nostra <a href="https://checkout.postfinance.ch/en-us/doc/payment/refund" target="_blank">Documentazione sui Rimborsi.</a>.</p>
+</div>					</div>
+</div>					<div class="section" id="_tokenization">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.6</span>Tokenization					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>INel caso in cui il metodo di pagamento supporti la tokenizzazione, potete memorizzare i dettagli di pagamento dei vostri clienti per acquisti futuri. Per utilizzare questa funzionalità, assicuratevi che la Modalità di <strong>One-Click-Payment Mode</strong> inella configurazione del vostro <a href="https://checkout.postfinance.ch/space/select?target=/payment/method-configuration/list">metodo di pagamento</a> sia impostata su <code>allow</code> o <code>force</code>.</p>
+</div><div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+La tokenizzazione non è disponibile per i checkout degli ospiti.
+</td>
+</tr>
+</table>
+</div>					</div>
+</div>					<div class="section" id="_key_features">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.7</span>Key Features					</h2>
+	</div>
+	<div class="section-body">
+					<div class="ulist">
+<ul>
+<li>
+<p><strong>iFrame Integration</strong>: Incorpora i moduli di pagamento direttamente nel tuo checkout.</p>
+</li>
+<li>
+<p><strong>Refunds &amp; Captures</strong>: Attiva rimborsi totali/parziali e acquisizioni da Shopware o dal Portale PostFinance Checkout.</p>
+</li>
+<li>
+<p><strong>Multi-Store Support</strong>: Gestisci le configurazioni su più negozi.</p>
+</li>
+<li>
+<p><strong>Automatic Updates</strong>: I metodi di pagamento si sincronizzano dinamicamente tramite l&#8217;API PostFinance Checkout.</p>
+</li>
+</ul>
+</div>					</div>
+</div>					<div class="section" id="_risoluzione_dei_problemi">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.8</span>Risoluzione dei Problemi					</h2>
+	</div>
+	<div class="section-body">
+					<div class="ulist">
+<ul>
+<li>
+<p>Logs: Controlla i log dei pagamenti con:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">tail -f var/log/whitelabelname_payment*.log</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Problemi Comuni</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Assicurati che <code>composer update whitelabelname/shopware-6</code> venga eseguito dopo gli aggiornamenti.</p>
+</li>
+<li>
+<p>Verifica che le credenziali API corrispondano al tuo account PostFinance Checkout.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>					</div>
+</div>					<div class="section" id="_faqs">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.9</span>FAQs					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p><strong>D: Come posso essere sicuro che la connessione tra il portale e il negozio funzioni?</strong></p>
+</div><div class="paragraph">
+<p>R: Dovrete verificare se i webhook sono stati creati correttamente. Per farlo, navigate nel vostro space all&#8217;interno del portale, andate su Impostazioni → Generale →  Webhook Listener.</p>
+</div><div class="imageblock">
+<div class="content">
+<img src="resource/webhooks.png" alt="webhooks"/>
+</div>
+</div><div class="imageblock">
+<div class="content">
+<img src="resource/webhook-listeners.png" alt="webhook listeners"/>
+</div>
+</div><div class="paragraph">
+<p><strong>D: Questo plugin supporta i one-click payments?</strong></p>
+</div><div class="paragraph">
+<p>R: Sì, tramite tokenizzazione nel portale PostFinance Checkout.</p>
+</div><div class="paragraph">
+<p><strong>D: Come gestisco la conformità PCI?</strong></p>
+</div><div class="paragraph">
+<p>R: Il plugin utilizza l&#8217;integrazione iFrame, riducendo i requisiti PCI a SAQ-A.</p>
+</div><div class="paragraph">
+<p><strong>D: Il plugin supporta Apple Pay?</strong></p>
+</div><div class="paragraph">
+<p>R: Sì, il plugin supporta wallet come Apple Pay.</p>
+</div>					</div>
+</div>			</div>
+</div>	<div class="chapter" id="_changelog">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">9</span>Changelog					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>Per gli aggiornamenti specifici della versione, consultate le <a href="https://github.com/pfpayments/shopware-6/releases" target="_blank">Release di GitHub</a>.</p>
+</div>					</div>
+</div>	<div class="chapter" id="_contribuzione">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">10</span>Contribuzione					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>Segnalate i problemi tramite le <a href="https://github.com/pfpayments/shopware-6/issues" target="_blank">Issue di GitHub</a>.</p>
+</div><div class="paragraph">
+<p>Seguite la <a href="https://developer.shopware.com/docs/guides/plugins/plugins/plugin-base-guide.html" target="_blank">Guida Base</a> per lo Sviluppo di Plugin per Shopware.</p>
+</div>					</div>
+</div>	<div class="chapter" id="_support">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">11</span>Support					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>se hai bisogno di aiuto contatta il nostro <a href="https://www.postfinance.ch/en/business/support.html">supporto</a>.</p>
+</div>					</div>
+</div>																			</div>
+															</div>
+						</div>
+						<div class="col-right">
+		<div class="col-right-wrapper">
+							<div class="table-of-contents">
+	<ul class="nav">
+					<li class="nav-level-1">
+	<a href="#_panoramica">
+		<span class="item-number">1</span>
+		<span class="item-title">Panoramica</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#_requisiti">
+		<span class="item-number">2</span>
+		<span class="item-title">Requisiti</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#compatibility">
+		<span class="item-number">3</span>
+		<span class="item-title">Compatibilità</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#_installazione">
+		<span class="item-number">4</span>
+		<span class="item-title">Installazione</span>
+			</a>
+        	<ul  class="nav">
+    		    			<li class="nav-level-2">
+	<a href="#_tramite_il_marketplace">
+		<span class="item-number">4.1</span>
+		<span class="item-title">Tramite il Marketplace</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_tramite_composer_raccomandato">
+		<span class="item-number">4.2</span>
+		<span class="item-title">Tramite Composer (Raccomandato)</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_installazione_manuale">
+		<span class="item-number">4.3</span>
+		<span class="item-title">Installazione manuale</span>
+			</a>
+    </li>    		    	</ul>
+    </li>					<li class="nav-level-1">
+	<a href="#portal-startup-guide">
+		<span class="item-number">5</span>
+		<span class="item-title">Guida Rapida al Portale</span>
+			</a>
+        	<ul  class="nav">
+    		    			<li class="nav-level-2">
+	<a href="#_create_la_chiave_api">
+		<span class="item-number">5.1</span>
+		<span class="item-title">Create la chiave API:</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_configurate_i_metodi_di_pagamento">
+		<span class="item-number">5.2</span>
+		<span class="item-title">Configurate i Metodi di Pagamento</span>
+			</a>
+    </li>    		    	</ul>
+    </li>					<li class="nav-level-1">
+	<a href="#_guida_rapida_al_shop">
+		<span class="item-number">6</span>
+		<span class="item-title">Guida Rapida al Shop</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#_grafico_dello_stato_della_transazione">
+		<span class="item-number">7</span>
+		<span class="item-title">Grafico dello Stato della Transazione</span>
+			</a>
+        	<ul  class="nav">
+    		    			<li class="nav-level-2">
+	<a href="#_mappatura_degli_stati_degli_ordini_di_shopware">
+		<span class="item-number">7.1</span>
+		<span class="item-title">Mappatura degli Stati degli Ordini di Shopware</span>
+			</a>
+        	<ul  class="nav">
+    		    			<li class="nav-level-3">
+	<a href="#_osservazioni_generali_riguardo_agli_stati_degli_ordini">
+		<span class="item-number">7.1.1</span>
+		<span class="item-title">Osservazioni Generali Riguardo agli Stati degli Ordini</span>
+			</a>
+    </li>    		    	</ul>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_mappatura_dello_stato_di_pagamento_di_shopware">
+		<span class="item-number">7.2</span>
+		<span class="item-title">Mappatura dello Stato di Pagamento di Shopware</span>
+			</a>
+        	<ul  class="nav">
+    		    			<li class="nav-level-3">
+	<a href="#_osservazioni_generali_riguardo_agli_stati_di_pagamento">
+		<span class="item-number">7.2.1</span>
+		<span class="item-title">Osservazioni Generali Riguardo agli Stati di Pagamento</span>
+			</a>
+    </li>    		    	</ul>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_mappatura_dello_stato_di_spedizione_di_shopware">
+		<span class="item-number">7.3</span>
+		<span class="item-title">Mappatura dello Stato di Spedizione di Shopware</span>
+			</a>
+    </li>    		    	</ul>
+    </li>					<li class="nav-level-1">
+	<a href="#_gestione_delle_transazioni">
+		<span class="item-number">8</span>
+		<span class="item-title">Gestione delle Transazioni</span>
+			</a>
+        	<ul  class="nav">
+    		    			<li class="nav-level-2">
+	<a href="#_completare_acquisire_un_ordine">
+		<span class="item-number">8.1</span>
+		<span class="item-title">Completare (Acquisire) un Ordine</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_annullare_una_transazione">
+		<span class="item-number">8.2</span>
+		<span class="item-title">Annullare una transazione</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_rimborso_di_una_transazione">
+		<span class="item-number">8.3</span>
+		<span class="item-title">Rimborso di una Transazione</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_ordini_in_attesa">
+		<span class="item-number">8.4</span>
+		<span class="item-title">Ordini in Attesa</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_limitazioni_della_sincronizzazione_tra_wallee_e_shopware">
+		<span class="item-number">8.5</span>
+		<span class="item-title">Limitazioni della Sincronizzazione tra Wallee e Shopware</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_tokenization">
+		<span class="item-number">8.6</span>
+		<span class="item-title">Tokenization</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_key_features">
+		<span class="item-number">8.7</span>
+		<span class="item-title">Key Features</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_risoluzione_dei_problemi">
+		<span class="item-number">8.8</span>
+		<span class="item-title">Risoluzione dei Problemi</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_faqs">
+		<span class="item-number">8.9</span>
+		<span class="item-title">FAQs</span>
+			</a>
+    </li>    		    	</ul>
+    </li>					<li class="nav-level-1">
+	<a href="#_changelog">
+		<span class="item-number">9</span>
+		<span class="item-title">Changelog</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#_contribuzione">
+		<span class="item-number">10</span>
+		<span class="item-title">Contribuzione</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#_support">
+		<span class="item-number">11</span>
+		<span class="item-title">Support</span>
+			</a>
+    </li>			</ul>
+</div>					</div>
+	</div>
+				</div>
+					</div>
+
+		<script type="text/javascript" src="assets/jquery.js"></script>
+		<script type="text/javascript" src="assets/scrollspy.js"></script>
+		<script type="text/javascript" src="assets/sticky-kit.js"></script>
+		<script type="text/javascript" src="assets/highlight.js"></script>
+		<script type="text/javascript" src="assets/base.js"></script>
+	</body>
+</html>
