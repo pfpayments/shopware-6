@@ -9,6 +9,7 @@ use Shopware\Core\{
     Checkout\Payment\Cart\PaymentHandler\AsynchronousPaymentHandlerInterface,
     Checkout\Payment\Exception\AsyncPaymentFinalizeException,
     Checkout\Payment\Exception\AsyncPaymentProcessException,
+    Checkout\Payment\PaymentException,
     Checkout\Payment\Exception\CustomerCanceledAsyncPaymentException,
     Framework\Validation\DataBag\RequestDataBag,
     System\SalesChannel\SalesChannelContext
@@ -140,7 +141,7 @@ class PostFinanceCheckoutPaymentHandler implements AsynchronousPaymentHandlerInt
                 ]);
                 unset($_SESSION['transactionId']);
                 $this->logger->info($errorMessage);
-                throw new \Exception($transaction->getOrder()->getId());
+                throw PaymentException::customerCanceled($transaction->getOrderTransaction()->getId(), $errorMessage);
             }
         } else {
             $this->orderTransactionStateHandler->paid($transaction->getOrderTransaction()->getId(), $salesChannelContext->getContext());
