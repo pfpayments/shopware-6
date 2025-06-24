@@ -5,7 +5,7 @@
 	<template #smart-bar-header>
 		<h2>
 			{{ $tc('sw-settings.index.title') }}
-			<sw-icon name="small-arrow-medium-right" small></sw-icon>
+			<mt-icon name="small-arrow-medium-right" size="16px"></mt-icon>
 			{{ $tc('postfinancecheckout-settings.header') }}
 		</h2>
 	</template>
@@ -14,7 +14,7 @@
 	{% block postfinancecheckout_settings_actions %}
 	<template #smart-bar-actions>
 		{% block postfinancecheckout_settings_actions_save %}
-		<sw-button-process
+		<mt-button
 				v-model:value="isSaveSuccessful"
 				class="sw-settings-login-registration__save-action"
 				variant="primary"
@@ -22,7 +22,7 @@
 				:disabled="isLoading"
 				@click="onSave">
 			{{ $tc('postfinancecheckout-settings.settingForm.save') }}
-		</sw-button-process>
+		</mt-button>
 		{% endblock %}
 	</template>
 	{% endblock %}
@@ -31,7 +31,7 @@
 	<template #content>
 
 		{% block postfinancecheckout_settings_content_card %}
-		<sw-card-view>
+		<mt-card-view>
 
 			{% block postfinancecheckout_settings_content_card_channel_config %}
 			<sw-sales-channel-config v-model:value="config"
@@ -42,7 +42,7 @@
 				<template #select="{ onInput, selectedSalesChannelId, salesChannel }">
 
 					{% block postfinancecheckout_settings_content_card_channel_config_sales_channel_card %}
-					<sw-card title="Sales Channel Switch">
+					<mt-card title="Sales Channel Switch">
 
 						{% block postfinancecheckout_settings_content_card_channel_config_sales_channel_card_title %}
 						<sw-single-select
@@ -66,18 +66,19 @@
 								{% endblock %}
 
 								{% block postfinancecheckout_settings_content_card_channel_config_sales_channel_card_footer_container_button %}
-								<sw-button-process
+								<sw-button
+										variant="primary"
 										v-model:value="isSetDefaultPaymentSuccessful"
 										:isLoading="isSettingDefaultPaymentMethods"
 										@click="onSetPaymentMethodDefault">
 									{{ $tc('postfinancecheckout-settings.salesChannelCard.button.label') }}
-								</sw-button-process>
+								</sw-button>
 								{% endblock %}
 							</sw-container>
 							{% endblock %}
 						</template>
 						{% endblock %}
-					</sw-card>
+					</mt-card>
 					{% endblock %}
 				</template>
 				{% endblock %}
@@ -134,9 +135,9 @@
 			{% endblock %}
 
 			{% block postfinancecheckout_settings_content_card_loading %}
-			<sw-loader v-if="isLoading"></sw-loader>
+			<mt-loader v-if="isLoading"></mt-loader>
 			{% endblock %}
-		</sw-card-view>
+		</mt-card-view>
 		{% endblock %}
 
 	</template>

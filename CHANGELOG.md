@@ -1,3 +1,10 @@
+# 7.0.0
+- Compatibility with Shopware 6.7.0
+
+# 6.1.14
+- Disable Recreate Cart for Headless Storefront Order
+- Added the correct Exception Type to the finalize method
+
 # 6.1.13
 - Updated English documentation
 - Added French, German and Italian documentation

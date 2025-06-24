@@ -6,12 +6,21 @@
 
 	<services>
 		<service id="PostFinanceCheckoutPayment\Core\Checkout\PaymentHandler\PostFinanceCheckoutPaymentHandler">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Checkout\Cart\CustomCartPersister"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService"/>
 			<argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+			<argument type="service" id="Shopware\Core\System\SalesChannel\Context\SalesChannelContextService"/>
+            <argument type="service" id="order_transaction.repository"/>
 			<call method="setLogger">
 				<argument type="service" id="monolog.logger.postfinancecheckout_payment"/>
 			</call>
-			<tag name="shopware.payment.method.async"/>
+			<tag name="shopware.payment.method"/>
+		</service>
+
+		<service id="PostFinanceCheckoutPayment\Core\Checkout\Cart\CustomCartPersister"
+				 decorates="Shopware\Core\Checkout\Cart\CartPersister"
+				 decoration-inner-name="PostFinanceCheckoutPayment\Core\Checkout\Cart\CustomCartPersister.inner">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Checkout\Cart\CustomCartPersister.inner"/>
 		</service>
 	</services>
 

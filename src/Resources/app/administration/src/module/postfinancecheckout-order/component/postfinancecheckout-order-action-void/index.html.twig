@@ -4,21 +4,22 @@
 		  @modal-close="$emit('modal-close')">
 
 	{% block postfinancecheckout_order_action_void_amount %}
-		<sw-checkbox-field
+        {# Review if this v-model:checked="isVoid" needs to change to checked #}
+		<mt-checkbox
 				:label="$tc('postfinancecheckout-order.voidAction.confirm.message')"
-				v-model:value="isVoid">
-        </sw-checkbox-field>
+				v-model:checked="isVoid">
+        </mt-checkbox>
 	{% endblock %}
 
 	{% block postfinancecheckout_order_action_void_confirm_button %}
 	<template #modal-footer>
-		<sw-button variant="primary"
+		<mt-button variant="primary"
 				   @click="voidPayment">
 			{{ $tc('postfinancecheckout-order.refundAction.confirmButton.text') }}
-		</sw-button>
+		</mt-button>
 	</template>
 	{% endblock %}
 
-	<sw-loader v-if="isLoading"></sw-loader>
+	<mt-loader v-if="isLoading"></mt-loader>
 </sw-modal>
 {% endblock %}
