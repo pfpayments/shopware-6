@@ -45,15 +45,15 @@
 					<mt-card title="Sales Channel Switch">
 
 						{% block postfinancecheckout_settings_content_card_channel_config_sales_channel_card_title %}
-						<sw-single-select
+						<sw-entity-single-select
 								v-model:value="selectedSalesChannelId"
 								labelProperty="translated.name"
 								valueProperty="id"
 								:mapInheritance="props"
 								:isLoading="isLoading"
-								:options="salesChannel"
+								entity="sales_channel"
 								@update:value="onInput">
-						</sw-single-select>
+						</sw-entity-single-select>
 						{% endblock %}
 						{% block postfinancecheckout_settings_content_card_channel_config_sales_channel_card_footer %}
 						<template #footer>

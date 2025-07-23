@@ -77,7 +77,11 @@
 	  "successMessage": "Il tuo rimborso è andato a buon fine.",
 	  "successTitle": "Successo",
 	  "maxAvailableItemsToRefund": "Numero massimo di articoli disponibili da rimborsare",
-	  "maxAvailableAmountToRefund": "Importo massimo disponibile per il rimborso"
+	  "maxAvailableAmountToRefund": "Importo massimo disponibile per il rimborso",
+	  "refundExceedsTotalError": {
+		"title": "Errore durante la creazione del rimborso.",
+		"messageRefundAmountExceedsAvailableBalance": "LL'importo del rimborso supera il saldo disponibile."
+	  }
 	},
 	"transactionHistory": {
 	  "cardTitle": "Dettagli",

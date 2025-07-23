@@ -78,7 +78,11 @@
 	  "successMessage": "Your refund was successful.",
 	  "successTitle": "Success",
 	  "maxAvailableItemsToRefund": "Maximum available items to refund",
-	  "maxAvailableAmountToRefund": "Maximum available amount to refund"
+	  "maxAvailableAmountToRefund": "Maximum available amount to refund",
+	  "refundExceedsTotalError": {
+		"title": "Error while creating the refund.",
+		"messageRefundAmountExceedsAvailableBalance": "Refund amount exceeds available balance."
+	  }
 	},
 	"transactionHistory": {
 	  "cardTitle": "Details",

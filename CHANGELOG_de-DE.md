@@ -1,3 +1,9 @@
+# 7.0.1
+- Plugin-Versionsmetrik hinzugefügt
+- Fehlermeldung behoben, wenn der Rückerstattungsbetrag den Gesamtbetrag überschreitet
+- Fehler behoben, bei dem nur 25 Vertriebskanäle in der Dropdown-Liste angezeigt wurden
+- Fehlerhafte Protokolle entfernt
+
 # 7.0.0
 - Kompatibilität mit Shopware 6.7.0
 
