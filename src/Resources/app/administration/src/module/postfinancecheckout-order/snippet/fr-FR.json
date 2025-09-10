@@ -77,11 +77,7 @@
 	  "successMessage": "Votre remboursement a été effectué avec succès.",
 	  "successTitle": "Succès",
 	  "maxAvailableItemsToRefund": "Nombre maximum d'articles disponibles pour le remboursement",
-	  "maxAvailableAmountToRefund": "Montant maximal disponible pour le remboursement",
-	  "refundExceedsTotalError": {
-		"title": "Erreur lors de la création du remboursement.",
-		"messageRefundAmountExceedsAvailableBalance": "Le montant du remboursement dépasse le solde disponible."
-	  }
+	  "maxAvailableAmountToRefund": "Montant maximal disponible pour le remboursement"
 	},
 	"transactionHistory": {
 	  "cardTitle": "Détails",

@@ -77,11 +77,7 @@
 	  "successMessage": "Ihre Rückerstattung war erfolgreich",
 	  "successTitle": "Erfolg",
 	  "maxAvailableItemsToRefund": "Maximal Verfügbare Artikel zum Erstatten",
-	  "maxAvailableAmountToRefund": "Maximal verfügbarer Erstattungsbetrag",
-	  "refundExceedsTotalError": {
-		"title": "Fehler beim Erstellen der Rückerstattung.",
-		"messageRefundAmountExceedsAvailableBalance": "Der Rückerstattungsbetrag übersteigt das verfügbare Guthaben."
-	  }
+	  "maxAvailableAmountToRefund": "Maximal verfügbarer Erstattungsbetrag"
 	},
 	"transactionHistory": {
 	  "cardTitle": "Einzelheiten",
