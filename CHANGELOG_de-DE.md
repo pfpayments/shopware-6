@@ -1,5 +1,5 @@
-# 7.0.0
-- Kompatibilität mit Shopware 6.7.0
+# 6.1.15
+- Problem behoben, bei dem die Versandkosten nicht korrekt verarbeitet wurden
 
 # 6.1.14
 – Warenkorb neu erstellen für Headless Storefront Order deaktivieren

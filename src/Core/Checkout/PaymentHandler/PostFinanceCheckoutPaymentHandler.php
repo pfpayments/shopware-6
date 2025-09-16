@@ -4,30 +4,16 @@ namespace PostFinanceCheckoutPayment\Core\Checkout\PaymentHandler;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
-    Checkout\Order\Aggregate\OrderTransaction\OrderTransactionEntity,
     Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler,
-    Checkout\Payment\Cart\PaymentTransactionStruct,
-    Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler,
-    Checkout\Payment\Cart\PaymentHandler\PaymentHandlerType,
+    Checkout\Payment\Cart\AsyncPaymentTransactionStruct,
+    Checkout\Payment\Cart\PaymentHandler\AsynchronousPaymentHandlerInterface,
+    Checkout\Payment\Exception\AsyncPaymentFinalizeException,
+    Checkout\Payment\Exception\AsyncPaymentProcessException,
     Checkout\Payment\PaymentException,
     Checkout\Payment\Exception\CustomerCanceledAsyncPaymentException,
-    Framework\App\AppException,
-    Framework\Api\Context\SalesChannelApiSource,
-    Framework\Context,
-    Framework\DataAbstractionLayer\EntityRepository,
-    Framework\DataAbstractionLayer\Search\Criteria,
-    Framework\DataAbstractionLayer\Search\Sorting\FieldSorting,
-    Framework\Struct\Struct,
     Framework\Validation\DataBag\RequestDataBag,
-    System\SalesChannel\Context\SalesChannelContextService,
-    System\SalesChannel\Context\SalesChannelContextServiceParameters
+    System\SalesChannel\SalesChannelContext
 };
-use Shopware\Core\Framework\Util\Random;
-use PostFinanceCheckoutPayment\Core\Checkout\Cart\CustomCartPersister;
-use Shopware\Core\Checkout\Cart\Cart;
-use Shopware\Core\Checkout\Cart\CartPersister;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
-
 use Symfony\Component\{
     HttpFoundation\RedirectResponse,
     HttpFoundation\Request
@@ -41,13 +27,8 @@ use PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService;
  *
  * @package PostFinanceCheckoutPayment\Core\Checkout\PaymentHandler
  */
-class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
+class PostFinanceCheckoutPaymentHandler implements AsynchronousPaymentHandlerInterface
 {
-
-    /**
-     * @var CustomCartPersister
-     */
-    private CustomCartPersister $cartPersister;
 
     /**
      * @var \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService
@@ -63,34 +44,22 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
      */
     private $orderTransactionStateHandler;
 
-    protected SalesChannelContextService $salesChannelContextService;
-
-    protected EntityRepository $orderTransactionRepository;
-
     /**
      * PostFinanceCheckoutPaymentHandler constructor.
      *
      * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService $transactionService
      * @param \Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler $orderTransactionStateHandler
-     * @param SalesChannelContextService $salesChannelContextService
-     * @param EntityRepository $orderTransactionRepository
      */
-    public function __construct(
-        CustomCartPersister $cartPersister,
-        TransactionService $transactionService,
-        OrderTransactionStateHandler $orderTransactionStateHandler,
-        SalesChannelContextService $salesChannelContextService,
-        EntityRepository $orderTransactionRepository
-    ) {
-        $this->cartPersister = $cartPersister;
+    public function __construct(TransactionService $transactionService, OrderTransactionStateHandler $orderTransactionStateHandler)
+    {
         $this->transactionService = $transactionService;
         $this->orderTransactionStateHandler = $orderTransactionStateHandler;
-        $this->salesChannelContextService = $salesChannelContextService;
-        $this->orderTransactionRepository = $orderTransactionRepository;
     }
 
     /**
      * @param \Psr\Log\LoggerInterface $logger
+     * @internal
+     * @required
      *
      */
     public function setLogger(LoggerInterface $logger): void
@@ -104,123 +73,78 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
      *
      * A redirect to the url will be performed
      *
-     * @param \Symfony\Component\HttpFoundation\Request
-     * @param \Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct $transaction
-     * @param \Shopware\Core\Framework\Context $context
-     * @param \Shopware\Core\Framework\Struct\Struct $validateStruct
+     * @param \Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct $transaction
+     * @param \Shopware\Core\Framework\Validation\DataBag\RequestDataBag $dataBag
+     * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
     public function pay(
-        Request $request,
-        PaymentTransactionStruct $transaction,
-        Context           $context,
-        ?Struct $validateStruct
+        AsyncPaymentTransactionStruct $transaction,
+        RequestDataBag                $dataBag,
+        SalesChannelContext           $salesChannelContext
     ): RedirectResponse
     {
         try {
-            $orderTransactionId = $transaction->getOrderTransactionId();
-            $orderTransaction = $this->orderTransactionRepository->search(
-                (new Criteria([$orderTransactionId]))
-                    ->addAssociation('order'), $context
-            )->getEntities()->first();
-
-            $contextSource = $context->getSource();
-            if ($contextSource instanceof SalesChannelApiSource) {
-                $salesChannelContextId = $contextSource->getSalesChannelId();
-            }
-
-            $parameters = new SalesChannelContextServiceParameters($salesChannelContextId, $request->getSession()->get("sw-context-token", Random::getAlphanumericString(32)), originalContext: $context);
-            $salesChannelContext = $this->salesChannelContextService->get($parameters);
             $redirectUrl = $transaction->getReturnUrl();
-
-            if ($orderTransaction->getOrder()->getAmountTotal() > 0) {
+            if ($transaction->getOrder()->getAmountTotal() > 0) {
                 $transactionId = $_SESSION['transactionId'] ?? null;
                 if ($transactionId === null) {
-                    $this->transactionService->createPendingTransaction($transaction, $salesChannelContext);
+                    $this->transactionService->createPendingTransaction($salesChannelContext);
                 }
                 $redirectUrl = $this->transactionService->create($transaction, $salesChannelContext);
             }
             return new RedirectResponse($redirectUrl);
 
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             unset($_SESSION['transactionId']);
             $errorMessage = 'An error occurred during the communication with external payment gateway : ' . $e->getMessage();
             $this->logger->critical($errorMessage);
-            throw PaymentException::customerCanceled($transaction->getOrderTransaction()->getId(), $errorMessage);
+            throw new \Exception($transaction->getOrderTransaction()->getId() . ': ' . $errorMessage);
         }
     }
 
     /**
      * The finalize function will be called when the user is redirected back to shop from the payment gateway.
      *
+     * Throw a @param \Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct $transaction
      * @param \Symfony\Component\HttpFoundation\Request $request
-     * @param \Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct $transaction
-     * @param \Shopware\Core\Framework\Context $context
+     * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
      * @throws \PostFinanceCheckout\Sdk\ApiException
      * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
      * @throws \PostFinanceCheckout\Sdk\VersioningException
-     * @throws \Exception when the payment was canceled by the customer
+     * @see AsyncPaymentFinalizeException exception if an error ocurres while calling an external payment API
+     * Throw a @see CustomerCanceledAsyncPaymentException exception if the customer canceled the payment process on
+     * payment provider page
+     *
      */
     public function finalize(
-        Request                  $request,
-        PaymentTransactionStruct $transaction,
-        Context                  $context
+        AsyncPaymentTransactionStruct $transaction,
+        Request                       $request,
+        SalesChannelContext           $salesChannelContext
     ): void
     {
-        $orderTransactionId = $transaction->getOrderTransactionId();
-        $orderTransaction = $this->orderTransactionRepository->search(
-            (new Criteria([$orderTransactionId]))
-                ->addAssociation('order'), $context
-        )->getEntities()->first();
-
-        if ($orderTransaction->getOrder()->getAmountTotal() > 0) {
+        if ($transaction->getOrder()->getAmountTotal() > 0) {
             $transactionEntity = $this->transactionService->getByOrderId(
-                $orderTransaction->getOrder()->getId(),
-                $context
+                $transaction->getOrder()->getId(),
+                $salesChannelContext->getContext()
             );
 
             $postFinanceCheckoutTransaction = $this->transactionService->read(
                 $transactionEntity->getTransactionId(),
-                $transactionEntity->getSalesChannelId()
+                $salesChannelContext->getSalesChannel()->getId()
             );
 
             if (in_array($postFinanceCheckoutTransaction->getState(), [TransactionState::FAILED])) {
                 $errorMessage = strtr('Customer canceled payment for :orderId on SalesChannel :salesChannelName', [
-                    ':orderId' => $orderTransaction->getOrder()->getId(),
-                    ':salesChannelName' => $transactionEntity->getSalesChannelId(),
+                    ':orderId' => $transaction->getOrder()->getId(),
+                    ':salesChannelName' => $salesChannelContext->getSalesChannel()->getName(),
                 ]);
                 unset($_SESSION['transactionId']);
                 $this->logger->info($errorMessage);
                 throw PaymentException::customerCanceled($transaction->getOrderTransaction()->getId(), $errorMessage);
             }
         } else {
-            $this->orderTransactionStateHandler->paid($orderTransaction->getId(), $context);
-        }
-
-        $token = $request->getSession()->get('sw-context-token');
-        if ($token) {
-            $salesChannelId = $transactionEntity->getSalesChannelId();
-            $parameters = new SalesChannelContextServiceParameters($salesChannelId, $token, originalContext: $context);
-            $salesChannelContext = $this->salesChannelContextService->get($parameters);
-
-            $salesChannelContext->getContext()->addState('do-cart-delete');
-            $this->logger->info('Clearing cart with token: ' . $token);
-            $this->cartPersister->delete($salesChannelContext->getToken(), $salesChannelContext);
+            $this->orderTransactionStateHandler->paid($transaction->getOrderTransaction()->getId(), $salesChannelContext->getContext());
         }
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function supports(
-        PaymentHandlerType $type,
-        string $paymentMethodId,
-        Context $context
-        ): bool {
-        if ($type === PaymentHandlerType::RECURRING) {
-            return false;
-        }
-        return true;
-    }
-
 }

@@ -19,10 +19,9 @@
 			<call method="setContainer">
 				<argument type="service" id="service_container"/>
 			</call>
-            <!-- Removed in 6.7 -->
-            <!-- <call method="setTwig">
+            <call method="setTwig">
                 <argument type="service" id="twig"/>
-            </call> -->
+            </call>
 		</service>
 
 		<!-- Subscribers -->

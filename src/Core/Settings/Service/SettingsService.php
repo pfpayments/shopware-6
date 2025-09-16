@@ -30,6 +30,31 @@ class SettingsService {
 	public const CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED  = 'storefrontPaymentsUpdateEnabled';
 
 	/**
+	 * List of config properties whose values allowed to be empty without triggering a warning in logger.
+	 * 
+	 * This list is derived from testing of all config properties. The plugin fails only when either spaceId, userId, applicationKey and/or integration is empty.
+	 * On top of that, spaceId, userId, applicationKey are marked as "required" input fields in admin interface.
+	 * 
+	 * It is worth considering updating this list whenever a new config is introduced in settings.
+	 * If new config is optional, left empty by design and not required for transactions to work, this list should be updated to avoid false-positive warnings.
+	 * 
+	 * @var array
+	 */
+	private const ALLOWED_EMPTY_CONFIGS = [
+		// Options
+		self::CONFIG_SPACE_VIEW_ID,
+		self::CONFIG_LINE_ITEM_CONSISTENCY_ENABLED,
+		self::CONFIG_EMAIL_ENABLED,
+		
+		// Storefront Options
+		self::CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED,
+
+		// Advanced Options
+		self::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED,
+		self::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED
+	];
+
+	/**
 	 * @var \Shopware\Core\System\SystemConfig\SystemConfigService
 	 */
 	private $systemConfigService;
@@ -132,7 +157,13 @@ class SettingsService {
 			if ($property === '') {
 				continue;
 			}
-			if (!is_numeric($value) && empty($value)) {
+			// Space view id is only numeric setting which can be 0. If it is, rest of the loop is skipped.
+			if ($property === self::CONFIG_SPACE_VIEW_ID && $value === 0) {
+				$propertyValuePairs[$property] = $value;
+				continue;
+			}
+			// Check if $value is empty and is not in the list of configs which are allowed to be empty
+			if (empty($value) && !in_array($property, self::ALLOWED_EMPTY_CONFIGS, true)) {
 				$this->logger->warning(strtr('Empty value :value for settings :property.', [':property' => $property, ':value' => $value]));
 			}
 			$propertyValuePairs[$property] = $value;

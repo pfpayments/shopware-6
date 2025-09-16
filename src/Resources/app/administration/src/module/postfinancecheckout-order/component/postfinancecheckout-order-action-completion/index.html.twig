@@ -4,21 +4,21 @@
 		  @modal-close="$emit('modal-close')">
 
 	{% block postfinancecheckout_order_action_completion_amount %}
-		<mt-checkbox
+		<sw-checkbox-field
 				:label="$tc('postfinancecheckout-order.captureAction.button.text')"
-				v-model:checked="isCompletion">
-        </mt-checkbox>
+				v-model:value="isCompletion">
+        </sw-checkbox-field>
 	{% endblock %}
 
 	{% block postfinancecheckout_order_action_completion_confirm_button %}
 	<template #modal-footer>
-		<mt-button variant="primary"
+		<sw-button variant="primary"
 				   @click="completion">
 			{{ $tc('postfinancecheckout-order.refundAction.confirmButton.text') }}
-		</mt-button>
+		</sw-button>
 	</template>
 	{% endblock %}
 
-	<mt-loader v-if="isLoading"></mt-loader>
+	<sw-loader v-if="isLoading"></sw-loader>
 </sw-modal>
 {% endblock %}

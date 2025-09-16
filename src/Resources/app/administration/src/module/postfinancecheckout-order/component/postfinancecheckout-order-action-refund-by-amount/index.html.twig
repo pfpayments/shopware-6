@@ -4,23 +4,23 @@
 		  @modal-close="$emit('modal-close')">
 
 	{% block postfinancecheckout_order_action_refund_amount_by_amount %}
-		<mt-number-field
+		<sw-number-field
 		 :max="refundableAmount"
 		 :min="0"
-		 v-model="refundAmount"
+		 v-model:value="refundAmount"
 		 :label="$tc('postfinancecheckout-order.refund.refundAmount.label')"
 		 :suffix="currency">
-		</mt-number-field>
+		</sw-number-field>
 	{% endblock %}
 
 	{% block postfinancecheckout_order_action_refund_confirm_button_by_amount %}
 	<template #modal-footer>
-		<mt-button variant="primary" @click="refundByAmount()">
+		<sw-button variant="primary" @click="refundByAmount()">
 			{{ $tc('postfinancecheckout-order.refundAction.confirmButton.text') }}
-		</mt-button>
+		</sw-button>
 	</template>
 	{% endblock %}
 
-	<mt-loader v-if="isLoading"></mt-loader>
+	<sw-loader v-if="isLoading"></sw-loader>
 </sw-modal>
 {% endblock %}

@@ -1,5 +1,5 @@
-# 7.0.0
-- Compatibility with Shopware 6.7.0
+# 6.1.15
+- Fixed issue with shipping costs not being processed correctly
 
 # 6.1.14
 - Disable Recreate Cart for Headless Storefront Order

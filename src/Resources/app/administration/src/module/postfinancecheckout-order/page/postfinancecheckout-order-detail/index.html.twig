@@ -1,61 +1,61 @@
 {% block postfinancecheckout_order_detail %}
 <div class="postfinancecheckout-order-detail">
 	<div v-if="!isLoading">
-		<mt-card :title="$tc('postfinancecheckout-order.paymentDetails.cardTitle')">
+		<sw-card :title="$tc('postfinancecheckout-order.paymentDetails.cardTitle')">
 			<template #grid>
 				{% block postfinancecheckout_order_actions_section %}
-				<mt-card-section secondary slim>
+				<sw-card-section secondary slim>
 					{% block postfinancecheckout_order_transaction_refunds_action_button %}
-						<mt-button
+						<sw-button
 								variant="primary"
 								size="small"
 								:disabled="transaction.state != 'FULFILL' || refundableAmount <= 0"
 								@click="spawnModal('refundByAmount')">
 							{{ $tc('postfinancecheckout-order.buttons.label.refund') }}
-						</mt-button>
+						</sw-button>
 					{% endblock %}
 					{% block postfinancecheckout_order_transaction_completion_action_button %}
-					<mt-button
+					<sw-button
 							variant="primary"
 							size="small"
 							:disabled="transaction.state != 'AUTHORIZED' || isLoading"
 							@click="spawnModal('completion')">
 						{{ $tc('postfinancecheckout-order.buttons.label.completion') }}
-					</mt-button>
+					</sw-button>
 					{% endblock %}
 					{% block postfinancecheckout_order_transaction_void_action_button %}
-					<mt-button
+					<sw-button
 							variant="primary"
 							size="small"
 							:disabled="transaction.state != 'AUTHORIZED' || isLoading"
 							@click="spawnModal('void')">
 						{{ $tc('postfinancecheckout-order.buttons.label.void') }}
-					</mt-button>
+					</sw-button>
 					{% endblock %}
 					{% block postfinancecheckout_order_transaction_download_invoice_action_button %}
-					<mt-button
+					<sw-button
 							variant="primary"
 							size="small"
 							:disabled="transaction.state != 'FULFILL'"
 							@click="downloadInvoice()">
 						{{ $tc('postfinancecheckout-order.buttons.label.download-invoice') }}
-					</mt-button>
+					</sw-button>
 					{% endblock %}
 					{% block postfinancecheckout_order_transaction_download_packing_slip_action_button %}
-					<mt-button
+					<sw-button
 							variant="primary"
 							size="small"
 							:disabled="transaction.state != 'FULFILL'"
 							@click="downloadPackingSlip()">
 						{{ $tc('postfinancecheckout-order.buttons.label.download-packing-slip') }}
-					</mt-button>
+					</sw-button>
 					{% endblock %}
-				</mt-card-section>
+				</sw-card-section>
 				{% endblock %}
 			</template>
-		</mt-card>
+		</sw-card>
 		{% block postfinancecheckout_order_transaction_history_card %}
-		<mt-card :title="$tc('postfinancecheckout-order.transactionHistory.cardTitle')">
+		<sw-card :title="$tc('postfinancecheckout-order.transactionHistory.cardTitle')">
 			<template #grid>
 
 				{% block postfinancecheckout_order_transaction_history_grid %}
@@ -78,10 +78,10 @@
 				{% endblock %}
 			</template>
 
-		</mt-card>
+		</sw-card>
 		{% endblock %}
 		{% block postfinancecheckout_order_transaction_line_items_card %}
-        <mt-card :title="$tc('postfinancecheckout-order.lineItem.cardTitle')">
+        <sw-card :title="$tc('postfinancecheckout-order.lineItem.cardTitle')">
             <template #grid>
 
                 {% block postfinancecheckout_order_transaction_line_items_grid %}
@@ -131,10 +131,10 @@
                     </sw-data-grid>
                 {% endblock %}
             </template>
-        </mt-card>
+        </sw-card>
 		{% endblock %}
 		{% block postfinancecheckout_order_transaction_refunds_card %}
-		<mt-card :title="$tc('postfinancecheckout-order.refund.cardTitle')" v-if="transactionData.refunds.length > 0">
+		<sw-card :title="$tc('postfinancecheckout-order.refund.cardTitle')" v-if="transactionData.refunds.length > 0">
 			<template #grid>
 
 				{% block postfinancecheckout_order_transaction_refunds_grid %}
@@ -147,7 +147,7 @@
 				{% endblock %}
 			</template>
 
-		</mt-card>
+		</sw-card>
 		{% endblock %}
 		{% block postfinancecheckout_order_actions_modal_refund_partial %}
 			<postfinancecheckout-order-action-refund-partial
@@ -195,6 +195,6 @@
 		</postfinancecheckout-order-action-void>
 		{% endblock %}
 	</div>
-	<mt-loader v-if="isLoading"></mt-loader>
+	<sw-loader v-if="isLoading"></sw-loader>
 </div>
 {% endblock %}

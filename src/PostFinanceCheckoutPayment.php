@@ -3,7 +3,6 @@
 namespace PostFinanceCheckoutPayment;
 
 use Shopware\Core\{
-  	Framework\Feature,
 	Framework\Plugin,
 	Framework\Plugin\Context\ActivateContext,
 	Framework\Plugin\Context\DeactivateContext,
@@ -22,7 +21,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\DirectoryLoader;
 use Symfony\Component\DependencyInjection\Loader\GlobFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
 // expect the vendor folder on Shopware store releases
 if (file_exists(dirname(__DIR__) . '/vendor/autoload.php')) {
@@ -84,21 +82,19 @@ class PostFinanceCheckoutPayment extends Plugin {
 	{
 		parent::build($container);
 
-		$confDir = \rtrim($this->getPath(), '/') . '/Resources/config';
-		$locator = new FileLocator($confDir);
+		$locator = new FileLocator('Resources/config');
 
 		$resolver = new LoaderResolver([
-		  new YamlFileLoader($container, $locator),
-		  new XmlFileLoader($container, $locator),
-		  new GlobFileLoader($container, $locator),
-		  new DirectoryLoader($container, $locator),
+			new YamlFileLoader($container, $locator),
+			new GlobFileLoader($container, $locator),
+			new DirectoryLoader($container, $locator),
 		]);
 
 		$configLoader = new DelegatingLoader($resolver);
 
-		$configLoader->load($confDir . '/{packages}/*.yaml', 'glob');
+		$confDir = \rtrim($this->getPath(), '/') . '/Resources/config';
 
-		$configLoader->load('services/core/checkout.xml');
+		$configLoader->load($confDir . '/{packages}/*.yaml', 'glob');
 	}
 
 	public function enrichPrivileges(): array

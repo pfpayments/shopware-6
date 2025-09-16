@@ -47,9 +47,7 @@ Component.register('postfinancecheckout-order-action-refund-partial', {
         createdComponent() {
             this.isLoading = false;
             this.currency = this.transactionData.transactions[0].currency;
-            if (!this.refundAmount) {
-                this.refundAmount = this.$parent.$parent.itemRefundableAmount;
-            }
+            this.refundAmount = this.$parent.$parent.itemRefundableAmount;
         },
 
 		createPartialRefund(itemUniqueId) {

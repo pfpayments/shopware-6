@@ -1,4 +1,4 @@
-<mt-card class="mt-card"
+<sw-card class="sw-card"
 		 :title="$tc('postfinancecheckout-settings.settingForm.advancedOptions.cardTitle')">
 	<sw-container>
 		<div v-if="actualConfigData" class="postfinancecheckout-settings-advanced-options-fields">
@@ -7,16 +7,16 @@
 					:inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null'][CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED]"
 					:customInheritationCheckFunction="checkBoolFieldInheritance">
 				<template #content="props">
-					<mt-switch
+					<sw-switch-field
 							:name="CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED"
 							bordered
 							:mapInheritance="props"
 							:label="$tc('postfinancecheckout-settings.settingForm.advancedOptions.webhooksUpdateEnabled.label')"
 							:helpText="$tc('postfinancecheckout-settings.settingForm.advancedOptions.webhooksUpdateEnabled.tooltipText')"
 							:disabled="props.isInherited"
-							:checked="props.currentValue"
-							@update:checked="props.updateCurrentValue">
-					</mt-switch>
+							:value="props.currentValue"
+							@update:value="props.updateCurrentValue">
+					</sw-switch-field>
 				</template>
 			</sw-inherit-wrapper>
 
@@ -25,19 +25,19 @@
 					:inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null'][CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED]"
 					:customInheritationCheckFunction="checkBoolFieldInheritance">
 				<template #content="props">
-					<mt-switch
+					<sw-switch-field
 							:name="CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED"
 							bordered
 							:mapInheritance="props"
 							:label="$tc('postfinancecheckout-settings.settingForm.advancedOptions.paymentsUpdateEnabled.label')"
 							:helpText="$tc('postfinancecheckout-settings.settingForm.advancedOptions.paymentsUpdateEnabled.tooltipText')"
 							:disabled="props.isInherited"
-							:checked="props.currentValue"
-							@update:checked="props.updateCurrentValue">
-					</mt-switch>
+							:value="props.currentValue"
+							@update:value="props.updateCurrentValue">
+					</sw-switch-field>
 				</template>
 			</sw-inherit-wrapper>
 		</div>
 	</sw-container>
-</mt-card>
+</sw-card>
 

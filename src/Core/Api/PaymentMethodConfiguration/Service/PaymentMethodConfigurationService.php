@@ -499,7 +499,6 @@ class PaymentMethodConfigurationService {
 			'afterOrderEnabled'  => true,
 			'active'             => true,
 			'translations'       => $this->getPaymentMethodConfigurationTranslation($paymentMethodConfiguration, $context),
-			'technicalName'		 => $paymentMethodConfiguration->getName(),
 		];
 
 		$data['mediaId'] = $this->upsertMedia($id, $paymentMethodConfiguration, $context);

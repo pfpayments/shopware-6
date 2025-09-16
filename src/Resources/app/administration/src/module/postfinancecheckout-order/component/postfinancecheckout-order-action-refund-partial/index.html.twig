@@ -4,13 +4,13 @@
 		  @modal-close="$emit('modal-close')">
 
 	{% block postfinancecheckout_order_action_refund_amount_partial %}
-		<mt-number-field
+		<sw-number-field
 		 :max="this.$parent.$parent.itemRefundableAmount"
 		 :min="0.00"
-		 v-model="refundAmount"
+		 v-model:value="refundAmount"
 		 :label="$tc('postfinancecheckout-order.refund.refundAmount.label')"
 		 :suffix="currency">
-		</mt-number-field>
+		</sw-number-field>
 
 		<div>
 			{{ $tc('postfinancecheckout-order.refundAction.maxAvailableAmountToRefund') }}:
@@ -20,12 +20,12 @@
 
 	{% block postfinancecheckout_order_action_refund_confirm_button_partial %}
 	<template #modal-footer>
-		<mt-button variant="primary" @click="createPartialRefund(this.$parent.$parent.currentLineItem)">
+		<sw-button variant="primary" @click="createPartialRefund(this.$parent.$parent.currentLineItem)">
 			{{ $tc('postfinancecheckout-order.refundAction.confirmButton.text') }}
-		</mt-button>
+		</sw-button>
 	</template>
 	{% endblock %}
 
-	<mt-loader v-if="isLoading"></mt-loader>
+	<sw-loader v-if="isLoading"></sw-loader>
 </sw-modal>
 {% endblock %}

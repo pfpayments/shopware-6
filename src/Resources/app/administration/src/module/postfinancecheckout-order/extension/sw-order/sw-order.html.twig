@@ -1,7 +1,6 @@
 {% block sw_order_detail_content_tabs_general %}
     {% parent %}
 
-{# sw-tabs-item will dissappear. See: https://github.com/shopware/shopware/blob/trunk/UPGRADE-6.7.md#sw-tabs-is-removed #}
 <sw-tabs-item v-if="isPostFinanceCheckoutPayment"
 			  :route="{ name: 'postfinancecheckout.order.detail', params: { id: $route.params.id } }"
 			  :title="$tc('postfinancecheckout-order.header')">

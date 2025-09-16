@@ -1,5 +1,5 @@
 {% block postfinancecheckout_settings_content_card_channel_config_options %}
-	<mt-card class="mt-card"
+	<sw-card class="sw-card"
 			 :title="$tc('postfinancecheckout-settings.settingForm.options.cardTitle')">
 
 		{% block postfinancecheckout_settings_content_card_channel_config_credentials_card_container %}
@@ -14,15 +14,15 @@
 									:inheritedValue="selectedSalesChannelId === null ? null : allConfigs['null'][CONFIG_SPACE_VIEW_ID]"
 									:customInheritationCheckFunction="checkNumberFieldInheritance">
 								<template #content="props">
-									<mt-number-field
+									<sw-number-field
 											:name="CONFIG_SPACE_VIEW_ID"
 											:mapInheritance="props"
 											:label="$tc('postfinancecheckout-settings.settingForm.options.spaceViewId.label')"
 											:helpText="$tc('postfinancecheckout-settings.settingForm.options.spaceViewId.tooltipText')"
 											:disabled="props.isInherited"
-											:model-value="props.currentValue"
-											@update:model-value="props.updateCurrentValue">
-									</mt-number-field>
+											:value="props.currentValue"
+											@update:value="props.updateCurrentValue">
+									</sw-number-field>
 								</template>
 							</sw-inherit-wrapper>
 						{% endblock %}
@@ -55,16 +55,16 @@
 									:inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null'][CONFIG_LINE_ITEM_CONSISTENCY_ENABLED]"
 									:customInheritationCheckFunction="checkBoolFieldInheritance">
 								<template #content="props">
-									<mt-switch
+									<sw-switch-field
 											:name="CONFIG_LINE_ITEM_CONSISTENCY_ENABLED"
 											bordered
 											:mapInheritance="props"
 											:label="$tc('postfinancecheckout-settings.settingForm.options.lineItemConsistencyEnabled.label')"
 											:helpText="$tc('postfinancecheckout-settings.settingForm.options.lineItemConsistencyEnabled.tooltipText')"
 											:disabled="props.isInherited"
-											:checked="props.currentValue"
-											@update:checked="props.updateCurrentValue">
-									</mt-switch>
+											:value="props.currentValue"
+											@update:value="props.updateCurrentValue">
+									</sw-switch-field>
 								</template>
 							</sw-inherit-wrapper>
 						{% endblock %}
@@ -75,16 +75,16 @@
 									:inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null'][CONFIG_EMAIL_ENABLED]"
 									:customInheritationCheckFunction="checkBoolFieldInheritance">
 								<template #content="props">
-									<mt-switch
+									<sw-switch-field
 											:name="CONFIG_EMAIL_ENABLED"
 											bordered
 											:mapInheritance="props"
 											:label="$tc('postfinancecheckout-settings.settingForm.options.emailEnabled.label')"
 											:helpText="$tc('postfinancecheckout-settings.settingForm.options.emailEnabled.tooltipText')"
 											:disabled="props.isInherited"
-											:checked="props.currentValue"
-											@update:checked="props.updateCurrentValue">
-									</mt-switch>
+											:value="props.currentValue"
+											@update:value="props.updateCurrentValue">
+									</sw-switch-field>
 								</template>
 							</sw-inherit-wrapper>
 						{% endblock %}
@@ -92,6 +92,6 @@
 				{% endblock %}
 			</sw-container>
 		{% endblock %}
-	</mt-card>
+	</sw-card>
 
 {% endblock %}

@@ -8,7 +8,7 @@ use Shopware\Core\{
     Checkout\Cart\CartException,
     Checkout\Cart\LineItem\LineItem,
     Checkout\Order\OrderEntity,
-    Checkout\Payment\Cart\PaymentTransactionStruct,
+    Checkout\Payment\Cart\AsyncPaymentTransactionStruct,
     Framework\Context,
     Framework\DataAbstractionLayer\Search\Criteria,
     Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
@@ -115,7 +115,7 @@ class TransactionService
      *
      * A redirect to the url will be performed
      *
-     * @param \Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct $transaction
+     * @param \Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct $transaction
      * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
      *
      * @return string
@@ -124,14 +124,10 @@ class TransactionService
      * @throws \PostFinanceCheckout\Sdk\VersioningException
      */
     public function create(
-        PaymentTransactionStruct $transaction,
-        SalesChannelContext      $salesChannelContext
+        AsyncPaymentTransactionStruct $transaction,
+        SalesChannelContext           $salesChannelContext
     ): string
     {
-        $criteria = new Criteria([$transaction->getOrderTransactionId()]);
-        $criteria->addAssociation('order');
-        $orderTransaction = $this->container->get('order_transaction.repository')->search($criteria, $salesChannelContext->getContext())->first();
-
         $salesChannelId = $salesChannelContext->getSalesChannel()->getId();
         $settings = $this->settingsService->getSettings($salesChannelId);
         $apiClient = $settings->getApiClient();
@@ -169,7 +165,7 @@ class TransactionService
 
         $redirectUrl = $this->container->get('router')->generate(
             'frontend.postfinancecheckout.checkout.pay',
-            ['orderId' => $orderTransaction->getOrder()->getId(),],
+            ['orderId' => $transaction->getOrder()->getId(),],
             UrlGeneratorInterface::ABSOLUTE_URL
         );
 
@@ -181,8 +177,8 @@ class TransactionService
         $this->upsert(
             $createdTransaction,
             $salesChannelContext->getContext(),
-            $orderTransaction->getPaymentMethodId(),
-            $orderTransaction->getOrder()->getSalesChannelId()
+            $transaction->getOrderTransaction()->getPaymentMethodId(),
+            $transaction->getOrder()->getSalesChannelId()
         );
         $_SESSION['transactionId'] = null;
         $_SESSION['arrayOfPossibleMethods'] = null;
@@ -190,26 +186,26 @@ class TransactionService
         $_SESSION['currencyCheck'] = null;
 
 
-        $this->holdDelivery($orderTransaction->getOrder()->getId(), $salesChannelContext->getContext());
+        $this->holdDelivery($transaction->getOrder()->getId(), $salesChannelContext->getContext());
 
         return $redirectUrl;
     }
 
     /**
-     * @param \Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct $transaction
+     * @param \Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct $transaction
      * @param \Shopware\Core\Framework\Context $context
      * @param int $postfinancecheckoutTransactionId
      * @param int $spaceId
      */
     protected function addPostFinanceCheckoutTransactionId(
-        PaymentTransactionStruct $transaction,
+        AsyncPaymentTransactionStruct $transaction,
         Context                       $context,
         int                           $postfinancecheckoutTransactionId,
         int                           $spaceId
     ): void
     {
         $data = [
-            'id' => $transaction->getOrderTransactionId(),
+            'id' => $transaction->getOrderTransaction()->getId(),
             'customFields' => [
                 TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_TRANSACTION_ID => $postfinancecheckoutTransactionId,
                 TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_SPACE_ID => $spaceId,
@@ -347,7 +343,7 @@ class TransactionService
      *
      * @return \Shopware\Core\Checkout\Order\OrderEntity
      */
-    protected function getOrderEntity(string $orderId, Context $context): OrderEntity
+    private function getOrderEntity(string $orderId, Context $context): OrderEntity
     {
         try {
             $criteria = (new Criteria([$orderId]))->addAssociations(['deliveries']);

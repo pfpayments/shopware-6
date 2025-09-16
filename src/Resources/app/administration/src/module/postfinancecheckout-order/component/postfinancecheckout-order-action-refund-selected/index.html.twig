@@ -5,12 +5,12 @@
 
 	{% block postfinancecheckout_order_action_refund_confirm_button_selected %}
 	<template #modal-footer>
-		<mt-button variant="primary" @click="refundSelected()">
+		<sw-button variant="primary" @click="refundSelected()">
 			{{ $tc('postfinancecheckout-order.refundAction.confirmButton.text') }}
-		</mt-button>
+		</sw-button>
 	</template>
 	{% endblock %}
 
-	<mt-loader v-if="isLoading"></mt-loader>
+	<sw-loader v-if="isLoading"></sw-loader>
 </sw-modal>
 {% endblock %}

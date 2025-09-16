@@ -65,6 +65,18 @@ Component.register('postfinancecheckout-settings', {
         };
     },
 
+    created() {
+        // Registers a listener for the 'check-api-connection-event'.
+        // Triggered when this event is emitted.
+        this.$on('check-api-connection-event', this.onCheckApiConnection);
+    },
+
+    beforeDestroy() {
+        // Removes the listener for the 'check-api-connection-event'
+        // before the component is destroyed to prevent memory leaks.
+        this.$off('check-api-connection-event', this.onCheckApiConnection);
+    },
+
     watch: {
         config: {
             handler(configData) {
