@@ -115,7 +115,11 @@ class RefundController extends AbstractController
         $apiClient = $settings->getApiClient();
         
         $transaction = $apiClient->getTransactionService()->read($settings->getSpaceId(), $transactionId);
-        $this->refundService->createRefundByAmount($transaction, $refundableAmount, $context);
+        $refund = $this->refundService->createRefundByAmount($transaction, $refundableAmount, $context);
+
+        if ($refund === null) {
+          return new Response('refundExceedsAmount', Response::HTTP_BAD_REQUEST);
+        }
         
         return new Response(null, Response::HTTP_NO_CONTENT);
     }

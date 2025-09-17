@@ -57,5 +57,5 @@ interface WebhookStrategyActionsInterface {
 	 * @param Transaction|TransactionInvoiceState|Refund|mixed $transaction The transaction object from which the order ID should be extracted.
 	 * @return string The order ID as a string.
 	 */
-	public function getOrderIdByTransaction($transaction): string;
+	public function getOrderIdByTransaction(Transaction $transaction): string;
 }

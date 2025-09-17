@@ -5,7 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<meta name="keywords" value="PostFinance Checkout, Shopware, Shopware Plugin, Payment, Payment Integration, Documentation"><meta name="description" value="The documentation for the Shopware 6 plugin that enables processing payments with PostFinance Checkout.">		
-		<link rel="canonical" href="https://plugin-documentation.wallee.com/wallee-payment/shopware-6/master/PostFinanceCheckoutPayment/docs/fr/documentation.html" />
+		<link rel="canonical" href="@WalleeCanonicalPath(https://plugin-documentation.wallee.com/wallee-payment, PostFinanceCheckoutPayment/docs/fr/documentation.html)" />
 		<title>Wallee Payment Plugin pour Shopware 6</title>
 		<link href="assets/monokai-sublime.css" rel="stylesheet" />
 		<link href="assets/base.css" rel="stylesheet" />
@@ -23,7 +23,7 @@
 		</a>
 	</li>
 	<li>
-		<a href="https://github.com/pfpayments/shopware-6/releases/tag/7.1.0/">
+		<a href="@WalleeReleasePath()">
 			Source
 		</a>
 	</li>
@@ -50,7 +50,7 @@
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p><strong>Shopware Version</strong>: 6.5.x or 6.6.x (voir <a href="#compatibility">tableau de compatibilité</a>).</p>
+<p><strong>Shopware Version</strong>: 6.5.x, 6.6.x or 6.7.x (voir <a href="#compatibility">tableau de compatibilité</a>).</p>
 </div><div class="paragraph">
 <p><strong>PHP</strong>: Version minimale requise pour votre installation Shopware (e.g., 7.4+).</p>
 </div><div class="paragraph">
@@ -71,22 +71,28 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Shopware Version</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plugin Version</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>PHP Version</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Support Until</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Version Shopware</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Version du Plugin</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Version PHP</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Support jusqu’à</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6.7.x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">7.x.x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 et 8.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">En cours</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">6.6.x</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">6.x.x</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 and 8.3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">En cours</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 et 8.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Décembre 2025</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">6.5.x - Deprecated</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6.5.x – Obsolète</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">5.x.x</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 and 8.3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">October 2024</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 et 8.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Octobre 2024</p></td>
 </tr>
 </tbody>
 </table>					</div>
@@ -705,10 +711,19 @@ La tokenisation n&#8217;est pas disponible pour les paiements par les invités.
 </tr>
 </table>
 </div>					</div>
+</div>					<div class="section" id="_paiements_récurrents">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.7</span>Paiements récurrents					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>Shopware fournit le package "Shopware Commercial" avec des fonctionnalités supplémentaires, entre autres, les abonnements. Ce plugin prend en charge les paiements adaptés aux abonnements. Tant que le connecteur de la méthode de paiement prend en charge la tokenisation, il peut être utilisé pour les abonnements. Le paiement récurrent est entièrement géré par le plugin Shopware Commercial. Veuillez vous référer à leur documentation pour plus d&#8217;informations.</p>
+</div>					</div>
 </div>					<div class="section" id="_caractéristiques_pricinpales">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.7</span>Caractéristiques Pricinpales					</h2>
+			<span class="title-number">8.8</span>Caractéristiques Pricinpales					</h2>
 	</div>
 	<div class="section-body">
 					<div class="ulist">
@@ -725,12 +740,15 @@ La tokenisation n&#8217;est pas disponible pour les paiements par les invités.
 <li>
 <p><strong>Mises à jour automatiques</strong>: Les méthodes de paiement se synchronisent dynamiquement via l&#8217;API Wallee.</p>
 </li>
+<li>
+<p><strong>Paiements récurrents</strong>: Effectuez des paiements récurrents avec les abonnements (Shopware Commercial) et PostFinanceCheckout.</p>
+</li>
 </ul>
 </div>					</div>
 </div>					<div class="section" id="_troubleshooting">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.8</span>Troubleshooting					</h2>
+			<span class="title-number">8.9</span>Troubleshooting					</h2>
 	</div>
 	<div class="section-body">
 					<div class="ulist">
@@ -761,7 +779,7 @@ La tokenisation n&#8217;est pas disponible pour les paiements par les invités.
 </div>					<div class="section" id="_faqs">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.9</span>FAQs					</h2>
+			<span class="title-number">8.10</span>FAQs					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -954,18 +972,23 @@ A: Oui, le plugin prend en charge les portefeuilles comme Apple Pay.</p>
 		<span class="item-title">Tokenisation</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
-	<a href="#_caractéristiques_pricinpales">
+	<a href="#_paiements_récurrents">
 		<span class="item-number">8.7</span>
+		<span class="item-title">Paiements récurrents</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_caractéristiques_pricinpales">
+		<span class="item-number">8.8</span>
 		<span class="item-title">Caractéristiques Pricinpales</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_troubleshooting">
-		<span class="item-number">8.8</span>
+		<span class="item-number">8.9</span>
 		<span class="item-title">Troubleshooting</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_faqs">
-		<span class="item-number">8.9</span>
+		<span class="item-number">8.10</span>
 		<span class="item-title">FAQs</span>
 			</a>
     </li>    		    	</ul>

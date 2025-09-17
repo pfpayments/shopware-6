@@ -8,10 +8,14 @@ use Shopware\Core\{Checkout\Cart\Tax\Struct\CalculatedTaxCollection,
     Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity,
     Checkout\Customer\CustomerEntity,
     Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity,
-    Checkout\Payment\Cart\AsyncPaymentTransactionStruct,
+    Checkout\Order\OrderEntity,
+    Checkout\Payment\Cart\PaymentTransactionStruct,
     Framework\DataAbstractionLayer\Search\Criteria,
     System\SalesChannel\SalesChannelContext
 };
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use PostFinanceCheckout\Sdk\{Model\AddressCreate,
@@ -36,6 +40,10 @@ use PostFinanceCheckoutPayment\Core\{Api\PaymentMethodConfiguration\Entity\Payme
     Util\Payload\CustomProducts\CustomProductsLineItemTypes
 };
 
+use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\System\Tax\TaxEntity;
+
 /**
  * Class TransactionPayload
  *
@@ -48,6 +56,7 @@ class TransactionPayload extends AbstractPayload
 
     public const ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_SPACE_ID = 'postfinancecheckout_space_id';
     public const ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_TRANSACTION_ID = 'postfinancecheckout_transaction_id';
+    public const ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_TOKEN = 'postfinancecheckout_token';
 
     public const POSTFINANCECHECKOUT_METADATA_SALES_CHANNEL_ID = 'salesChannelId';
     public const POSTFINANCECHECKOUT_METADATA_ORDER_ID = 'orderId';
@@ -61,7 +70,7 @@ class TransactionPayload extends AbstractPayload
     protected $salesChannelContext;
 
     /**
-     * @var \Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct
+     * @var \Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct
      */
     protected $transaction;
 
@@ -85,6 +94,10 @@ class TransactionPayload extends AbstractPayload
      */
     protected $translator;
 
+    protected EntityRepository $orderTransactionRepository;
+
+    protected OrderEntity $order;
+
     /**
      * TransactionPayload constructor.
      *
@@ -92,14 +105,14 @@ class TransactionPayload extends AbstractPayload
      * @param \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider $localeCodeProvider
      * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
      * @param \PostFinanceCheckoutPayment\Core\Settings\Struct\Settings $settings
-     * @param \Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct $transaction
+     * @param \Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct $transaction
      */
     public function __construct(
         ContainerInterface            $container,
         LocaleCodeProvider            $localeCodeProvider,
         SalesChannelContext           $salesChannelContext,
         Settings                      $settings,
-        AsyncPaymentTransactionStruct $transaction
+        PaymentTransactionStruct $transaction
     )
     {
         $this->localeCodeProvider = $localeCodeProvider;
@@ -108,6 +121,23 @@ class TransactionPayload extends AbstractPayload
         $this->transaction = $transaction;
         $this->container = $container;
         $this->translator = $this->container->get('translator');
+        $this->orderTransactionRepository = $this->container->get('order_transaction.repository');
+
+        $criteria = (new Criteria());
+        $criteria->addFilter(new EqualsFilter('id', $this->transaction->getOrderTransactionId()));
+
+        $orders = $this->orderTransactionRepository->search($criteria, $this->salesChannelContext->getContext())->getEntities();
+        $orderId = $orders->first()->getOrderId();
+
+        $criteria = new Criteria([$orderId]);
+        $criteria
+            ->addAssociation('lineItems')
+            ->addAssociation('orderCustomer')
+            ->addAssociation('transactions')
+            ->addAssociation('currency')
+            ;
+
+        $this->order = $this->container->get('order.repository')->search($criteria, $this->salesChannelContext->getContext())->getEntities()->first();
     }
 
     /**
@@ -118,12 +148,20 @@ class TransactionPayload extends AbstractPayload
      */
     public function get(int $version): TransactionPending
     {
-        $customer = $this->salesChannelContext->getCustomer();
+        $customerId = $this->order->getOrderCustomer()->getCustomerId();
+        $criteria = new Criteria([$customerId]);
+        $criteria->addAssociation('activeBillingAddress')
+            ->addAssociation('activeShippingAddress')
+            ->addAssociation('activeShippingAddress')
+            ->addAssociation('defaultBillingAddress')
+            ->addAssociation('defaultShippingAddress')
+            ->addAssociation('salutation');
+        $customer = $this->container->get('customer.repository')->search($criteria, $this->salesChannelContext->getContext())->getEntities()->first();
 
         $lineItems = $this->getLineItems();
+
         $billingAddress = $this->getAddressPayload($customer, $customer->getActiveBillingAddress());
         $shippingAddress = $this->getAddressPayload($customer, $customer->getActiveShippingAddress(), false);
-
 
         $customerId = null;
         $customerName = null;
@@ -137,14 +175,14 @@ class TransactionPayload extends AbstractPayload
         }
 
         $transactionData = [
-            'currency' => $this->salesChannelContext->getCurrency()->getIsoCode(),
-            'customer_email_address' => $billingAddress->getEmailAddress(),
+            'currency' => $this->order->getCurrency()->getIsoCode(),
+            'customer_email_address' => $customer->getEmail(),
             'customer_id' => $customerId,
             'language' => $this->localeCodeProvider->getLocaleCodeFromContext($this->salesChannelContext->getContext()) ?? null,
-            'merchant_reference' => $this->fixLength($this->transaction->getOrder()->getOrderNumber(), 100),
+            'merchant_reference' => $this->fixLength($this->order->getOrderNumber(), 100),
             'meta_data' => [
-                self::POSTFINANCECHECKOUT_METADATA_ORDER_ID => $this->transaction->getOrder()->getId(),
-                self::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID => $this->transaction->getOrderTransaction()->getId(),
+                self::POSTFINANCECHECKOUT_METADATA_ORDER_ID => $this->order->getId(),
+                self::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID => $this->order->getTransactions()->first()->getId(),
                 self::POSTFINANCECHECKOUT_METADATA_SALES_CHANNEL_ID => $this->salesChannelContext->getSalesChannel()->getId(),
                 self::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME => $customerName,
             ],
@@ -161,8 +199,8 @@ class TransactionPayload extends AbstractPayload
             $transactionData['meta_data']['additionalAddress2'] = $additionalAddress2;
         }
 
-        if (!empty($this->transaction->getOrder()->getCustomerComment())) {
-            $transactionData['meta_data']['customer_comment'] = $this->transaction->getOrder()->getCustomerComment();
+        if (!empty($this->order->getCustomerComment())) {
+            $transactionData['meta_data']['customer_comment'] = $this->order->getCustomerComment();
         }
 
         $vatIds = $customer->getVatIds();
@@ -198,7 +236,7 @@ class TransactionPayload extends AbstractPayload
         $transactionPayload->setAllowedPaymentMethodConfigurations([$paymentConfiguration->getPaymentMethodConfigurationId()]);
 
         $successUrl = $this->transaction->getReturnUrl() . '&status=paid';
-        $failedUrl = $this->getFailUrl($this->transaction->getOrder()->getId()) . '&status=fail';
+        $failedUrl = $this->getFailUrl($this->order->getId()) . '&status=fail';
         $transactionPayload->setSuccessUrl($successUrl)
             ->setFailedUrl($failedUrl);
 
@@ -219,7 +257,7 @@ class TransactionPayload extends AbstractPayload
     protected function getLineItems(): array
     {
         $lineItems = [];
-        $items = $this->transaction->getOrder()->getLineItems();
+        $items = $this->order->getLineItems() ?? [];
 
         foreach ($items as $shopLineItem) {
             if ($this->shouldSkipLineItem($shopLineItem)) {
@@ -307,27 +345,90 @@ class TransactionPayload extends AbstractPayload
     protected function addDiscountLineItem($discount, array &$lineItems): void
     {
         $calculatedPrice = $discount->getPrice();
-        $calculatedTaxesCollection = $calculatedPrice->getCalculatedTaxes();
+        $discountName = $discount->getLabel() ?? 'Unnamed';
+        $definition = $discount->getPriceDefinition();
 
-        foreach ($calculatedTaxesCollection as $calculatedTax) {
-            $rate = $calculatedTax->getTaxRate();
-            $lineItem = new LineItemCreate();
-            $amount = $this->calculateDiscountAmount($calculatedTax);
+        if ($this->order->getTaxStatus() === 'net' || $definition instanceof \Shopware\Core\Checkout\Cart\Price\Struct\AbsolutePriceDefinition) {
+            $calculatedTaxesCollection = $calculatedPrice->getCalculatedTaxes();
+            foreach ($calculatedTaxesCollection as $calculatedTax) {
+                $rate = $calculatedTax->getTaxRate();
+                $amount = $this->calculateDiscountAmount($calculatedTax);
 
-            $discountName = $discount->getLabel();
-            $lineItem->setAmountIncludingTax($amount)
-              ->setName(sprintf('DISCOUNT: %s (%s%% tax)', $discount->getLabel(), $rate))
-              ->setQuantity(1)
-              ->setShippingRequired(false)
-              ->setSku('sku-discount-' . $rate . '-' . $discountName, 200)
-              ->setType(LineItemType::DISCOUNT)
-              ->setUniqueId('coupon-sku-discount-' . $rate . '-' . $rate . '-' . $discountName);
+                $lineItems[] = $this->createDiscountLineItem($discountName, $amount, $rate);
+            }
+        } else {
+            $taxRules = $calculatedPrice->getTaxRules();
 
-            $taxRate = new TaxCreate(['title' => 'Discount Tax: ' . $rate, 'rate' => $rate]);
-            $lineItem->setTaxes([$taxRate]);
-
-            $lineItems[] = $lineItem;
+            if ($taxRules && $taxRules->count() > 0) {
+                foreach ($taxRules as $taxRule) {
+                    $rate = $taxRule->getTaxRate();
+                    $amount = $calculatedPrice->getTotalPrice();
+                    $lineItems[] = $this->createDiscountLineItem($discountName, $amount, $rate);
+                }
+            } else {
+                $rate = $this->getDefaultTaxRate();
+                $amount = $calculatedPrice->getTotalPrice();
+                $lineItems[] = $this->createDiscountLineItem($discountName, $amount, $rate);
+            }
         }
+    }
+
+    /**
+     * @param string $discountName
+     * @param float $amount
+     * @param float $rate
+     * @return LineItemCreate
+     */
+    private function createDiscountLineItem(string $discountName, float $amount, float $rate): LineItemCreate
+    {
+        $lineItem = new LineItemCreate();
+
+        $discountSkuName = 'sku-discount-' . $rate . '-' . $discountName;
+        $discountTitle = sprintf('DISCOUNT: %s (%s%% tax)', $discountName, $rate);
+        if ($this->order->getTaxStatus() === 'tax-free') {
+            $discountSkuName = 'sku-discount-' . $discountName;
+            $discountTitle = sprintf('DISCOUNT: %s', $discountName);
+        }
+
+        $lineItem->setAmountIncludingTax($amount)
+            ->setName($discountTitle)
+            ->setQuantity(1)
+            ->setShippingRequired(false)
+            ->setSku($discountSkuName, 200)
+            ->setType(LineItemType::DISCOUNT)
+            ->setUniqueId('coupon-' . $discountSkuName);
+
+        $taxRate = new TaxCreate([
+            'title' => 'Discount Tax: ' . $rate,
+            'rate' => $rate,
+        ]);
+
+        if ($this->order->getTaxStatus() !== 'tax-free') {
+            $lineItem->setTaxes([$taxRate]);
+        }
+
+        return $lineItem;
+    }
+
+    /**
+     * @return float
+     */
+    private function getDefaultTaxRate(): float
+    {
+        /** @var SystemConfigService $systemConfigService */
+        $systemConfigService = $this->container->get(SystemConfigService::class);
+        $taxId = $systemConfigService->get('core.tax.defaultTaxRate');
+
+        if (!$taxId || !is_string($taxId)) {
+            return 21.0;
+        }
+
+        $criteria = new Criteria([$taxId]);
+        /** @var TaxRepository $taxRepository */
+        $taxRepository = $this->container->get('tax.repository');
+        $tax = $taxRepository->search($criteria, Context::createDefaultContext())->get($taxId);
+
+        return $tax instanceof TaxEntity ? $tax->getTaxRate() : 21.0;
     }
 
     /**
@@ -336,7 +437,7 @@ class TransactionPayload extends AbstractPayload
     protected function calculateDiscountAmount($calculatedTax): float
     {
         $amount = self::round($calculatedTax->getPrice());
-        if ($this->transaction->getOrder()->getTaxStatus() === 'net') {
+        if ($this->order->getTaxStatus() === 'net') {
             $amount = self::round($amount + $calculatedTax->getTax());
         }
         return $amount;
@@ -357,9 +458,7 @@ class TransactionPayload extends AbstractPayload
      */
     protected function addOptionalLineItems(array &$lineItems): void
     {
-        $shippingCosts = $this->transaction->getOrder()->getShippingCosts();
-
-        if ($shippingCosts && $this->transaction->getOrder()->getShippingTotal() > 0) {
+        if ($this->order->getShippingCosts() && $this->order->getShippingTotal() > 0) {
             if ($shippingLineItem = $this->getShippingLineItem()) {
                 $lineItems[] = $shippingLineItem;
             }
@@ -381,7 +480,7 @@ class TransactionPayload extends AbstractPayload
     protected function getCustomProductOptionLabel(string $lineItemParentId): string
     {
         $label = '';
-        foreach ($this->transaction->getOrder()->getLineItems() as $shopLineItem) {
+        foreach ($this->order->getLineItems() as $shopLineItem) {
             if ($shopLineItem->getParentId() === $lineItemParentId && $shopLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_PRODUCT) {
                 $label = $shopLineItem->getLabel();
                 break;
@@ -406,10 +505,11 @@ class TransactionPayload extends AbstractPayload
             $sku = $payLoad['productNumber'];
         }
         $sku = $this->fixLength($sku, 200);
+
         $amount = $shopLineItem->getTotalPrice() ? self::round($shopLineItem->getTotalPrice()) : 0;
 
         //include Tax Excluded for Net Tax display customer group
-        if ($this->transaction->getOrder()->getTaxStatus() === 'net') {
+        if ($this->order->getTaxStatus() === 'net') {
             $amount = self::round($amount + $shopLineItem->getPrice()->getCalculatedTaxes()->getAmount());
         }
 
@@ -445,7 +545,9 @@ class TransactionPayload extends AbstractPayload
         }
 
         if (!empty($taxes)) {
-            $lineItem->setTaxes($taxes);
+            if ($this->order->getTaxStatus() !== 'tax-free') {
+                $lineItem->setTaxes($taxes);
+            }
         }
 
         if ($shopLineItem->getTotalPrice() >= 0) {
@@ -521,30 +623,33 @@ class TransactionPayload extends AbstractPayload
     {
         try {
 
-            $amount = $this->transaction->getOrder()->getShippingTotal();
+            $amount = $this->order->getShippingTotal();
             $amount = self::round($amount);
 
             if ($amount > 0) {
 
                 $shippingName = $this->salesChannelContext->getShippingMethod()->getName() ?? $this->translator->trans('postfinancecheckout.payload.shipping.name');
                 $taxes = $this->getTaxes(
-                    $this->transaction->getOrder()->getShippingCosts()->getCalculatedTaxes(),
+                    $this->order->getShippingCosts()->getCalculatedTaxes(),
                     $shippingName
                 );
-                if ($this->transaction->getOrder()->getTaxStatus() === 'net') {
-                    $amount = self::round($amount + $this->transaction->getOrder()->getShippingCosts()->getCalculatedTaxes()->getAmount());
+                if ($this->order->getTaxStatus() === 'net') {
+                    $amount = self::round($amount + $this->order->getShippingCosts()->getCalculatedTaxes()->getAmount());
                 }
 
 
                 $lineItem = (new LineItemCreate())
                     ->setAmountIncludingTax($amount)
                     ->setName($this->fixLength($shippingName . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
-                    ->setQuantity($this->transaction->getOrder()->getShippingCosts()->getQuantity() ?? 1)
-                    ->setTaxes($taxes)
+                    ->setQuantity($this->order->getShippingCosts()->getQuantity() ?? 1)
                     ->setSku($this->fixLength($shippingName . '-Shipping', 200))
                     /** @noinspection PhpParamsInspection */
                     ->setType(LineItemType::SHIPPING)
                     ->setUniqueId($this->fixLength($shippingName . '-Shipping', 200));
+
+                if ($this->order->getTaxStatus() !== 'tax-free') {
+                    $lineItem->setTaxes($taxes);
+                }
 
                 if (!$lineItem->valid()) {
                     $this->logger->critical('Shipping LineItem payload invalid:', $lineItem->listInvalidProperties());
@@ -566,15 +671,15 @@ class TransactionPayload extends AbstractPayload
     protected function getMultipleShippingLineItems(): array
     {
         try {
-            if ($this->transaction->getOrder()->getShippingTotal() > 0) {
+            if ($this->order->getShippingTotal() > 0) {
                 $lineItems = [];
                 $shippingName = $this->salesChannelContext->getShippingMethod()->getName() ?? $this->translator->trans('postfinancecheckout.payload.shipping.name');
 
                 $isFirst = true;
 
-                foreach ($this->transaction->getOrder()->getShippingCosts()->getCalculatedTaxes() as $taxItem) {
+                foreach ($this->order->getShippingCosts()->getCalculatedTaxes() as $taxItem) {
                     $amount = self::round($taxItem->getPrice());
-                    if ($this->transaction->getOrder()->getTaxStatus() === 'net') {
+                    if ($this->order->getTaxStatus() === 'net') {
                         $amount = self::round($amount + $taxItem->getTax());
                     }
                     $taxRate = $taxItem->getTaxRate();
@@ -586,11 +691,14 @@ class TransactionPayload extends AbstractPayload
                     $lineItem = (new LineItemCreate())
                       ->setAmountIncludingTax($amount)
                       ->setName($this->fixLength($name . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
-                      ->setQuantity($this->transaction->getOrder()->getShippingCosts()->getQuantity() ?? 1)
-                      ->setTaxes([$tax])
+                      ->setQuantity($this->order->getShippingCosts()->getQuantity() ?? 1)
                       ->setSku($this->fixLength($name . '-Shipping', 200))
                       ->setType($isFirst ? LineItemType::SHIPPING : LineItemType::FEE) // First item as SHIPPING, rest as FEE
                       ->setUniqueId($this->fixLength($name . '-Shipping', 200));
+
+                    if ($this->order->getTaxStatus() !== 'tax-free') {
+                        $lineItem->setTaxes([$tax]);
+                    }
 
                     if (!$lineItem->valid()) {
                         $this->logger->critical('Shipping LineItem payload invalid:', $lineItem->listInvalidProperties());
@@ -625,9 +733,8 @@ class TransactionPayload extends AbstractPayload
         $lineItemPriceTotal = array_sum(array_map(static fn(LineItemCreate $li) => $li->getAmountIncludingTax(), $lineItems));
 
         $this->logger->debug("LineItem price total before adjustment: $lineItemPriceTotal");
-
         // Get shipping total including taxes from the order
-        $shippingCosts = $this->transaction->getOrder()->getShippingCosts();
+        $shippingCosts = $this->order->getShippingCosts();
         $shippingTotal = $shippingCosts ? self::round($shippingCosts->getTotalPrice()) : 0.0;
 
         // Add shipping to the line items total if it's not already included
@@ -636,13 +743,13 @@ class TransactionPayload extends AbstractPayload
             $lineItemPriceTotal += $shippingTotal;
         }
 
-        $adjustmentPrice = self::round($this->transaction->getOrder()->getAmountTotal() - $lineItemPriceTotal);
+        $adjustmentPrice = self::round($this->order->getAmountTotal() - $lineItemPriceTotal);
 
         if (abs($adjustmentPrice) != 0) {
             if ($this->settings->isLineItemConsistencyEnabled()) {
                 $error = strtr('LineItems total :lineItemTotal does not add up to order total :orderTotal', [
                     ':lineItemTotal' => $lineItemPriceTotal,
-                    ':orderTotal' => $this->transaction->getOrder()->getAmountTotal(),
+                    ':orderTotal' => $this->order->getAmountTotal(),
                 ]);
                 $this->logger->critical($error);
                 throw new \Exception($error);

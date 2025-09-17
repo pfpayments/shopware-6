@@ -5,7 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<meta name="keywords" value="PostFinance Checkout, Shopware, Shopware Plugin, Payment, Payment Integration, Documentation"><meta name="description" value="The documentation for the Shopware 6 plugin that enables processing payments with PostFinance Checkout.">		
-		<link rel="canonical" href="https://plugin-documentation.wallee.com/wallee-payment/shopware-6/master/PostFinanceCheckoutPayment/docs/en/documentation.html" />
+		<link rel="canonical" href="@WalleeCanonicalPath(https://plugin-documentation.wallee.com/wallee-payment, PostFinanceCheckoutPayment/docs/en/documentation.html)" />
 		<title>PostFinance Checkout Shopware 6 Documentation</title>
 		<link href="assets/monokai-sublime.css" rel="stylesheet" />
 		<link href="assets/base.css" rel="stylesheet" />
@@ -23,7 +23,7 @@
 		</a>
 	</li>
 	<li>
-		<a href="https://github.com/pfpayments/shopware-6/releases/tag/7.1.0/">
+		<a href="@WalleeReleasePath()">
 			Source
 		</a>
 	</li>
@@ -50,11 +50,13 @@
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p>Shopware Version: 6.5.x or 6.6.x (see <a href="#compatibility">compatibility table</a>).</p>
+<p>Shopware Version: 6.5.x, 6.6.x or 6.7.x (see <a href="#compatibility">compatibility table</a>).</p>
 </div><div class="paragraph">
 <p>PHP: Minimum version as required by your Shopware installation (e.g., 7.4+).</p>
 </div><div class="paragraph">
 <p>PostFinance Checkout Account: Obtain Space ID, User ID, and API Key from PostFinance Checkout Portal (see <a href="#portal-startup-guide">Portal Start-up Guide</a>).</p>
+</div><div class="paragraph">
+<p>For using recurring payments, you also need Showpare Commercial package, which is a paid product.</p>
 </div>					</div>
 </div>	<div class="chapter" id="compatibility">
 	<div class="chapter-title">
@@ -77,10 +79,16 @@
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Support Until</strong></p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6.7.x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">7.x.x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 and 8.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ongoing</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">6.6.x</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">6.x.x</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 and 8.3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ongoing</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">December 2025</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">6.5.x - Deprecated</p></td>
@@ -727,10 +735,20 @@ Tokenization is not available for guest checkouts.
 </tr>
 </table>
 </div>					</div>
+</div>					<div class="section" id="_recurring_payments">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.7</span>Recurring payments					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>Shopware provides the package "Shopware Commercial" with additional features, among others, subscriptions. This plugin supports making payments that are suitable for subscriptions. As long as the payment method&#8217;s conector supports
+tokenization, it can be used for subscriptions. The recurring payment is fully managed by Shopware Commercial plugin. Please refer to their documentation for more information.</p>
+</div>					</div>
 </div>					<div class="section" id="_key_features">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.7</span>Key Features					</h2>
+			<span class="title-number">8.8</span>Key Features					</h2>
 	</div>
 	<div class="section-body">
 					<div class="ulist">
@@ -747,12 +765,15 @@ Tokenization is not available for guest checkouts.
 <li>
 <p><strong>Automatic Updates</strong>: Payment methods sync dynamically via the PostFinance Checkout API.</p>
 </li>
+<li>
+<p><strong>Recurring payments</strong>: Make recurring payments with Subscriptions (Shopware Commercial) and PostFinanceCheckout.</p>
+</li>
 </ul>
 </div>					</div>
 </div>					<div class="section" id="_troubleshooting">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.8</span>Troubleshooting					</h2>
+			<span class="title-number">8.9</span>Troubleshooting					</h2>
 	</div>
 	<div class="section-body">
 					<div class="ulist">
@@ -783,7 +804,7 @@ Tokenization is not available for guest checkouts.
 </div>					<div class="section" id="_faqs">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.9</span>FAQs					</h2>
+			<span class="title-number">8.10</span>FAQs					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -980,18 +1001,23 @@ Tokenization is not available for guest checkouts.
 		<span class="item-title">Tokenization</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
-	<a href="#_key_features">
+	<a href="#_recurring_payments">
 		<span class="item-number">8.7</span>
+		<span class="item-title">Recurring payments</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_key_features">
+		<span class="item-number">8.8</span>
 		<span class="item-title">Key Features</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_troubleshooting">
-		<span class="item-number">8.8</span>
+		<span class="item-number">8.9</span>
 		<span class="item-title">Troubleshooting</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_faqs">
-		<span class="item-number">8.9</span>
+		<span class="item-number">8.10</span>
 		<span class="item-title">FAQs</span>
 			</a>
     </li>    		    	</ul>

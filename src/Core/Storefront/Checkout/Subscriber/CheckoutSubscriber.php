@@ -100,6 +100,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
     {
         return [
             CheckoutConfirmPageLoadedEvent::class => ['onConfirmPageLoaded', 1],
+            "subscription." . CheckoutConfirmPageLoadedEvent::class => ['onConfirmPageLoaded', 1],
             MailBeforeValidateEvent::class => ['onMailBeforeValidate', 1],
         ];
     }

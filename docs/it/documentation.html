@@ -5,7 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<meta name="keywords" value="PostFinance Checkout, Shopware, Shopware Plugin, Payment, Payment Integration, Documentation"><meta name="description" value="The documentation for the Shopware 6 plugin that enables processing payments with PostFinance Checkout.">		
-		<link rel="canonical" href="https://plugin-documentation.wallee.com/wallee-payment/shopware-6/master/PostFinanceCheckoutPayment/docs/it/documentation.html" />
+		<link rel="canonical" href="@WalleeCanonicalPath(https://plugin-documentation.wallee.com/wallee-payment, PostFinanceCheckoutPayment/docs/it/documentation.html)" />
 		<title>PostFinance Checkout Shopware 6 Documentation</title>
 		<link href="assets/monokai-sublime.css" rel="stylesheet" />
 		<link href="assets/base.css" rel="stylesheet" />
@@ -23,7 +23,7 @@
 		</a>
 	</li>
 	<li>
-		<a href="https://github.com/pfpayments/shopware-6/releases/tag/7.1.0/">
+		<a href="@WalleeReleasePath()">
 			Source
 		</a>
 	</li>
@@ -50,7 +50,7 @@
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p>Versione di Shopware: 6.5.x o 6.6.x (vedere la <a href="#compatibility">tabella di compatibilità</a>).</p>
+<p>Versione di Shopware: 6.5.x, 6.6.x o 6.7.x (vedere la <a href="#compatibility">tabella di compatibilità</a>).</p>
 </div><div class="paragraph">
 <p>PHP: Versione minima richiesta dalla vostra installazione di Shopware (ad es. 7.4+).</p>
 </div><div class="paragraph">
@@ -71,22 +71,28 @@
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Shopware Version</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Plugin Version</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>PHP Version</strong></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Support Until</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Versione Shopware</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Versione Plugin</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Versione PHP</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Supporto fino a</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6.7.x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">7.x.x</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 e 8.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">In corso</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">6.6.x</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">6.x.x</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 and 8.3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ongoing</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 e 8.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Dicembre 2025</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">6.5.x - Deprecated</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6.5.x – Deprecato</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">5.x.x</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 and 8.3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">October 2024</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PHP 8.2 e 8.3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ottobre 2024</p></td>
 </tr>
 </tbody>
 </table>					</div>
@@ -712,10 +718,19 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 </tr>
 </table>
 </div>					</div>
+</div>					<div class="section" id="_pagamenti_ricorrenti">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">8.7</span>Pagamenti ricorrenti					</h2>
+	</div>
+	<div class="section-body">
+					<div class="paragraph">
+<p>Shopware fornisce il pacchetto "Shopware Commercial" con funzionalità aggiuntive, tra cui gli abbonamenti. Questo plugin supporta l&#8217;esecuzione di pagamenti adatti per gli abbonamenti. Finché il connettore del metodo di pagamento supporta la tokenizzazione, può essere utilizzato per gli abbonamenti. Il pagamento ricorrente è completamente gestito dal plugin Shopware Commercial. Si prega di fare riferimento alla loro documentazione per maggiori informazioni.</p>
+</div>					</div>
 </div>					<div class="section" id="_key_features">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.7</span>Key Features					</h2>
+			<span class="title-number">8.8</span>Key Features					</h2>
 	</div>
 	<div class="section-body">
 					<div class="ulist">
@@ -732,12 +747,15 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 <li>
 <p><strong>Automatic Updates</strong>: I metodi di pagamento si sincronizzano dinamicamente tramite l&#8217;API PostFinance Checkout.</p>
 </li>
+<li>
+<p><strong>Pagamenti ricorrenti</strong>: Effettua pagamenti ricorrenti con Abbonamenti (Shopware Commercial) e PostFinanceCheckout.</p>
+</li>
 </ul>
 </div>					</div>
 </div>					<div class="section" id="_risoluzione_dei_problemi">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.8</span>Risoluzione dei Problemi					</h2>
+			<span class="title-number">8.9</span>Risoluzione dei Problemi					</h2>
 	</div>
 	<div class="section-body">
 					<div class="ulist">
@@ -768,7 +786,7 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 </div>					<div class="section" id="_faqs">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.9</span>FAQs					</h2>
+			<span class="title-number">8.10</span>FAQs					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -965,18 +983,23 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 		<span class="item-title">Tokenization</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
-	<a href="#_key_features">
+	<a href="#_pagamenti_ricorrenti">
 		<span class="item-number">8.7</span>
+		<span class="item-title">Pagamenti ricorrenti</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_key_features">
+		<span class="item-number">8.8</span>
 		<span class="item-title">Key Features</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_risoluzione_dei_problemi">
-		<span class="item-number">8.8</span>
+		<span class="item-number">8.9</span>
 		<span class="item-title">Risoluzione dei Problemi</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_faqs">
-		<span class="item-number">8.9</span>
+		<span class="item-number">8.10</span>
 		<span class="item-title">FAQs</span>
 			</a>
     </li>    		    	</ul>

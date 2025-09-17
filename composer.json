@@ -53,11 +53,11 @@
 	"ext-json": "*",
 	"ext-mbstring": "*",
 	"php": ">=8.2",
-    "shopware/core": "~6.6.0",
-    "shopware/administration": "~6.6.0",
-    "shopware/storefront":"~6.6.0",
+    "shopware/core": "~6.7.0",
+    "shopware/administration": "~6.7.0",
+    "shopware/storefront":"~6.7.0",
     "postfinancecheckout/sdk": "^4.0.0"
   },
   "type": "shopware-platform-plugin",
-  "version": "6.1.15"
+  "version": "7.1.0"
 }

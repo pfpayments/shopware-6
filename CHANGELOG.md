@@ -1,5 +1,22 @@
-# 6.1.15
+# 7.1.0
+## Feature
+- Support subscription payment methods
+- Support Shopware 6.7.2.0
+
+## Bugfix
 - Fixed issue with shipping costs not being processed correctly
+
+# 7.0.1
+## Feature
+- Add plugin version metric
+
+## Bugfix
+- Fixed error message when refund amount exceeds total
+- Fixed bug where only 25 sales channels showed in the dropdown
+- Removed erroneous logs
+
+# 7.0.0
+- Compatibility with Shopware 6.7.0
 
 # 6.1.14
 - Disable Recreate Cart for Headless Storefront Order

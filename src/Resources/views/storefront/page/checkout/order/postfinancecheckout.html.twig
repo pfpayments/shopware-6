@@ -1,15 +1,11 @@
 {% sw_extends '@Storefront/storefront/page/checkout/_page.html.twig' %}
 
-{% block base_header %}
-	{% sw_include '@PostFinanceCheckoutPayment/storefront/page/checkout/order/postfinancecheckout_header.html.twig' %}
-{% endblock %}
-
-{% block base_navigation %}{% endblock %}
 {% block base_body_classes %}postfinancecheckout-payment is-act-confirmpage{% endblock %}
 
 {% block page_checkout_main_content %}
-	{% block page_checkout_pay %}
-		{% block page_checkout_confirm_header %}
+    <div id="postfinancecheckoutOrderCancel"></div>
+    {% block page_checkout_pay %}
+        {% block page_checkout_confirm_header %}
             <h1 class="confirm-main-header">
                 {{ "postfinancecheckout.payHeader"|trans|sw_sanitize }}
             </h1>
@@ -142,10 +138,6 @@
 			</button>
         </form>
     </div>
-{% endblock %}
-
-{% block base_footer %}
-	{% sw_include '@Storefront/storefront/layout/footer/footer-minimal.html.twig' %}
 {% endblock %}
 
 {% block base_body_script %}

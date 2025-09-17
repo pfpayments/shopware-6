@@ -1,5 +1,16 @@
-# 6.1.15
-- Problem behoben, bei dem die Versandkosten nicht korrekt verarbeitet wurden
+# 7.1.0
+– Unterstützung für Abonnement-Zahlungsmethoden
+– Support für Shopware 6.7.2.0
+– Problem mit fehlerhafter Bearbeitung der Versandkosten behoben
+
+# 7.0.1
+- Plugin-Versionsmetrik hinzugefügt
+- Fehlermeldung behoben, wenn der Rückerstattungsbetrag den Gesamtbetrag überschreitet
+- Fehler behoben, bei dem nur 25 Vertriebskanäle in der Dropdown-Liste angezeigt wurden
+- Fehlerhafte Protokolle entfernt
+
+# 7.0.0
+- Kompatibilität mit Shopware 6.7.0
 
 # 6.1.14
 – Warenkorb neu erstellen für Headless Storefront Order deaktivieren

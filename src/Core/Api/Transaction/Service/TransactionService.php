@@ -8,7 +8,7 @@ use Shopware\Core\{
     Checkout\Cart\CartException,
     Checkout\Cart\LineItem\LineItem,
     Checkout\Order\OrderEntity,
-    Checkout\Payment\Cart\AsyncPaymentTransactionStruct,
+    Checkout\Payment\Cart\PaymentTransactionStruct,
     Framework\Context,
     Framework\DataAbstractionLayer\Search\Criteria,
     Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
@@ -16,22 +16,23 @@ use Shopware\Core\{
 };
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use PostFinanceCheckout\Sdk\{
-    Model\AddressCreate,
-    Model\ChargeAttempt,
-    Model\CreationEntityState,
-    Model\CriteriaOperator,
-    Model\EntityQuery,
-    Model\EntityQueryFilter,
-    Model\EntityQueryFilterType,
-    Model\Gender,
-    Model\LineItemAttributeCreate,
-    Model\LineItemCreate,
-    Model\LineItemType,
-    Model\Transaction,
-    Model\TransactionCreate,
-    Model\TransactionPending,
-    Model\TransactionState,
+use PostFinanceCheckout\Sdk\Model\{
+    AddressCreate,
+    ChargeAttempt,
+    CreationEntityState,
+    CriteriaOperator,
+    EntityQuery,
+    EntityQueryFilter,
+    EntityQueryFilterType,
+    Gender,
+    LineItemAttributeCreate,
+    LineItemCreate,
+    LineItemType,
+    TokenizationMode,
+    Transaction,
+    TransactionCreate,
+    TransactionPending,
+    TransactionState,
 };
 use PostFinanceCheckoutPayment\Core\{
     Api\OrderDeliveryState\Handler\OrderDeliveryStateHandler,
@@ -115,7 +116,7 @@ class TransactionService
      *
      * A redirect to the url will be performed
      *
-     * @param \Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct $transaction
+     * @param \Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct $transaction
      * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
      *
      * @return string
@@ -124,10 +125,14 @@ class TransactionService
      * @throws \PostFinanceCheckout\Sdk\VersioningException
      */
     public function create(
-        AsyncPaymentTransactionStruct $transaction,
-        SalesChannelContext           $salesChannelContext
+        PaymentTransactionStruct $transaction,
+        SalesChannelContext      $salesChannelContext
     ): string
     {
+        $criteria = new Criteria([$transaction->getOrderTransactionId()]);
+        $criteria->addAssociation('order');
+        $orderTransaction = $this->container->get('order_transaction.repository')->search($criteria, $salesChannelContext->getContext())->first();
+
         $salesChannelId = $salesChannelContext->getSalesChannel()->getId();
         $settings = $this->settingsService->getSettings($salesChannelId);
         $apiClient = $settings->getApiClient();
@@ -165,7 +170,7 @@ class TransactionService
 
         $redirectUrl = $this->container->get('router')->generate(
             'frontend.postfinancecheckout.checkout.pay',
-            ['orderId' => $transaction->getOrder()->getId(),],
+            ['orderId' => $orderTransaction->getOrder()->getId(),],
             UrlGeneratorInterface::ABSOLUTE_URL
         );
 
@@ -177,8 +182,8 @@ class TransactionService
         $this->upsert(
             $createdTransaction,
             $salesChannelContext->getContext(),
-            $transaction->getOrderTransaction()->getPaymentMethodId(),
-            $transaction->getOrder()->getSalesChannelId()
+            $orderTransaction->getPaymentMethodId(),
+            $orderTransaction->getOrder()->getSalesChannelId()
         );
         $_SESSION['transactionId'] = null;
         $_SESSION['arrayOfPossibleMethods'] = null;
@@ -186,26 +191,45 @@ class TransactionService
         $_SESSION['currencyCheck'] = null;
 
 
-        $this->holdDelivery($transaction->getOrder()->getId(), $salesChannelContext->getContext());
+        $this->holdDelivery($orderTransaction->getOrder()->getId(), $salesChannelContext->getContext());
 
         return $redirectUrl;
     }
 
     /**
-     * @param \Shopware\Core\Checkout\Payment\Cart\AsyncPaymentTransactionStruct $transaction
+     * Creates the transaction in the portal using the SDK.
+     *
+     * @return void
+     */
+    public function createRecurringTransaction(TransactionCreate $sdkTransactionCreate, string $spaceId = ""): Transaction {
+        $settings = $this->settingsService->getSettings();
+        if (empty($spaceId)) {
+            $spaceId = $settings->getSpaceId();
+        }
+
+        $sdkTransaction = $settings->getApiClient()->getTransactionService()->create($spaceId, $sdkTransactionCreate);
+        if ($sdkTransaction->valid()) {
+            return $settings->getApiClient()->getTransactionService()->processWithoutUserInteraction($spaceId, $sdkTransaction->getId());
+        }
+
+        throw new \Exception("The transacion is not valid and could not be created.");
+    }
+
+    /**
+     * @param \Shopware\Core\Checkout\Payment\Cart\PaymentTransactionStruct $transaction
      * @param \Shopware\Core\Framework\Context $context
      * @param int $postfinancecheckoutTransactionId
      * @param int $spaceId
      */
     protected function addPostFinanceCheckoutTransactionId(
-        AsyncPaymentTransactionStruct $transaction,
+        PaymentTransactionStruct $transaction,
         Context                       $context,
         int                           $postfinancecheckoutTransactionId,
         int                           $spaceId
     ): void
     {
         $data = [
-            'id' => $transaction->getOrderTransaction()->getId(),
+            'id' => $transaction->getOrderTransactionId(),
             'customFields' => [
                 TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_TRANSACTION_ID => $postfinancecheckoutTransactionId,
                 TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_SPACE_ID => $spaceId,
@@ -343,7 +367,7 @@ class TransactionService
      *
      * @return \Shopware\Core\Checkout\Order\OrderEntity
      */
-    private function getOrderEntity(string $orderId, Context $context): OrderEntity
+    protected function getOrderEntity(string $orderId, Context $context): OrderEntity
     {
         try {
             $criteria = (new Criteria([$orderId]))->addAssociations(['deliveries']);
@@ -387,7 +411,7 @@ class TransactionService
      * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
      * @throws \PostFinanceCheckout\Sdk\VersioningException
      */
-    public function read(int $transactionId, string $salesChannelId): Transaction
+    public function read(int $transactionId, string $salesChannelId = ""): Transaction
     {
         $settings = $this->settingsService->getSettings($salesChannelId);
         return $settings->getApiClient()->getTransactionService()->read($settings->getSpaceId(), $transactionId);
@@ -594,7 +618,8 @@ class TransactionService
                 ->setCustomerEmailAddress($customer->getEmail())
                 ->setCustomerId($customerId)
                 ->setSuccessUrl($homeUrl . '?success')
-                ->setFailedUrl($homeUrl . '?fail');
+                ->setFailedUrl($homeUrl . '?fail')
+                ->setTokenizationMode(TokenizationMode::FORCE_CREATION);
 
             $transactionService = $settings->getApiClient()->getTransactionService();
             $transaction = $transactionService->create($settings->getSpaceId(), $transactionPayload);

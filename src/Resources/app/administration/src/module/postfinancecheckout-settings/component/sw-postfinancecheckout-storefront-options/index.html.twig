@@ -1,4 +1,4 @@
-<sw-card class="sw-card"
+<mt-card class="mt-card"
 		 :title="$tc('postfinancecheckout-settings.settingForm.storefrontOptions.cardTitle')">
 	<sw-container>
 		<div v-if="actualConfigData" class="postfinancecheckout-settings-storefront-options-fields">
@@ -7,19 +7,19 @@
 					:inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null'][CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED]"
 					:customInheritationCheckFunction="checkBoolFieldInheritance">
 				<template #content="props">
-					<sw-switch-field
+					<mt-switch
 							:name="CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED"
 							bordered
 							:mapInheritance="props"
 							:label="$tc('postfinancecheckout-settings.settingForm.storefrontOptions.invoiceDownloadEnabled.label')"
 							:helpText="$tc('postfinancecheckout-settings.settingForm.storefrontOptions.invoiceDownloadEnabled.tooltipText')"
 							:disabled="props.isInherited"
-							:value="props.currentValue"
-							@update:value="props.updateCurrentValue">
-					</sw-switch-field>
+							:checked="props.currentValue"
+							@update:checked="props.updateCurrentValue">
+					</mt-switch>
 				</template>
 			</sw-inherit-wrapper>
 		</div>
 	</sw-container>
-</sw-card>
+</mt-card>
 
