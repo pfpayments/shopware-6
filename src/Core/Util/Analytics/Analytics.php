@@ -14,6 +14,7 @@ class Analytics {
 	public const SHOP_SYSTEM             = 'x-meta-shop-system';
 	public const SHOP_SYSTEM_VERSION     = 'x-meta-shop-system-version';
 	public const SHOP_SYSTEM_AND_VERSION = 'x-meta-shop-system-and-version';
+	public const PLUGIN_SYSTEM_VERSION   = 'x-meta-plugin-version';
 
 	/**
 	 * @return array
@@ -24,6 +25,7 @@ class Analytics {
 			self::SHOP_SYSTEM             => 'shopware',
 			self::SHOP_SYSTEM_VERSION     => '6',
 			self::SHOP_SYSTEM_AND_VERSION => 'shopware-6',
+			self::PLUGIN_SYSTEM_VERSION   => '6.1.15',
 		];
 	}
 

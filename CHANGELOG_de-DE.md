@@ -1,3 +1,10 @@
+# 6.1.15
+- Problem behoben, bei dem die Versandkosten nicht korrekt verarbeitet wurden
+
+# 6.1.14
+– Warenkorb neu erstellen für Headless Storefront Order deaktivieren
+– Der korrekte Ausnahmetyp wurde zur Finalisierungsmethode hinzugefügt
+
 # 6.1.13
 – Englische Dokumentation aktualisiert
 – Französische, deutsche und italienische Dokumentation hinzugefügt

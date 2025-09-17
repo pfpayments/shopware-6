@@ -357,7 +357,9 @@ class TransactionPayload extends AbstractPayload
      */
     protected function addOptionalLineItems(array &$lineItems): void
     {
-        if (count($this->transaction->getOrder()->getShippingCosts()->getCalculatedTaxes()) === 1) {
+        $shippingCosts = $this->transaction->getOrder()->getShippingCosts();
+
+        if ($shippingCosts && $this->transaction->getOrder()->getShippingTotal() > 0) {
             if ($shippingLineItem = $this->getShippingLineItem()) {
                 $lineItems[] = $shippingLineItem;
             }
@@ -619,12 +621,22 @@ class TransactionPayload extends AbstractPayload
     {
         $lineItem = null;
 
-        $lineItemPriceTotal = array_sum(array_map(static function (LineItemCreate $lineItem) {
-            return $lineItem->getAmountIncludingTax();
-        }, $lineItems));
+        // Calculate total of all current line items
+        $lineItemPriceTotal = array_sum(array_map(static fn(LineItemCreate $li) => $li->getAmountIncludingTax(), $lineItems));
 
-        $adjustmentPrice = $this->transaction->getOrder()->getAmountTotal() - $lineItemPriceTotal;
-        $adjustmentPrice = self::round($adjustmentPrice);
+        $this->logger->debug("LineItem price total before adjustment: $lineItemPriceTotal");
+
+        // Get shipping total including taxes from the order
+        $shippingCosts = $this->transaction->getOrder()->getShippingCosts();
+        $shippingTotal = $shippingCosts ? self::round($shippingCosts->getTotalPrice()) : 0.0;
+
+        // Add shipping to the line items total if it's not already included
+        $hasShippingLineItem = array_filter($lineItems, static fn(LineItemCreate $li) => $li->getType() === LineItemType::SHIPPING);
+        if (!$hasShippingLineItem && $shippingTotal > 0) {
+            $lineItemPriceTotal += $shippingTotal;
+        }
+
+        $adjustmentPrice = self::round($this->transaction->getOrder()->getAmountTotal() - $lineItemPriceTotal);
 
         if (abs($adjustmentPrice) != 0) {
             if ($this->settings->isLineItemConsistencyEnabled()) {
