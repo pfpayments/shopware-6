@@ -528,67 +528,6 @@ class TransactionService
             $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
 
             $customer = $salesChannelContext->getCustomer();
-            $customerBillingAddress = $customer->getActiveBillingAddress();
-
-            $billingAddress = new AddressCreate();
-
-            $customerAddressEntity = $customer->getActiveBillingAddress();
-
-            $familyName = "";
-            if (!empty($customerAddressEntity->getLastName())) {
-                $familyName = $customerAddressEntity->getLastName();
-            } else {
-                if (!empty($customer->getLastName())) {
-                    $familyName = $customer->getLastName();
-                }
-            }
-            $billingAddress->setFamilyName($familyName);
-
-            $givenName = "";
-            if (!empty($customerAddressEntity->getFirstName())) {
-                $givenName = $customerAddressEntity->getFirstName();
-            } else {
-                if (!empty($customer->getFirstName())) {
-                    $givenName = $customer->getFirstName();
-                }
-            }
-            $billingAddress->setGivenName($givenName);
-            $billingAddress->setOrganizationName($customerBillingAddress->getCompany());
-            $billingAddress->setPhoneNumber($customerAddressEntity->getPhoneNumber());
-            $billingAddress->setCountry($customerBillingAddress->getCountry()->getIso());
-            $postalState = $customerBillingAddress?->getCountryState()?->getName() ?? '';
-            if (empty($postalState)) {
-                $postalState = $customerBillingAddress?->getCountryState()?->getShortCode() ?? '';
-            }
-            $billingAddress->setPostalState($postalState);
-            $billingAddress->setPostCode($customerBillingAddress->getZipcode());
-            $billingAddress->setStreet($customerBillingAddress->getStreet());
-            $billingAddress->setEmailAddress($customer->getEmail());
-
-
-            if (!empty($customer->getBirthday())) {
-                $birthday = new \DateTime();
-                $birthday->setTimestamp($customer->getBirthday()->getTimestamp());
-                $birthday = $birthday->format('Y-m-d');
-                $billingAddress->setDateOfBirth($birthday);
-            }
-
-            $salutation = "";
-            if (!(
-                empty($customerAddressEntity->getSalutation()) ||
-                empty($customerAddressEntity->getSalutation()->getDisplayName())
-            )) {
-                $salutation = $customerAddressEntity->getSalutation()->getDisplayName();
-            } else {
-                if (!empty($customer->getSalutation())) {
-                    $salutation = $customer->getSalutation()->getDisplayName();
-
-                }
-            }
-
-            $billingAddress->setGender(strtolower($customerAddressEntity->getSalutation()->getSalutationKey()) === 'mr' ? Gender::MALE : Gender::FEMALE);
-            $billingAddress->setSalutation($salutation);
-
             $lineItems = [];
             if ($event) {
                 $cartLineItems = $event->getPage()->getCart()->getLineItems()->getElements();
@@ -608,8 +547,13 @@ class TransactionService
             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
             $homeUrl = $protocol . $_SERVER['HTTP_HOST'];
             $currency = $salesChannelContext->getCurrency()->getIsoCode();
+
+            $billingAddress = $this->buildAddress($salesChannelContext, $customer->getActiveBillingAddress());
+            $shippingAddress = $this->buildAddress($salesChannelContext, $customer->getActiveShippingAddress());
+
             $transactionPayload = (new TransactionCreate())
                 ->setBillingAddress($billingAddress)
+                ->setShippingAddress($shippingAddress)
                 ->setLineItems($lineItems)
                 ->setCurrency($currency)
                 ->setSpaceViewId($settings->getSpaceViewId())
@@ -644,25 +588,14 @@ class TransactionService
         $transaction = $settings->getApiClient()->getTransactionService()->read($settings->getSpaceId(), $transactionId);
         $pendingTransaction->setVersion($transaction->getVersion());
 
-        $customerBillingAddress = $salesChannelContext->getCustomer()->getActiveBillingAddress();
-
-        $billingAddress = new AddressCreate();
-        $billingAddress->setStreet($customerBillingAddress->getStreet());
-        $billingAddress->setCity($customerBillingAddress->getCity());
-        $billingAddress->setCountry($customerBillingAddress->getCountry()->getIso());
-        $billingAddress->setPostCode($customerBillingAddress->getZipcode());
-
-        $postalState = $customerBillingAddress?->getCountryState()?->getName() ?? '';
-        if (empty($postalState)) {
-            $postalState = $customerBillingAddress?->getCountryState()?->getShortCode() ?? '';
-        }
-
-        $billingAddress->setPostalState($postalState);
-        $billingAddress->setOrganizationName($customerBillingAddress->getCompany());
-
         $currency = $salesChannelContext->getCurrency()->getIsoCode();
+
         $pendingTransaction->setCurrency($currency);
+        $billingAddress = $this->buildAddress($salesChannelContext, $salesChannelContext->getCustomer()->getActiveBillingAddress());
+        $shippingAddress = $this->buildAddress($salesChannelContext, $salesChannelContext->getCustomer()->getActiveShippingAddress());
+
         $pendingTransaction->setBillingAddress($billingAddress);
+        $pendingTransaction->setShippingAddress($shippingAddress);
 
         $settings->getApiClient()->getTransactionService()
             ->update($settings->getSpaceId(), $pendingTransaction);
@@ -767,5 +700,53 @@ class TransactionService
         $lineItem->setType(LineItemType::PRODUCT);
 
         return $lineItem;
+    }
+
+    /**
+     * Build a PostFinanceCheckout address from Shopware customer address.
+     *
+     * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
+     * @param \Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity $addressEntity
+     * @return \PostFinanceCheckout\Sdk\Model\AddressCreate
+     */
+    private function buildAddress(
+        SalesChannelContext $salesChannelContext,
+        \Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity $addressEntity
+    ): AddressCreate {
+        $customer = $salesChannelContext->getCustomer();
+
+        $address = new AddressCreate();
+
+        $address->setFamilyName($addressEntity->getLastName() ?: $customer->getLastName() ?: '');
+        $address->setGivenName($addressEntity->getFirstName() ?: $customer->getFirstName() ?: '');
+        $address->setOrganizationName($addressEntity->getCompany());
+        $address->setPhoneNumber($addressEntity->getPhoneNumber());
+        $address->setCountry($addressEntity->getCountry()->getIso());
+
+        $postalState = $addressEntity?->getCountryState()?->getName()
+            ?: $addressEntity?->getCountryState()?->getShortCode()
+            ?: '';
+        $address->setPostalState($postalState);
+
+        $address->setPostCode($addressEntity->getZipcode());
+        $address->setStreet($addressEntity->getStreet());
+        $address->setEmailAddress($customer->getEmail());
+
+        if (!empty($customer->getBirthday())) {
+            $birthday = (new \DateTimeImmutable())
+                ->setTimestamp($customer->getBirthday()->getTimestamp())
+                ->format('Y-m-d');
+            $address->setDateOfBirth($birthday);
+        }
+
+        $salutationEntity = $addressEntity->getSalutation() ?: $customer->getSalutation();
+        $address->setSalutation($salutationEntity?->getDisplayName() ?? '');
+        $address->setGender(
+            strtolower($salutationEntity?->getSalutationKey() ?? '') === 'mr'
+            ? Gender::MALE
+            : Gender::FEMALE
+        );
+
+        return $address;
     }
 }

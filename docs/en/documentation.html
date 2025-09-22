@@ -5,7 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<meta name="keywords" value="PostFinance Checkout, Shopware, Shopware Plugin, Payment, Payment Integration, Documentation"><meta name="description" value="The documentation for the Shopware 6 plugin that enables processing payments with PostFinance Checkout.">		
-		<link rel="canonical" href="@WalleeCanonicalPath(https://plugin-documentation.wallee.com/wallee-payment, PostFinanceCheckoutPayment/docs/en/documentation.html)" />
+		<link rel="canonical" href="https://plugin-documentation.wallee.com/wallee-payment/shopware-6/master/PostFinanceCheckoutPayment/docs/en/documentation.html" />
 		<title>PostFinance Checkout Shopware 6 Documentation</title>
 		<link href="assets/monokai-sublime.css" rel="stylesheet" />
 		<link href="assets/base.css" rel="stylesheet" />
@@ -23,7 +23,7 @@
 		</a>
 	</li>
 	<li>
-		<a href="@WalleeReleasePath()">
+		<a href="https://github.com/pfpayments/shopware-6/releases/tag/7.1.1/">
 			Source
 		</a>
 	</li>
@@ -39,7 +39,7 @@
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p>The PostFinance Checkout Payment Plugin integrates modern payment processing into Shopware 6, offering features like iFrame-based payments, refunds, captures, and PCI compliance. It supports seamless integration with the PostFinance Checkout Portal for managing transactions and payment methods.</p>
+<p>The PostFinance Checkout Plugin integrates modern payment processing into Shopware 6, offering features like iFrame-based payments, refunds, captures, and PCI compliance. It supports seamless integration with the PostFinance Checkout Portal for managing transactions and payment methods.</p>
 </div><div class="paragraph">
 <p>Important: Please note that only Major (e.g. 6.x.0.0) and Minor (e.g. 6.0.x.0) update will be tested for compatibility within a 2 weeks after release.</p>
 </div>					</div>
@@ -127,7 +127,7 @@
 </div>
 </li>
 <li>
-<p>Activate the PostFinance Checkout Payment plugin from the Plugin Manager.</p>
+<p>Activate the PostFinance Checkout plugin from the Plugin Manager.</p>
 </li>
 </ol>
 </div>					</div>
@@ -148,7 +148,7 @@
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">composer require postfinancecheckout/shopware-6
 php bin/console plugin:refresh
-php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment</code></pre>
+php bin/console plugin:install --activate --clearCache PostFinanceCheckout</code></pre>
 </div>
 </div>
 </li>
@@ -173,7 +173,7 @@ php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPaymen
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">php bin/console plugin:refresh
-php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment</code></pre>
+php bin/console plugin:install --activate --clearCache PostFinanceCheckout</code></pre>
 </div>
 </div>
 </li>
@@ -360,7 +360,7 @@ Please note that the connectors seems duplicated but it because one is for Physi
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>Navigate to <strong>Shopware Admin</strong> → <strong>Settings</strong> → <strong>Extensions</strong> → <strong>PostFinance Checkout Payment</strong> and click on <strong>Save</strong>.</p>
+<p>Navigate to <strong>Shopware Admin</strong> → <strong>Settings</strong> → <strong>Extensions</strong> → <strong>PostFinance Checkout</strong> and click on <strong>Save</strong>.</p>
 </li>
 <li>
 <p>Enter your <code>Space ID</code>, <code>User ID</code>, and <code>API Key</code></p>
@@ -782,7 +782,7 @@ tokenization, it can be used for subscriptions. The recurring payment is fully m
 <p>Logs: Check payment logs with:</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">tail -f var/log/whitelabelname_payment*.log</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">tail -f var/log/whitelabelname*.log</code></pre>
 </div>
 </div>
 </li>

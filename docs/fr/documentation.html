@@ -5,15 +5,15 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<meta name="keywords" value="PostFinance Checkout, Shopware, Shopware Plugin, Payment, Payment Integration, Documentation"><meta name="description" value="The documentation for the Shopware 6 plugin that enables processing payments with PostFinance Checkout.">		
-		<link rel="canonical" href="@WalleeCanonicalPath(https://plugin-documentation.wallee.com/wallee-payment, PostFinanceCheckoutPayment/docs/fr/documentation.html)" />
-		<title>Wallee Payment Plugin pour Shopware 6</title>
+		<link rel="canonical" href="https://plugin-documentation.wallee.com/wallee-payment/shopware-6/master/PostFinanceCheckoutPayment/docs/fr/documentation.html" />
+		<title>PostFinance Checkout Plugin pour Shopware 6</title>
 		<link href="assets/monokai-sublime.css" rel="stylesheet" />
 		<link href="assets/base.css" rel="stylesheet" />
 	</head>
 	<body class="documentation">
 		<div class="layout-wrapper">
 							<div class="layout-title">
-					<h1>Wallee Payment Plugin pour Shopware 6</h1>
+					<h1>PostFinance Checkout Plugin pour Shopware 6</h1>
 <h2>Documentation</h2>				</div>
 										<div class="layout-navigation">
 					<ul class="nav">
@@ -23,7 +23,7 @@
 		</a>
 	</li>
 	<li>
-		<a href="@WalleeReleasePath()">
+		<a href="https://github.com/pfpayments/shopware-6/releases/tag/7.1.1/">
 			Source
 		</a>
 	</li>
@@ -39,7 +39,7 @@
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p>Le plugin de paiement Wallee intègre un traitement moderne des paiements dans Shopware 6, offrant des fonctionnalités telles que les paiements basés sur iFrame, les remboursements, les captures et la conformité PCI. Il permet une intégration transparente avec le portail Wallee pour la gestion des transactions et des méthodes de paiement.</p>
+<p>Le plugin de paiement PostFinance Checkout intègre un traitement moderne des paiements dans Shopware 6, offrant des fonctionnalités telles que les paiements basés sur iFrame, les remboursements, les captures et la conformité PCI. Il permet une intégration transparente avec le portail PostFinance Checkout pour la gestion des transactions et des méthodes de paiement.</p>
 </div><div class="paragraph">
 <p>Important : Veuillez noter que seules les mises à jour majeures (par exemple 6.x.0.0) et mineures (par exemple 6.0.x.0) seront testées pour la compatibilité dans les 2 semaines suivant la publication.</p>
 </div>					</div>
@@ -54,7 +54,7 @@
 </div><div class="paragraph">
 <p><strong>PHP</strong>: Version minimale requise pour votre installation Shopware (e.g., 7.4+).</p>
 </div><div class="paragraph">
-<p><strong>Compte Wallee</strong>: Obtenir Space ID, User ID, et clé API du <strong>Portail Wallee</strong> (voir le <a href="#portal-startup-guide">Guide de démarrage du Portail</a>).</p>
+<p><strong>Compte PostFinance Checkout</strong>: Obtenir Space ID, User ID, et clé API du <strong>Portail PostFinance Checkout</strong> (voir le <a href="#portal-startup-guide">Guide de démarrage du Portail</a>).</p>
 </div>					</div>
 </div>	<div class="chapter" id="compatibility">
 	<div class="chapter-title">
@@ -125,7 +125,7 @@
 </div>
 </li>
 <li>
-<p>Activez le plugin wallee Payment à partir du gestionnaire de plugins</p>
+<p>Activez le plugin PostFinance Checkout à partir du gestionnaire de plugins</p>
 </li>
 </ol>
 </div>					</div>
@@ -146,7 +146,7 @@
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">composer require postfinancecheckout/shopware-6
 php bin/console plugin:refresh
-php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment</code></pre>
+php bin/console plugin:install --activate --clearCache PostFinanceCheckout</code></pre>
 </div>
 </div>
 </li>
@@ -167,7 +167,7 @@ php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPaymen
 </div><div class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-bash" data-lang="bash">php bin/console plugin:refresh
-php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment</code></pre>
+php bin/console plugin:install --activate --clearCache PostFinanceCheckout</code></pre>
 </div>
 </div>					</div>
 </div>			</div>
@@ -351,7 +351,7 @@ Veuillez noter que les connecteurs semblent faire double emploi, mais c&#8217;es
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>Naviguez vers <strong>Shopware Admin → Paramètres → Extensions → Wallee Payment</strong> et cliquez sur  Sauvegarder.</p>
+<p>Naviguez vers <strong>Shopware Admin → Paramètres → Extensions → PostFinance Checkout</strong> et cliquez sur  Sauvegarder.</p>
 </li>
 <li>
 <p>Entrez votre <code>Space ID</code>, <code>User ID</code>, et <code>clé API</code></p>
@@ -374,7 +374,7 @@ Veuillez noter que les connecteurs semblent faire double emploi, mais c&#8217;es
 <li>
 <p><strong>Méthodes de Paiment</strong></p>
 <div class="paragraph">
-<p>Les méthodes de paiement disponibles à la caisse sont gérées par le Portail Wallee. Si vous souhaitez désactiver une méthode de paiement, vous devez la désactiver à partir du portail.</p>
+<p>Les méthodes de paiement disponibles à la caisse sont gérées par le Portail PostFinance Checkout. Si vous souhaitez désactiver une méthode de paiement, vous devez la désactiver à partir du portail.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -484,9 +484,9 @@ Veuillez noter que si vous n&#8217;utilisez pas Space View Id, cette option doit
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p>Le processus de paiement de wallee est complètement standardisé pour chaque méthode de paiement que vous pouvez traiter. Cela vous permet d&#8217;ajouter simplement une méthode de paiement ou un processeur sans modifier la configuration de votre Shopware. Une vue d&#8217;ensemble des états et des processus de paiement de wallee peut être trouvée dans la <a href="https://checkout.postfinance.ch/en-us/doc/payment/transaction-process" target="_blank">documentation sur les paiments.</a>.</p>
+<p>Le processus de paiement de PostFinance Checkout est complètement standardisé pour chaque méthode de paiement que vous pouvez traiter. Cela vous permet d&#8217;ajouter simplement une méthode de paiement ou un processeur sans modifier la configuration de votre Shopware. Une vue d&#8217;ensemble des états et des processus de paiement de PostFinance Checkout peut être trouvée dans la <a href="https://checkout.postfinance.ch/en-us/doc/payment/transaction-process" target="_blank">documentation sur les paiments.</a>.</p>
 </div><div class="paragraph">
-<p>Dans la section suivante, nous vous donnons un aperçu de la façon dont les états de wallee sont mappés dans le graphique des états de Shopware pour les commandes et les états de paiement.</p>
+<p>Dans la section suivante, nous vous donnons un aperçu de la façon dont les états de PostFinance Checkout sont mappés dans le graphique des états de Shopware pour les commandes et les états de paiement.</p>
 </div>							<div class="section" id="_cartographie_des_différents_états_d_une_commande_de_shopware">
 	<div class="section-title">
 		<h2>
@@ -512,7 +512,7 @@ Veuillez noter que si vous n&#8217;utilisez pas Space View Id, cette option doit
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>Vous trouverez ci-dessous un diagramme qui montre l’association des différents états de Shopware pour l&#8217;état de paiement pour wallee, ainsi que des informations supplémentaires sur les transitions entre les états.</p>
+<p>Vous trouverez ci-dessous un diagramme qui montre l’association des différents états de Shopware pour l&#8217;état de paiement pour PostFinance Checkout, ainsi que des informations supplémentaires sur les transitions entre les états.</p>
 </div><div class="imageblock">
 <div class="content">
 <img src="resource/shopware_6_stage_graph_order.svg" alt="shopware 6 stage graph order"/>
@@ -520,7 +520,7 @@ Veuillez noter que si vous n&#8217;utilisez pas Space View Id, cette option doit
 </div><div class="olist glossary">
 <ol class="glossary">
 <li>
-<p>Si la transaction est <code>Autorisée</code> dans wallee, le statut du paiement de la commande dans le Shopware est marqué comme étant <code>En Cours</code>.</p>
+<p>Si la transaction est <code>Autorisée</code> dans PostFinance Checkout, le statut du paiement de la commande dans le Shopware est marqué comme étant <code>En Cours</code>.</p>
 </li>
 <li>
 <p>Si la transaction échoue avant ou pendant le processus d&#8217;autorisation, le statut du paiement de la commande du Shopware est marqué comme <code>Échouée</code>.</p>
@@ -529,7 +529,7 @@ Veuillez noter que si vous n&#8217;utilisez pas Space View Id, cette option doit
 <p>Si la transaction échoue après l&#8217;autorisation, le statut du paiement de la commande du Shopware est marqué comme <code>Annulée</code>.</p>
 </li>
 <li>
-<p>Si la facture de la transaction dans wallee est marquée comme <code>Payée</code> ou <code>Non Applicable</code>, le statut du paiement de la commande dans le Shopware est marqué comme <code>Payée</code>.</p>
+<p>Si la facture de la transaction dans PostFinance Checkout est marquée comme <code>Payée</code> ou <code>Non Applicable</code>, le statut du paiement de la commande dans le Shopware est marqué comme <code>Payée</code>.</p>
 </li>
 </ol>
 </div>							<div class="section" id="_remarques_générales_concernant_les_différents_status_pour_les_paiements">
@@ -557,10 +557,10 @@ Veuillez noter que si vous n&#8217;utilisez pas Space View Id, cette option doit
 </div><div class="olist glossary">
 <ol class="glossary">
 <li>
-<p>Si la transaction est <code>confirmée</code> dans wallee, le statut de livraison de la commande dans le Shopware est indiqué comme étant <code>En Attente</code>.</p>
+<p>Si la transaction est <code>confirmée</code> dans PostFinance Checkout, le statut de livraison de la commande dans le Shopware est indiqué comme étant <code>En Attente</code>.</p>
 </li>
 <li>
-<p>Si la transaction dans wallee est marquée comme <code>Délivrée</code>, le statut de livraison de la commande Shopware est marqué comme <code>Ouvert</code>.</p>
+<p>Si la transaction dans PostFinance Checkout est marquée comme <code>Délivrée</code>, le statut de livraison de la commande Shopware est marqué comme <code>Ouvert</code>.</p>
 </li>
 <li>
 <p>Si la transaction est en statut <code>Déclinée</code>, <code>Échouée</code> ou <code>Annulée</code>, le statut de livraison de la commande du Shopware est marqué comme <code>Annulée</code>.</p>
@@ -575,7 +575,7 @@ Veuillez noter que si vous n&#8217;utilisez pas Space View Id, cette option doit
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p>Vous pouvez capturer, annuler et rembourser des transactions directement depuis le backend de Shopware. Veuillez noter que si vous remboursez, annulez ou capturez des transactions dans wallee, les événements seront synchronisés dans Shopware. Cependant, il y a quelques limitations (voir ci-dessous).</p>
+<p>Vous pouvez capturer, annuler et rembourser des transactions directement depuis le backend de Shopware. Veuillez noter que si vous remboursez, annulez ou capturez des transactions dans PostFinance Checkout, les événements seront synchronisés dans Shopware. Cependant, il y a quelques limitations (voir ci-dessous).</p>
 </div>							<div class="section" id="_complete_capture_an_order">
 	<div class="section-title">
 		<h2>
@@ -593,7 +593,7 @@ Veuillez noter que si vous n&#8217;utilisez pas Space View Id, cette option doit
 <div class="title">Note</div>
 </td>
 <td class="content">
-Lorsque le paiement est en attente dans wallee, la commande reste en attente.
+Lorsque le paiement est en attente dans PostFinance Checkout, la commande reste en attente.
 </td>
 </tr>
 </table>
@@ -604,9 +604,9 @@ Lorsque le paiement est en attente dans wallee, la commande reste en attente.
 </div><div class="paragraph">
 <p><strong>Finalisation du paiement de manière différée</strong></p>
 </div><div class="paragraph">
-<p>Les détaillants souhaitent souvent autoriser les transactions et lancer le processus d&#8217;exécution une fois que tous les articles peuvent être expédiés. Cela est également possible avec wallee.</p>
+<p>Les détaillants souhaitent souvent autoriser les transactions et lancer le processus d&#8217;exécution une fois que tous les articles peuvent être expédiés. Cela est également possible avec PostFinance Checkout.</p>
 </div><div class="paragraph">
-<p>Cependant, certains processus doivent être suivis. Si vous avez configuré la finalisation du paiement pour qu&#8217;il soit différé, vous devez capturer la transaction avant d&#8217;initier l&#8217;expédition, car il peut toujours arriver qu’une finalisation échoue. Si vous voulez être sûr de ne pas expédier d&#8217;articles pour lesquels vous n&#8217;avez pas été payé, vous devez reporter l&#8217;expédition jusqu&#8217;à ce que l&#8217;état <code>Confirmé</code> soit atteint. Au départ, la transaction sera dans l&#8217;état <code>Autorisé</code> dans wallee et <code>En cours</code> dans Shopware. Si vous souhaitez lancer le processus d&#8217;exécution, assurez-vous de lancer le processus d&#8217;achèvement comme décrit ci-dessus. Une fois le processus terminé avec succès, la commande passera à l&#8217;état <code>Confirmée</code> dans wallee et à l&#8217;état Payée dans Shopware. Vous pouvez maintenant lancer le processus de livraison .</p>
+<p>Cependant, certains processus doivent être suivis. Si vous avez configuré la finalisation du paiement pour qu&#8217;il soit différé, vous devez capturer la transaction avant d&#8217;initier l&#8217;expédition, car il peut toujours arriver qu’une finalisation échoue. Si vous voulez être sûr de ne pas expédier d&#8217;articles pour lesquels vous n&#8217;avez pas été payé, vous devez reporter l&#8217;expédition jusqu&#8217;à ce que l&#8217;état <code>Confirmé</code> soit atteint. Au départ, la transaction sera dans l&#8217;état <code>Autorisé</code> dans PostFinance Checkout et <code>En cours</code> dans Shopware. Si vous souhaitez lancer le processus d&#8217;exécution, assurez-vous de lancer le processus d&#8217;achèvement comme décrit ci-dessus. Une fois le processus terminé avec succès, la commande passera à l&#8217;état <code>Confirmée</code> dans PostFinance Checkout et à l&#8217;état Payée dans Shopware. Vous pouvez maintenant lancer le processus de livraison .</p>
 </div>					</div>
 </div>					<div class="section" id="_annuler_une_transaction">
 	<div class="section-title">
@@ -665,7 +665,7 @@ Il peut s&#8217;écouler un certain temps avant que vous ne voyiez le remboursem
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>La livraison ne doit pas être effectuée tant que l&#8217;état de la livraison est en attente. Cela se produit lorsque la transaction dans wallee n&#8217;a pas atteint l&#8217;état Confirmé.</p>
+<p>La livraison ne doit pas être effectuée tant que l&#8217;état de la livraison est en attente. Cela se produit lorsque la transaction dans PostFinance Checkout n&#8217;a pas atteint l&#8217;état Confirmé.</p>
 </div><div class="paragraph">
 <p>Il y a essentiellement deux raisons pour lesquelles cela peut se produire :</p>
 </div><div class="ulist">
@@ -674,22 +674,22 @@ Il peut s&#8217;écouler un certain temps avant que vous ne voyiez le remboursem
 <p>La transaction n&#8217;est pas terminée. Dans ce cas, vous devez compléter la transaction comme indiqué ci-dessus..</p>
 </li>
 <li>
-<p>Nous ne sommes pas en mesure de déterminer si vous devez honorer la commande. La décision de livraison est prise automatiquement. Si cela ne se produit pas dans le délai défini, wallee génère une tâche manuelle que vous devez observer et suivre les instructions.</p>
+<p>Nous ne sommes pas en mesure de déterminer si vous devez honorer la commande. La décision de livraison est prise automatiquement. Si cela ne se produit pas dans le délai défini, PostFinance Checkout génère une tâche manuelle que vous devez observer et suivre les instructions.</p>
 </li>
 </ul>
 </div><div class="paragraph">
 <p>Vous trouverez plus d&#8217;informations sur les tâches manuelles dans notre <a href="https://checkout.postfinance.ch/en-us/doc/manual-tasks" target="_blank">Documentation sur les Tâches Manuelles.</a>.</p>
 </div>					</div>
-</div>					<div class="section" id="_limites_de_la_synchronisation_entre_wallee_et_shopware">
+</div>					<div class="section" id="_limites_de_la_synchronisation_entre_whitelabelname_et_shopware">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.5</span>Limites de la synchronisation entre wallee et Shopware					</h2>
+			<span class="title-number">8.5</span>Limites de la synchronisation entre PostFinance Checkout et Shopware					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>Veuillez noter que les captures, annulations et remboursements effectués dans wallee sont synchronisés. Cependant, il y a quelques limitations. Dans wallee, vous pouvez modifier le <strong>prix unitaire</strong> et <strong>la quantité</strong> en une seule fois. Cela n&#8217;est pas possible dans le backend du Shopware. Nous vous recommandons donc d&#8217;effectuer les remboursements toujours dans le backend de Shopware et non dans wallee. Si un remboursement ne peut pas être synchronisé, il sera envoyé au processeur, mais il se peut que vous ne le voyiez pas dans votre backend Shopware.</p>
+<p>Veuillez noter que les captures, annulations et remboursements effectués dans PostFinance Checkout sont synchronisés. Cependant, il y a quelques limitations. Dans PostFinance Checkout, vous pouvez modifier le <strong>prix unitaire</strong> et <strong>la quantité</strong> en une seule fois. Cela n&#8217;est pas possible dans le backend du Shopware. Nous vous recommandons donc d&#8217;effectuer les remboursements toujours dans le backend de Shopware et non dans PostFinance Checkout. Si un remboursement ne peut pas être synchronisé, il sera envoyé au processeur, mais il se peut que vous ne le voyiez pas dans votre backend Shopware.</p>
 </div><div class="paragraph">
-<p>Vous pouvez trouver plus d&#8217;informations sur les remboursements dans wallee dans notre <a href="https://checkout.postfinance.ch/en-us/doc/payment/refund" target="_blank">Documentation sur les Remboursements.</a>.</p>
+<p>Vous pouvez trouver plus d&#8217;informations sur les remboursements dans PostFinance Checkout dans notre <a href="https://checkout.postfinance.ch/en-us/doc/payment/refund" target="_blank">Documentation sur les Remboursements.</a>.</p>
 </div>					</div>
 </div>					<div class="section" id="_tokenisation">
 	<div class="section-title">
@@ -732,13 +732,13 @@ La tokenisation n&#8217;est pas disponible pour les paiements par les invités.
 <p><strong>Intégration iFrame</strong>: Intégrez des formulaires de paiement directement dans votre checkout.</p>
 </li>
 <li>
-<p><strong>Remboursements &amp; Captures</strong>: Déclenchez des remboursements complets/partiels et des captures à partir de Shopware ou du portail Wallee.</p>
+<p><strong>Remboursements &amp; Captures</strong>: Déclenchez des remboursements complets/partiels et des captures à partir de Shopware ou du portail PostFinance Checkout.</p>
 </li>
 <li>
 <p><strong>Support Multi-Magasins</strong>: Gérez les configurations sur plusieurs magasins.</p>
 </li>
 <li>
-<p><strong>Mises à jour automatiques</strong>: Les méthodes de paiement se synchronisent dynamiquement via l&#8217;API Wallee.</p>
+<p><strong>Mises à jour automatiques</strong>: Les méthodes de paiement se synchronisent dynamiquement via l&#8217;API PostFinance Checkout.</p>
 </li>
 <li>
 <p><strong>Paiements récurrents</strong>: Effectuez des paiements récurrents avec les abonnements (Shopware Commercial) et PostFinanceCheckout.</p>
@@ -757,7 +757,7 @@ La tokenisation n&#8217;est pas disponible pour les paiements par les invités.
 <p>Logs: Vérifiez les logs des payments avec:</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">tail -f var/log/whitelabelname_payment*.log</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">tail -f var/log/whitelabelname*.log</code></pre>
 </div>
 </div>
 </li>
@@ -769,7 +769,7 @@ La tokenisation n&#8217;est pas disponible pour les paiements par les invités.
 <p>Assurez-vous que la commande <code>composer update whitelabelname/shopware-6</code> est exécutée après les mises à jour.</p>
 </li>
 <li>
-<p>Vérifier que les identifiants de l&#8217;API correspondent à votre compte Wallee.</p>
+<p>Vérifier que les identifiants de l&#8217;API correspondent à votre compte PostFinance Checkout.</p>
 </li>
 </ul>
 </div>
@@ -795,7 +795,7 @@ A: Vous devez vérifier que les webhooks ont été correctement créés. Pour ce
 </div>
 </div><div class="paragraph">
 <p><strong>Q: Ce plugin prend-il en charge les paiements en un clic ?</strong>
-A: Oui, via la tokenisation dans le portail Wallee.</p>
+A: Oui, via la tokenisation dans le portail PostFinance Checkout.</p>
 </div><div class="paragraph">
 <p><strong>Q: Comment gérer la conformité PCI ?</strong>
 A: Le plugin utilise l&#8217;intégration iFrame, réduisant les exigences PCI à SAQ-A.</p>
@@ -962,9 +962,9 @@ A: Oui, le plugin prend en charge les portefeuilles comme Apple Pay.</p>
 		<span class="item-title">Commandes en attente</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
-	<a href="#_limites_de_la_synchronisation_entre_wallee_et_shopware">
+	<a href="#_limites_de_la_synchronisation_entre_whitelabelname_et_shopware">
 		<span class="item-number">8.5</span>
-		<span class="item-title">Limites de la synchronisation entre wallee et Shopware</span>
+		<span class="item-title">Limites de la synchronisation entre PostFinance Checkout et Shopware</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_tokenisation">
