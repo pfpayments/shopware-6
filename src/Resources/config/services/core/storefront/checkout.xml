@@ -13,6 +13,8 @@
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService"/>
 			<argument type="service" id="Shopware\Storefront\Page\GenericPageLoader"/>
 			<argument type="service" id="Shopware\Core\Checkout\Order\SalesChannel\OrderRoute"/>
+			<argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
+			<argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
 			<call method="setLogger">
 				<argument type="service" id="monolog.logger.postfinancecheckout_payment"/>
 			</call>

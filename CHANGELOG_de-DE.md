@@ -1,5 +1,8 @@
-# 6.1.15
+# 6.1.16
 - Problem behoben, bei dem die Versandkosten nicht korrekt verarbeitet wurden
+
+# 6.1.15
+- Problem behoben, bei dem ausstehende Bestellungen offen blieben
 
 # 6.1.14
 – Warenkorb neu erstellen für Headless Storefront Order deaktivieren

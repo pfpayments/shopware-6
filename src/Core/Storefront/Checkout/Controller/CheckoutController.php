@@ -10,7 +10,9 @@ use Shopware\Core\{
 	Checkout\Cart\SalesChannel\CartService,
 	Checkout\Order\Aggregate\OrderLineItem\OrderLineItemCollection,
 	Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity,
+	Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler,
 	Checkout\Order\OrderEntity,
+	Checkout\Order\OrderDefinition,
 	Checkout\Order\SalesChannel\AbstractOrderRoute,
 	Framework\Context,
 	Framework\DataAbstractionLayer\Search\Criteria,
@@ -21,7 +23,9 @@ use Shopware\Core\{
 	Framework\Uuid\Uuid,
 	Framework\Uuid\Exception\InvalidUuidException,
 	Framework\Validation\DataBag\RequestDataBag,
-	System\SalesChannel\SalesChannelContext
+	System\SalesChannel\SalesChannelContext,
+	System\StateMachine\StateMachineRegistry,
+	System\StateMachine\Transition,
 };
 use Shopware\Storefront\{
 	Controller\StorefrontController,
@@ -43,7 +47,8 @@ use PostFinanceCheckoutPayment\Core\{
 	Settings\Options\Integration,
 	Settings\Service\SettingsService,
 	Storefront\Checkout\Struct\CheckoutPageData,
-	Util\Payload\CustomProducts\CustomProductsLineItemTypes
+	Util\Payload\CustomProducts\CustomProductsLineItemTypes,
+	Util\Payload\TransactionPayload
 };
 
 
@@ -56,6 +61,18 @@ use PostFinanceCheckoutPayment\Core\{
 #[Package('checkout')]
 #[Route(defaults: ['_routeScope' => ['storefront']])]
 class CheckoutController extends StorefrontController {
+
+	public const ORDER_STATE_CANCEL = 'cancel';
+
+	/**
+	 * @var \Shopware\Core\System\StateMachine\StateMachineRegistry
+	 */
+	private $stateMachineRegistry;
+
+	/**
+	 * @var \Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler
+	 */
+	protected $orderTransactionStateHandler;
 
 	/**
 	 * @var \Shopware\Storefront\Page\GenericPageLoader
@@ -106,6 +123,8 @@ class CheckoutController extends StorefrontController {
 	 * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService $transactionService
 	 * @param \Shopware\Storefront\Page\GenericPageLoaderInterface                          $genericLoader
 	 * @param \Shopware\Core\Checkout\Order\SalesChannel\AbstractOrderRoute                 $orderRoute
+	 * @param \Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler $orderTransactionStateHandler
+	 * @param \Shopware\Core\System\StateMachine\StateMachineRegistry $stateMachineRegistry
 	 */
 	public function __construct(
 		LineItemFactoryRegistry $lineItemFactoryRegistry,
@@ -113,7 +132,9 @@ class CheckoutController extends StorefrontController {
 		SettingsService $settingsService,
 		TransactionService $transactionService,
 		GenericPageLoaderInterface $genericLoader,
-		AbstractOrderRoute $orderRoute
+		AbstractOrderRoute $orderRoute,
+		OrderTransactionStateHandler $orderTransactionStateHandler,
+		StateMachineRegistry $stateMachineRegistry
 	)
 	{
 		$this->cartService             = $cartService;
@@ -122,6 +143,8 @@ class CheckoutController extends StorefrontController {
 		$this->transactionService      = $transactionService;
 		$this->lineItemFactoryRegistry = $lineItemFactoryRegistry;
 		$this->orderRoute = $orderRoute;
+		$this->orderTransactionStateHandler = $orderTransactionStateHandler;
+		$this->stateMachineRegistry = $stateMachineRegistry;
 	}
 
 	/**
@@ -380,6 +403,7 @@ class CheckoutController extends StorefrontController {
 			}
 
 			$transaction = $this->getTransaction($orderId, $salesChannelContext->getContext());
+			$orderTransactionId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
 			if (!empty($transaction->getUserFailureMessage())) {
 				$this->addFlash('danger', $transaction->getUserFailureMessage());
 			}
@@ -413,6 +437,18 @@ class CheckoutController extends StorefrontController {
 				$cart = $this->cartService->add($cart, $lineItem, $salesChannelContext);
 
 			}
+
+			// Close the old, existing order to prevent confusion for the customer
+			$this->orderTransactionStateHandler->cancel($orderTransactionId, $salesChannelContext->getContext());
+			$this->stateMachineRegistry->transition(
+				new Transition(
+					OrderDefinition::ENTITY_NAME,
+					$orderId,
+					self::ORDER_STATE_CANCEL,
+					'stateId'
+				),
+				$salesChannelContext->getContext()
+			);
 
 		} catch (\Exception $exception) {
 			$this->addFlash('danger', $this->trans('error.addToCartError'));

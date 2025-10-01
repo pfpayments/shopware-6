@@ -1,3 +1,6 @@
+# 6.1.16
+- Fixed issue with pending orders remaining open
+
 # 6.1.15
 - Fixed issue with shipping costs not being processed correctly
 
