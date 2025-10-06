@@ -231,9 +231,16 @@ class TransactionPayload extends AbstractPayload
             ->setShippingAddress($shippingAddress)
             ->setShippingMethod($transactionData['shipping_method']);
 
-        $paymentConfiguration = $this->getPaymentConfiguration($this->salesChannelContext->getPaymentMethod()->getId());
+        $paymentConfiguration = $this->getPaymentConfiguration(
+            $this->salesChannelContext->getPaymentMethod()->getId(),
+            $this->settings->getSpaceId()
+        );
 
-        $transactionPayload->setAllowedPaymentMethodConfigurations([$paymentConfiguration->getPaymentMethodConfigurationId()]);
+        if ($paymentConfiguration) {
+            $transactionPayload->setAllowedPaymentMethodConfigurations([
+                $paymentConfiguration->getPaymentMethodConfigurationId()
+            ]);
+        }
 
         $successUrl = $this->transaction->getReturnUrl() . '&status=paid';
         $failedUrl = $this->getFailUrl($this->order->getId()) . '&status=fail';
@@ -899,19 +906,21 @@ class TransactionPayload extends AbstractPayload
         return $addressPayload;
     }
 
-    /**
-     * @param string $id
-     *
-     * @return \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity
-     */
-    protected function getPaymentConfiguration(string $id): PaymentMethodConfigurationEntity
-    {
-        $criteria = (new Criteria([$id]));
+	/**
+	 * @param string $paymentMethodId
+	 * @param int $spaceId
+	 * @return PaymentMethodConfigurationEntity|null
+	 */
+	protected function getPaymentConfiguration(string $paymentMethodId, int $spaceId): ?PaymentMethodConfigurationEntity
+	{
+		$criteria = new Criteria();
+		$criteria->addFilter(new EqualsFilter('paymentMethodId', $paymentMethodId));
+		$criteria->addFilter(new EqualsFilter('spaceId', $spaceId));
 
-        return $this->container->get('postfinancecheckout_payment_method_configuration.repository')
-            ->search($criteria, $this->salesChannelContext->getContext())
-            ->getEntities()->first();
-    }
+		return $this->container->get('postfinancecheckout_payment_method_configuration.repository')
+		  ->search($criteria, $this->salesChannelContext->getContext())
+		  ->first();
+	}
 
     /**
      * Get failure URL

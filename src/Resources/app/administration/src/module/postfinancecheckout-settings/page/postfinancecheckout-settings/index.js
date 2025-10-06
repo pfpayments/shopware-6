@@ -68,7 +68,7 @@ Component.register('postfinancecheckout-settings', {
     watch: {
         config: {
             handler(configData) {
-                const defaultConfig = this.$refs.configComponent.allConfigs.null;
+                const defaultConfig = (this.$refs.configComponent.allConfigs || {}).null || {};
                 const salesChannelId = this.$refs.configComponent.selectedSalesChannelId;
                 if (salesChannelId === null) {
 

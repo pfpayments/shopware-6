@@ -224,8 +224,18 @@ class WebHookController extends AbstractController {
 			// Configuration
 			$salesChannelId = $salesChannelId == 'null' ? null : $salesChannelId;
 			$this->settings = $this->settingsService->getSettings($salesChannelId);
+
 			$signature      = $request->server->get('HTTP_X_SIGNATURE');
 			$requestJson    = json_decode($request->getContent(), true);
+
+			if ($requestJson['eventId'] == null && $requestJson['entityId'] == null && $requestJson['listenerEntityId'] == null && $requestJson['listenerEntityId'] == null && $requestJson['listenerEntityTechnicalName'] == null && $requestJson['spaceId'] == null) {
+				throw new \InvalidArgumentException('Empty webhook');
+			}
+
+			if (!$this->settings->getSpaceId() || !$this->settings->getUserId() || !$this->settings->getApplicationKey()) {
+				throw new \InvalidArgumentException('Not correct webhook configuration for salesChannelId: ' . $salesChannelId . ' Debug: ' . var_dump($requestJson));
+			}
+
 			$apiClient      = $this->settings->getApiClient();
 			$callBackData->assign($requestJson);
 
