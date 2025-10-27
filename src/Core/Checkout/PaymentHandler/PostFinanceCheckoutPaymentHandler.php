@@ -133,7 +133,20 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
                 $salesChannelContextId = $contextSource->getSalesChannelId();
             }
 
-            $parameters = new SalesChannelContextServiceParameters($salesChannelContextId, $request->getSession()->get("sw-context-token", Random::getAlphanumericString(32)), originalContext: $context);
+            $orderCustomer = $orderTransaction->getOrder()?->getOrderCustomer();
+            
+            if ($orderCustomer) {
+                $customerId = $orderCustomer->getCustomerId();
+            } else {
+                $customerId = null;
+            }
+
+            $parameters = new SalesChannelContextServiceParameters(
+                $salesChannelContextId, 
+                $request->getSession()->get("sw-context-token", Random::getAlphanumericString(32)), 
+                originalContext: $context,
+                customerId: $customerId
+            );
             $salesChannelContext = $this->salesChannelContextService->get($parameters);
             $redirectUrl = $transaction->getReturnUrl();
 
@@ -149,7 +162,7 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
             $request->getSession()->remove('transactionId');
             $errorMessage = 'An error occurred during the communication with external payment gateway : ' . $e->getMessage();
             $this->logger->critical($errorMessage);
-            throw PaymentException::customerCanceled($transaction->getOrderTransaction()->getId(), $errorMessage);
+            throw PaymentException::customerCanceled($orderTransactionId, $errorMessage);
         }
     }
 
@@ -194,7 +207,7 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
                 ]);
                 $request->getSession()->remove('transactionId');
                 $this->logger->info($errorMessage);
-                throw PaymentException::customerCanceled($transaction->getOrderTransaction()->getId(), $errorMessage);
+                throw PaymentException::customerCanceled($orderTransactionId, $errorMessage);
             }
         } else {
             $this->orderTransactionStateHandler->paid($orderTransaction->getId(), $context);

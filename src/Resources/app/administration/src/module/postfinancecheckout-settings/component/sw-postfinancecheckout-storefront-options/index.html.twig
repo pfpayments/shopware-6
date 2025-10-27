@@ -7,16 +7,16 @@
 					:inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null'][CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED]"
 					:customInheritationCheckFunction="checkBoolFieldInheritance">
 				<template #content="props">
-					<mt-switch
+					<sw-switch-field
 							:name="CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED"
 							bordered
 							:mapInheritance="props"
 							:label="$tc('postfinancecheckout-settings.settingForm.storefrontOptions.invoiceDownloadEnabled.label')"
 							:helpText="$tc('postfinancecheckout-settings.settingForm.storefrontOptions.invoiceDownloadEnabled.tooltipText')"
 							:disabled="props.isInherited"
-							:checked="props.currentValue"
-							@update:checked="props.updateCurrentValue">
-					</mt-switch>
+							:value="props.currentValue"
+							@update:value="props.updateCurrentValue">
+					</sw-switch-field>
 				</template>
 			</sw-inherit-wrapper>
 		</div>

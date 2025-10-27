@@ -15,7 +15,7 @@
 							<sw-inherit-wrapper
 									v-model:value="actualConfigData[CONFIG_SPACE_ID]"
 									:inheritedValue="getInheritedValue(CONFIG_SPACE_ID)"
-									:customInheritationCheckFunction="checkNumberFieldInheritance">
+									@update:value="onSwitchInput">
 								<template #content="props">
 									<mt-number-field
 											:name="CONFIG_SPACE_ID"

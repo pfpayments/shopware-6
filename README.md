@@ -13,10 +13,10 @@ Please note that this plugin is for versions 6.5, 6.6 or 6.7. For the 6.4 plugin
 
 ## Documentation
 
-- For English documentation click [here](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.1.2/docs/en/documentation.html)
-- Für die deutsche Dokumentation klicken Sie [hier](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.1.2/docs/de/documentation.html)
-- Pour la documentation Française, cliquez [ici](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.1.2/docs/fr/documentation.html)
-- Per la documentazione in tedesco, clicca [qui](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.1.2/docs/it/documentation.html)
+- For English documentation click [here](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.1.3/docs/en/documentation.html)
+- Für die deutsche Dokumentation klicken Sie [hier](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.1.3/docs/de/documentation.html)
+- Pour la documentation Française, cliquez [ici](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.1.3/docs/fr/documentation.html)
+- Per la documentazione in tedesco, clicca [qui](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.1.3/docs/it/documentation.html)
 
 ## Installation
 
@@ -47,6 +47,15 @@ bin/console plugin:install --activate --clearCache PostFinanceCheckout
 
 1. Navigate to Shopware Admin > Settings > PostFinanceCheckout.
 2. Enter your Space ID, User ID, and API Key (obtained from the [PostFinance Checkout Portal](https://checkout.postfinance.ch/)).
+
+### PostFinanceCheckout does not appear in Settings
+
+1. You should run the following commmand
+
+```bash
+Copy
+bin/build-administration.sh
+```
 
 ### Payment Methods
 
