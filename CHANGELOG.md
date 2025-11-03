@@ -1,3 +1,8 @@
+# 6.1.17
+- Sales channels now support different spaces
+- Upgraded SDK to include latest fallback CA Bundle
+- Fixed error screen when returning from portal on failed payment
+
 # 6.1.16
 - Fixed issue with pending orders remaining open
 

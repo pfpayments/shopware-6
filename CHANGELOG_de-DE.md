@@ -1,3 +1,8 @@
+# 6.1.17
+- Vertriebskanäle unterstützen jetzt verschiedene Bereiche
+- SDK aktualisiert und enthält nun das neueste CA-Fallback-Bundle
+- Fehlerbildschirm beim Zurückkehren vom Portal nach fehlgeschlagener Zahlung behoben
+
 # 6.1.16
 - Problem behoben, bei dem die Versandkosten nicht korrekt verarbeitet wurden
 

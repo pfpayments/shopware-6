@@ -15,6 +15,7 @@ use Shopware\Core\{
     System\SalesChannel\SalesChannelContext
 };
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
+use Shopware\Storefront\Page\Account\Order\AccountEditOrderPageLoadedEvent;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use PostFinanceCheckout\Sdk\{
     Model\AddressCreate,
@@ -45,6 +46,9 @@ use PostFinanceCheckoutPayment\Core\{
     Util\Payload\CustomProducts\CustomProductsLineItemTypes,
     Util\Payload\TransactionPayload
 };
+
+use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
+use Shopware\Core\Framework\Struct\ArrayEntity;
 
 /**
  * Class TransactionService
@@ -180,10 +184,19 @@ class TransactionService
             $transaction->getOrderTransaction()->getPaymentMethodId(),
             $transaction->getOrder()->getSalesChannelId()
         );
-        $_SESSION['transactionId'] = null;
-        $_SESSION['arrayOfPossibleMethods'] = null;
-        $_SESSION['addressCheck'] = null;
-        $_SESSION['currencyCheck'] = null;
+		$salesChannelContext->getContext()->addExtension(
+		  'checkoutState',
+		  new ArrayEntity([
+			'transactionId' => null,
+			'addressHash'   => null,
+			'currency'      => null,
+		  ])
+		);
+
+		$salesChannelContext->getContext()->addExtension(
+		  'possibleMethods',
+		  new ArrayEntity(['ids' => []])
+		);
 
 
         $this->holdDelivery($transaction->getOrder()->getId(), $salesChannelContext->getContext());
@@ -478,14 +491,18 @@ class TransactionService
 
     /**
      * @param SalesChannelContext $salesChannelContext
-     * @param CheckoutConfirmPageLoadedEvent|null $event
+     * @param $event
      * @return int
      */
-    public function createPendingTransaction(SalesChannelContext $salesChannelContext, ?CheckoutConfirmPageLoadedEvent $event = null): int
-    {
+
+	public function createPendingTransaction(SalesChannelContext $salesChannelContext, $event = null): int
+	{
         $expiredTransaction = true;
         $transactionId = $_SESSION['transactionId'] ?? null;
         $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
+		if (!$settings) {
+			throw new \Exception('Space settings not configured');
+		}
 
         if ($transactionId) {
             $transactionService = $settings->getApiClient()->getTransactionService();
@@ -494,6 +511,7 @@ class TransactionService
                 TransactionState::DECLINE,
                 TransactionState::FAILED,
                 TransactionState::VOIDED,
+				null
             ];
             if (!in_array($pendingTransaction->getState(), $failedStates)) {
                 $expiredTransaction = false;
@@ -567,13 +585,20 @@ class TransactionService
 
             $lineItems = [];
             if ($event) {
-                $cartLineItems = $event->getPage()->getCart()->getLineItems()->getElements();
-                foreach ($cartLineItems as $cartLineItem) {
-                    if ($cartLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
-                        continue;
-                    }
-                    $lineItems[] = $this->createTempLineItem($cartLineItem);
-                }
+				if ($event instanceof CheckoutConfirmPageLoadedEvent) {
+					$cartLineItems = $event->getPage()->getCart()->getLineItems()->getElements();
+					foreach ($cartLineItems as $cartLineItem) {
+						if ($cartLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
+							continue;
+						}
+						$lineItems[] = $this->createTempLineItem($cartLineItem);
+					}
+				} elseif ($event instanceof AccountEditOrderPageLoadedEvent) {
+					$order = $event->getPage()->getOrder();
+					foreach ($order->getLineItems() as $orderLineItem) {
+						$lineItems[] = $this->createTempLineItem($orderLineItem);
+					}
+				}
             }
 
             $customerId = "";
@@ -731,16 +756,28 @@ class TransactionService
      * @param LineItem $productData
      * @return LineItemCreate
      */
-    private function createTempLineItem(LineItem $productData): LineItemCreate
-    {
-        $lineItem = new LineItemCreate();
-        $lineItem->setName($productData->getLabel());
-        $lineItem->setUniqueId($productData->getId());
-        $lineItem->setSku($productData->getId());
-        $lineItem->setQuantity($productData->getQuantity());
-        $lineItem->setAmountIncludingTax($productData->getPrice()->getUnitPrice());
-        $lineItem->setType(LineItemType::PRODUCT);
+	private function createTempLineItem($productData): LineItemCreate
+	{
+		$lineItem = new LineItemCreate();
 
-        return $lineItem;
-    }
+		if ($productData instanceof LineItem) {
+			$lineItem->setName($productData->getLabel());
+			$lineItem->setUniqueId($productData->getId());
+			$lineItem->setSku($productData->getReferencedId() ?? $productData->getId());
+			$lineItem->setQuantity($productData->getQuantity());
+			$lineItem->setAmountIncludingTax($productData->getPrice()->getUnitPrice());
+		} elseif ($productData instanceof OrderLineItemEntity) {
+			$lineItem->setName($productData->getLabel());
+			$lineItem->setUniqueId($productData->getId());
+			$lineItem->setSku($productData->getProductId() ?? $productData->getIdentifier() ?? $productData->getId());
+			$lineItem->setQuantity($productData->getQuantity());
+			$lineItem->setAmountIncludingTax($productData->getUnitPrice());
+		} else {
+			throw new \InvalidArgumentException('Unsupported line item type: ' . get_class($productData));
+		}
+
+		$lineItem->setType(LineItemType::PRODUCT);
+
+		return $lineItem;
+	}
 }

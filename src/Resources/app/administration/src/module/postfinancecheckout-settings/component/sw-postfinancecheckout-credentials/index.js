@@ -6,7 +6,7 @@ import constants from '../../page/postfinancecheckout-settings/configuration-con
 const {Component, Mixin} = Shopware;
 
 Component.register('sw-postfinancecheckout-credentials', {
-    template: template,
+    template,
 
     name: 'PostFinanceCheckoutCredentials',
 
@@ -29,7 +29,9 @@ Component.register('sw-postfinancecheckout-credentials', {
         },
 
         selectedSalesChannelId: {
-            required: true
+            type: [String, null],
+            required: false,
+            default: null
         },
         spaceIdFilled: {
             type: Boolean,
@@ -68,38 +70,44 @@ Component.register('sw-postfinancecheckout-credentials', {
         };
     },
 
+
+    computed: {
+        currentConfig() {
+            if (this.selectedSalesChannelId && this.allConfigs[this.selectedSalesChannelId]) {
+                return this.allConfigs[this.selectedSalesChannelId];
+            }
+            return this.allConfigs['null'] || {};
+        }
+    },
+
     methods: {
 
-        checkTextFieldInheritance(value) {
-            if (typeof value !== 'string') {
-                return true;
-            }
+		checkTextFieldInheritance(value) {
+		    return !value || value.length <= 0;
+		},
 
-            return value.length <= 0;
-        },
+		checkNumberFieldInheritance(value) {
+		    return value == null || value === '';
+		},
 
-        checkNumberFieldInheritance(value) {
-            if (typeof value !== 'number') {
-                return true;
-            }
-
-            return value.length <= 0;
-        },
-
-        checkBoolFieldInheritance(value) {
-            return typeof value !== 'boolean';
-        },
+		checkBoolFieldInheritance(value) {
+		    return typeof value !== 'boolean';
+		},
 
         // Emits the 'check-api-connection-event' with the current API connection parameters.
         // Used to trigger API connection testing from this component.
         emitCheckApiConnectionEvent() {
             const apiConnectionParams = {
-                spaceId: this.actualConfigData[constants.CONFIG_SPACE_ID],
-                userId: this.actualConfigData[constants.CONFIG_USER_ID],
-                applicationKey: this.actualConfigData[constants.CONFIG_APPLICATION_KEY]
+                spaceId: this.currentConfig[constants.CONFIG_SPACE_ID],
+                userId: this.currentConfig[constants.CONFIG_USER_ID],
+                applicationKey: this.currentConfig[constants.CONFIG_APPLICATION_KEY]
             };
 
             this.$emit('check-api-connection-event', apiConnectionParams);
+        },
+
+        getInheritedValue(key) {
+            return this.allConfigs['null']?.[key] ?? null;
         }
     }
 });

@@ -251,9 +251,9 @@ class PaymentMethodConfigurationService {
 	{
 		$data                          = [];
 		$paymentMethodData             = [];
-		$salesChannelPaymentMethodData = [];
 
-		$criteria = (new Criteria())->addFilter(new EqualsFilter('state', 'ACTIVE'));
+		$criteria = (new Criteria())->addFilter(new EqualsFilter('state', 'ACTIVE'))
+		  ->addFilter(new EqualsFilter('spaceId', $this->getSpaceId()));
 
 		/**
 		 * @var $postFinanceCheckoutPMConfigurationRepository
@@ -276,7 +276,7 @@ class PaymentMethodConfigurationService {
 				];
 
 				$paymentMethodData[] = [
-					'id'     => $paymentMethodConfigurationEntity->getId(),
+					'id'     => $paymentMethodConfigurationEntity->getPaymentMethodId(),
 					'active' => false,
 				];
 			}
@@ -349,33 +349,66 @@ class PaymentMethodConfigurationService {
 		 */
 		foreach ($paymentMethodConfigurations as $paymentMethodConfiguration) {
 
-			$paymentMethodConfigurationEntity = $this->getPaymentMethodConfigurationEntity(
-				$paymentMethodConfiguration->getSpaceId(),
-				$paymentMethodConfiguration->getId(),
-				$context
+			$entity = $this->getPaymentMethodConfigurationEntity(
+			  $paymentMethodConfiguration->getSpaceId(),
+			  $paymentMethodConfiguration->getId(),
+			  $context
 			);
 
-			$id = is_null($paymentMethodConfigurationEntity) ? Uuid::randomHex() : $paymentMethodConfigurationEntity->getId();
 
+			$configId = $entity ? $entity->getId() : Uuid::randomHex();
+			$technicalName = $paymentMethodConfiguration->getName();
+
+			$paymentMethodId = $this->getOrCreatePaymentMethodId(
+			  $technicalName,
+			  PostFinanceCheckoutPaymentHandler::class,
+			  $context
+			);
 			$data = [
-				'id'                           => $id,
-				'paymentMethodConfigurationId' => $paymentMethodConfiguration->getId(),
-				'paymentMethodId'              => $id,
-				'data'                         => json_decode(strval($paymentMethodConfiguration), true),
-				'sortOrder'                    => $paymentMethodConfiguration->getSortOrder(),
-				'spaceId'                      => $paymentMethodConfiguration->getSpaceId(),
-				'state'                        => CreationEntityState::ACTIVE,
+			  'id'                           => $configId,
+			  'paymentMethodConfigurationId' => $paymentMethodConfiguration->getId(),
+			  'paymentMethodId'              => $paymentMethodId,
+			  'data'                         => json_decode(strval($paymentMethodConfiguration), true),
+			  'sortOrder'                    => $paymentMethodConfiguration->getSortOrder(),
+			  'spaceId'                      => $paymentMethodConfiguration->getSpaceId(),
+			  'state'                        => CreationEntityState::ACTIVE,
 			];
 
-			$this->upsertPaymentMethod($id, $paymentMethodConfiguration, $context);
 
-            try {
-                $this->container->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository')->upsert([$data], $context);
-            } catch (\Exception $e) {
-                $this->logger->error($e->getMessage(), [$e->getTraceAsString()]);
-            }
-
+			try {
+				$this->upsertPaymentMethod($paymentMethodId, $paymentMethodConfiguration, $context);
+				$this->container
+				  ->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository')
+				  ->upsert([$data], $context);
+			} catch (\Exception $e) {
+				$this->logger->error($e->getMessage(), [$e->getTraceAsString()]);
+			}
 		}
+	}
+
+
+	private function getOrCreatePaymentMethodId(string $technicalName, string $handlerIdentifier, Context $context): string
+	{
+		$criteria = new Criteria();
+		$criteria->addFilter(new EqualsFilter('technicalName', $technicalName));
+		$criteria->setLimit(1);
+
+		$existing = $this->paymentMethodRepository->search($criteria, $context)->first();
+		if ($existing !== null) {
+			return $existing->getId();
+		}
+
+		$paymentMethodId = Uuid::randomHex();
+
+		$this->paymentMethodRepository->upsert([[
+		  'id' => $paymentMethodId,
+		  'handlerIdentifier' => $handlerIdentifier,
+		  'technicalName' => $technicalName,
+		  'name' => $technicalName,
+		  'active' => false,
+		]], $context);
+
+		return $paymentMethodId;
 	}
 
 	/**
@@ -479,38 +512,38 @@ class PaymentMethodConfigurationService {
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 */
 	protected function upsertPaymentMethod(
-		string $id,
-		PaymentMethodConfiguration $paymentMethodConfiguration,
-		Context $context
-	): void
-	{
+	  string $id,
+	  PaymentMethodConfiguration $paymentMethodConfiguration,
+	  Context $context
+	): void {
 		/** @var PluginIdProvider $pluginIdProvider */
 		$pluginIdProvider = $this->container->get(PluginIdProvider::class);
-		$pluginId         = $pluginIdProvider->getPluginIdByBaseClass(
-			PostFinanceCheckoutPayment::class,
-			$context
+		$pluginId = $pluginIdProvider->getPluginIdByBaseClass(
+		  PostFinanceCheckoutPayment::class,
+		  $context
 		);
 
 		$data = [
-			'id'                 => $id,
-			'handlerIdentifier'  => PostFinanceCheckoutPaymentHandler::class,
-			'pluginId'           => $pluginId,
-			'position'           => $paymentMethodConfiguration->getSortOrder() - 100,
-			'afterOrderEnabled'  => true,
-			'active'             => true,
-			'translations'       => $this->getPaymentMethodConfigurationTranslation($paymentMethodConfiguration, $context),
+		  'id'                => $id,
+		  'handlerIdentifier' => PostFinanceCheckoutPaymentHandler::class,
+		  'pluginId'          => $pluginId,
+		  'position'          => $paymentMethodConfiguration->getSortOrder() - 100,
+		  'afterOrderEnabled' => true,
+		  'active'            => true,
+		  'translations'      => $this->getPaymentMethodConfigurationTranslation($paymentMethodConfiguration, $context),
+		  'technicalName'     => $paymentMethodConfiguration->getName(),
 		];
 
-		$data['mediaId'] = $this->upsertMedia($id, $paymentMethodConfiguration, $context);
+		$mediaId = $this->upsertMedia($id, $paymentMethodConfiguration, $context);
+		if ($mediaId) {
+			$data['mediaId'] = $mediaId;
+		}
 
-		$data = array_filter($data);
-
-        try {
-            $this->paymentMethodRepository->upsert([$data], $context);
-        } catch (\Exception $e) {
-            $this->logger->error($e->getMessage(), [$e->getTraceAsString()]);
-        }
-
+		try {
+			$this->paymentMethodRepository->upsert([$data], $context);
+		} catch (\Exception $e) {
+			$this->logger->error($e->getMessage(), [$e->getTraceAsString()]);
+		}
 	}
 
 	/**
@@ -612,46 +645,58 @@ class PaymentMethodConfigurationService {
 	 *
 	 * @return string|null
 	 */
+	/**
+	 * Upload or update Payment Method icons
+	 */
 	protected function upsertMedia(string $id, PaymentMethodConfiguration $paymentMethodConfiguration, Context $context): ?string
 	{
 		try {
-			$existingRecord = $this->getMediaDefaultFolderForPaymentMethod($paymentMethodConfiguration, $context);
+			$folderKey = 'payment_method_' . $paymentMethodConfiguration->getId();
 
-			if ($existingRecord->count() > 0) {
-				$id = $existingRecord->first()->getId();
+			// Check existing default folder
+			$criteria = new Criteria();
+			$criteria->addFilter(new EqualsFilter('entity', $folderKey));
+			$existingFolder = $this->mediaDefaultFolderRepository->search($criteria, $context);
+
+			$folderId = $id;
+			if ($existingFolder->count() > 0) {
+				$folderId = $existingFolder->first()->getId();
 			}
 
+			// Ensure default folder
 			$this->mediaDefaultFolderRepository->upsert([
-				[
-					'id'                => $id,
-					'associationFields' => [],
-					'entity'            => 'payment_method_' . $paymentMethodConfiguration->getId(),
-				],
+			  [
+				'id'                => $folderId,
+				'associationFields' => [],
+				'entity'            => $folderKey,
+			  ],
 			], $context);
 
+			// Ensure media folder
 			$this->mediaFolderRepository->upsert([
-				[
-					'id'                     => $id,
-					'defaultFolderId'        => $id,
-					'name'                   => $paymentMethodConfiguration->getName(),
-					'useParentConfiguration' => false,
-					'configuration'          => [],
-				],
+			  [
+				'id'                     => $folderId,
+				'defaultFolderId'        => $folderId,
+				'name'                   => $paymentMethodConfiguration->getName(),
+				'useParentConfiguration' => false,
+				'configuration'          => [],
+			  ],
 			], $context);
 
-			/**
-			 * @var \Shopware\Core\Content\Media\MediaDefinition
-			 */
+			// Media insert/update
 			$mediaDefinition = $this->container->get(MediaDefinition::class);
 			$this->mediaSerializer->setRegistry($this->serializerRegistry);
+
 			$data = [
-				'id'            => $id,
-				'title'         => $paymentMethodConfiguration->getName(),
-				'url'           => $paymentMethodConfiguration->getResolvedImageUrl(),
-				'mediaFolderId' => $id,
+			  'id'            => $id,
+			  'title'         => $paymentMethodConfiguration->getName(),
+			  'url'           => $paymentMethodConfiguration->getResolvedImageUrl(),
+			  'mediaFolderId' => $folderId,
 			];
+
 			$data = $this->mediaSerializer->deserialize(new Config([], [], []), $mediaDefinition, $data);
 			$this->mediaRepository->upsert([$data], $context);
+
 			return $id;
 		} catch (\Exception $e) {
 			$this->logger->critical($e->getMessage(), [$e->getTraceAsString()]);

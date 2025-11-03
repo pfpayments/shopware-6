@@ -15,6 +15,7 @@
 			<argument type="service" id="Shopware\Core\Checkout\Order\SalesChannel\OrderRoute"/>
 			<argument type="service" id="Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler"/>
 			<argument type="service" id="Shopware\Core\System\StateMachine\StateMachineRegistry"/>
+			<argument type="service" id="Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface"/>
 			<call method="setLogger">
 				<argument type="service" id="monolog.logger.postfinancecheckout_payment"/>
 			</call>
@@ -32,6 +33,7 @@
 			<argument id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService" type="service"/>
 			<argument id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService" type="service"/>
 			<argument id="PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil" type="service"/>
+			<argument id="payment_method.repository" type="service"/>
 			<call method="setLogger">
 				<argument type="service" id="monolog.logger.postfinancecheckout_payment"/>
 			</call>

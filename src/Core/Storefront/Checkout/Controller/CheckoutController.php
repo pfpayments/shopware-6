@@ -2,8 +2,12 @@
 
 namespace PostFinanceCheckoutPayment\Core\Storefront\Checkout\Controller;
 
-use Psr\Log\LoggerInterface;
+use Psr\{
+	Log\LoggerInterface,
+	Cache\CacheItemPoolInterface 
+};
 use Shopware\Core\{
+	Checkout\Payment\PaymentException,
 	Checkout\Cart\Cart,
 	Checkout\Cart\CartException,
 	Checkout\Cart\LineItemFactoryRegistry,
@@ -35,9 +39,13 @@ use Shopware\Storefront\{
 use Symfony\Component\{
 	HttpFoundation\Request,
 	HttpFoundation\Response,
+	HttpFoundation\RedirectResponse,
 	Routing\Attribute\Route,
-	Routing\Generator\UrlGeneratorInterface
+	Routing\Generator\UrlGeneratorInterface,
+	Cache\Adapter\FilesystemAdapter,
+	DependencyInjection\ParameterBag\ParameterBagInterface
 };
+use Symfony\Contracts\Cache\ItemInterface;
 use PostFinanceCheckout\Sdk\{
 	Model\Transaction,
 	Model\TransactionState
@@ -50,7 +58,6 @@ use PostFinanceCheckoutPayment\Core\{
 	Util\Payload\CustomProducts\CustomProductsLineItemTypes,
 	Util\Payload\TransactionPayload
 };
-
 
 /**
  * Class CheckoutController
@@ -115,6 +122,11 @@ class CheckoutController extends StorefrontController {
 	private $orderRoute;
 
 	/**
+	 * @var \Psr\Cache\CacheItemPoolInterface
+	 */
+	private CacheItemPoolInterface $cache;
+
+	/**
 	 * PaymentController constructor.
 	 *
 	 * @param \Shopware\Core\Checkout\Cart\LineItemFactoryRegistry                          $lineItemFactoryRegistry
@@ -124,7 +136,8 @@ class CheckoutController extends StorefrontController {
 	 * @param \Shopware\Storefront\Page\GenericPageLoaderInterface                          $genericLoader
 	 * @param \Shopware\Core\Checkout\Order\SalesChannel\AbstractOrderRoute                 $orderRoute
 	 * @param \Shopware\Core\Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStateHandler $orderTransactionStateHandler
-	 * @param \Shopware\Core\System\StateMachine\StateMachineRegistry $stateMachineRegistry
+	 * @param \Shopware\Core\System\StateMachine\StateMachineRegistry 						$stateMachineRegistry
+	 * @param Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface		$params
 	 */
 	public function __construct(
 		LineItemFactoryRegistry $lineItemFactoryRegistry,
@@ -134,7 +147,8 @@ class CheckoutController extends StorefrontController {
 		GenericPageLoaderInterface $genericLoader,
 		AbstractOrderRoute $orderRoute,
 		OrderTransactionStateHandler $orderTransactionStateHandler,
-		StateMachineRegistry $stateMachineRegistry
+		StateMachineRegistry $stateMachineRegistry,
+		ParameterBagInterface $params
 	)
 	{
 		$this->cartService             = $cartService;
@@ -145,6 +159,7 @@ class CheckoutController extends StorefrontController {
 		$this->orderRoute = $orderRoute;
 		$this->orderTransactionStateHandler = $orderTransactionStateHandler;
 		$this->stateMachineRegistry = $stateMachineRegistry;
+		$this->cache = new FilesystemAdapter('postfinancecheckout', 0, rtrim($params->get('kernel.cache_dir'), '/') . '/postfinancecheckout-cache');
 	}
 
 	/**
@@ -386,6 +401,32 @@ class CheckoutController extends StorefrontController {
 		if($orderEntity->getSalesChannelId() !== $salesChannelContext->getSalesChannelId()) {
 			$this->settings = $this->settingsService->getSettings($orderEntity->getSalesChannelId());
 			$trans = $this->getTransaction($orderId, $salesChannelContext->getContext());
+
+			// Adoption in case of duplicate requests
+			// Get order specific value from cache
+			$cacheKey = 'postfinancecheckout_recreate_order_' . $orderId;
+			$isFound = $this->cache->get($cacheKey, function (ItemInterface $item) {
+				$item->expiresAfter(10);
+				return false;
+			});
+
+			// If value is found in cache - send user directly to successful checkout confirmation page for unpaid transactions
+			if ($isFound === true && in_array($trans->getState(), [TransactionState::FAILED])) {
+				$unpaidUrl = $this->getUnpaidUrlFromToken($trans->getSuccessUrl()) 
+				?? $this->buildUnpaidUrl($orderEntity->getSalesChannelId(), $salesChannelContext, $orderId);
+				if ($unpaidUrl) {
+					return new RedirectResponse(
+						$unpaidUrl . (parse_url($unpaidUrl, \PHP_URL_QUERY) ? '&' : '?') . 'error-code=' . PaymentException::PAYMENT_CUSTOMER_CANCELED_EXTERNAL
+					);
+				}
+			}
+
+			// Cache order specific value for some time on first request
+			$this->cache->delete($cacheKey);
+			$this->cache->get($cacheKey, function (ItemInterface $item) {
+				$item->expiresAfter(10);
+				return true;
+			});
 			return $this->redirect($trans->getSuccessUrl());
 		}
 		// End Adoption for Headless Storefronts
@@ -457,6 +498,74 @@ class CheckoutController extends StorefrontController {
 		}
 
 		return $this->redirectToRoute('frontend.checkout.confirm.page');
+	}
+
+	/**
+	 * Tries to return successful checkout confirmation url for unpaid transactions.
+	 * 
+	 * It achieves that by getting payment token from successUrl, parsing and decoding 
+	 * it, and finally reading the claims.
+	 * 
+	 * @param string $successUrl
+	 *
+	 * @return string|null
+	 */
+	private function getUnpaidUrlFromToken(string $successUrl): ?string {
+		$query = [];
+		parse_str((string) parse_url($successUrl, PHP_URL_QUERY), $query);
+		$jwt = $query['_sw_payment_token'] ?? null;
+
+		if (!$jwt) {
+			return null;
+		}
+
+		$data = explode('.', $jwt, 3);
+        if (count($data) !== 3) {
+			return null;
+        }
+		
+		[, $c, ] = $data;
+
+		try {
+			$urlSafeData = strtr($c, '-_', '+/');
+			$paddedData = str_pad($urlSafeData, \strlen($urlSafeData) % 4, '=');
+			$decoded = base64_decode($paddedData, true);
+			if (!$decoded) {
+				return null;
+			}
+			$claims = json_decode(json: $decoded, associative: true, flags: JSON_THROW_ON_ERROR);
+			$unpaidUrl = $claims['eul'] ?? null;
+			return $unpaidUrl;
+		} catch (\Throwable $e) {
+			$this->logger->warning("CheckoutController::getUnpaidUrlFromToken - JWT parse failed: {errorMessage}", [
+				'errorMessage' => $e->getMessage(),
+			]);
+			return null;
+		}
+	}
+
+	/**
+	 * Tries to return successful checkout confirmation url for unpaid transactions.
+	 * 
+	 * It achieves that by fetching headless storefront's base url,
+	 * and building custom url.
+	 * 
+	 * @param string $salesChannelId
+	 * @param SalesChannelContext $salesChannelContext
+	 * @param string $orderId
+	 *
+	 * @return string|null
+	 */
+	private function buildUnpaidUrl(string $salesChannelId, SalesChannelContext $salesChannelContext, string $orderId): ?string {
+		$salesChannelDomainRepo = $this->container->get('sales_channel_domain.repository');
+		$criteria = new Criteria();
+		$criteria->addFilter(new EqualsFilter('salesChannelId', $salesChannelId))->setLimit(10);
+		$domain = $salesChannelDomainRepo->search($criteria, $salesChannelContext->getContext())->first();
+		if(!$domain) {
+			return null;
+		}
+		$baseUrl = rtrim($domain->getUrl(), '/');
+		return sprintf('%s/checkout/success/%s/unpaid', $baseUrl, $orderId);
 	}
 
 	/**

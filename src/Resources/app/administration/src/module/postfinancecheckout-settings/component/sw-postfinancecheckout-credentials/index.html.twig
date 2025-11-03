@@ -14,7 +14,7 @@
 						{% block postfinancecheckout_settings_content_card_channel_config_credentials_card_container_settings_space_id %}
 							<sw-inherit-wrapper
 									v-model:value="actualConfigData[CONFIG_SPACE_ID]"
-									:inheritedValue="selectedSalesChannelId === null ? null : allConfigs['null'][CONFIG_SPACE_ID]"
+									:inheritedValue="getInheritedValue(CONFIG_SPACE_ID)"
 									:customInheritationCheckFunction="checkNumberFieldInheritance">
 								<template #content="props">
 									<sw-number-field
@@ -23,7 +23,7 @@
 											:mapInheritance="props"
 											:label="$tc('postfinancecheckout-settings.settingForm.credentials.spaceId.label')"
 											:helpText="$tc('postfinancecheckout-settings.settingForm.credentials.spaceId.tooltipText')"
-											:disabled="props.isInherited || !acl.can('postfinancecheckout.editor')"
+											:disabled="!acl.can('postfinancecheckout.editor')"
 											:value="props.currentValue"
 											:error="spaceIdErrorState"
 											@update:value="props.updateCurrentValue">
@@ -35,7 +35,7 @@
 						{% block postfinancecheckout_settings_content_card_channel_config_credentials_card_container_settings_user_id %}
 							<sw-inherit-wrapper
 									v-model:value="actualConfigData[CONFIG_USER_ID]"
-									:inheritedValue="selectedSalesChannelId === null ? null : allConfigs['null'][CONFIG_USER_ID]"
+									:inheritedValue="getInheritedValue(CONFIG_USER_ID)"
 									:customInheritationCheckFunction="checkNumberFieldInheritance">
 								<template #content="props">
 									<sw-number-field
@@ -44,7 +44,7 @@
 											:mapInheritance="props"
 											:label="$tc('postfinancecheckout-settings.settingForm.credentials.userId.label')"
 											:helpText="$tc('postfinancecheckout-settings.settingForm.credentials.userId.tooltipText')"
-											:disabled="props.isInherited || !acl.can('postfinancecheckout.editor')"
+											:disabled="!acl.can('postfinancecheckout.editor')"
 											:value="props.currentValue"
 											:error="userIdErrorState"
 											@update:value="props.updateCurrentValue">
@@ -56,7 +56,7 @@
 						{% block postfinancecheckout_settings_content_card_channel_config_credentials_card_container_settings_application_key %}
 							<sw-inherit-wrapper
 									v-model:value="actualConfigData[CONFIG_APPLICATION_KEY]"
-									:inheritedValue="selectedSalesChannelId === null ? null : allConfigs['null'][CONFIG_APPLICATION_KEY]"
+									:inheritedValue="getInheritedValue(CONFIG_APPLICATION_KEY)"
 									:customInheritationCheckFunction="checkTextFieldInheritance">
 								<template #content="props">
 									<sw-password-field
@@ -66,7 +66,7 @@
 											:mapInheritance="props"
 											:label="$tc('postfinancecheckout-settings.settingForm.credentials.applicationKey.label')"
 											:helpText="$tc('postfinancecheckout-settings.settingForm.credentials.applicationKey.tooltipText')"
-											:disabled="props.isInherited || !acl.can('postfinancecheckout.editor')"
+											:disabled="!acl.can('postfinancecheckout.editor')"
 											:value="props.currentValue"
 											:error="applicationKeyErrorState"
 											@update:value="props.updateCurrentValue">
