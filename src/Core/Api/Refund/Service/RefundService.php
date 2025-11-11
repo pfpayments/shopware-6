@@ -12,7 +12,11 @@ use Shopware\Core\{
 };
 use PostFinanceCheckout\Sdk\{
   Model\Refund,
-  Model\Transaction
+  Model\Transaction,
+  Model\CriteriaOperator,
+  Model\EntityQueryFilter,
+  Model\EntityQueryFilterType,
+  Model\EntityQuery,
 };
 use PostFinanceCheckoutPayment\Core\{
   Api\Refund\Entity\RefundEntity,
@@ -241,4 +245,67 @@ class RefundService
           ->first();
     }
     
+    /**
+     * Get total refunded quantity for transaction's line item by lineItemId.
+     *
+     * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
+     * @param \Shopware\Core\Framework\Context $context
+     * @param string $lineItemId
+     *
+     * @return int
+     */
+    public function getRefundedQuantity(Transaction $transaction, Context $context, string $lineItemId): int {
+        $transactionEntity = $this->getTransactionEntityByTransactionId($transaction->getId(), $context);
+        $settings = $this->settingsService->getSettings($transactionEntity->getSalesChannel()->getId());
+        $apiClient = $settings->getApiClient();
+
+        $entityQueryFilter = (new EntityQueryFilter())
+            ->setType(EntityQueryFilterType::LEAF)
+            ->setOperator(CriteriaOperator::EQUALS)
+            ->setFieldName('transaction.id')
+            ->setValue($transaction->getId());
+
+        $query = (new EntityQuery())->setFilter($entityQueryFilter);
+
+        $refunds = $apiClient->getRefundService()->search($settings->getSpaceId(), $query);
+
+        $refundedQuantity = 0;
+
+        foreach ($refunds as $refund) {
+            foreach ($refund->getReductions() as $reduction) {
+                if ($reduction->getLineItemUniqueId() === $lineItemId) {
+                    $refundedQuantity += (int) $reduction->getQuantityReduction();
+                }
+            }
+        }
+
+        return $refundedQuantity;
+    }
+
+    /**
+     * Get maximum quantity of available items to refund for line item.
+     *
+     * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
+     * @param \Shopware\Core\Framework\Context $context
+     * @param string $lineItemId
+     *
+     * @return int
+     */
+    public function getMaxRefundableQuantity(Transaction $transaction, Context $context, string $lineItemId): int {
+
+        $originalQuantity = 0;
+
+        foreach ($transaction->getLineItems() as $lineItem) {
+            if ($lineItem->getUniqueId() === $lineItemId) {
+                $originalQuantity = (int) $lineItem->getQuantity();
+                break;
+            }
+        }
+
+        $refundedQuantity = $this->getRefundedQuantity($transaction, $context, $lineItemId);
+
+        $maxQuantity = $originalQuantity - $refundedQuantity;
+
+        return $maxQuantity;
+    }
 }

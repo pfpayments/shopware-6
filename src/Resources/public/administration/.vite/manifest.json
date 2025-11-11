@@ -1,0 +1,11 @@
+{
+  "main.js": {
+    "file": "assets/post-finance-checkout-payment-EUhyJhow.js",
+    "name": "post-finance-checkout-payment",
+    "src": "main.js",
+    "isEntry": true,
+    "css": [
+      "assets/post-finance-checkout-payment-BiqAd7Bt.css"
+    ]
+  }
+}

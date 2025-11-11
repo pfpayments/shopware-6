@@ -1,3 +1,10 @@
+# 7.1.5
+- Verbesserte Analysefunktionen
+- Verbesserte Fehlerbehandlung bei Rückerstattungen von 0 Beträgen und zu vielen Artikeln
+
+# 7.1.4
+- Aktualisiertes SDK - 4.8.1
+
 # 7.1.3
 – Problem behoben, bei dem die Einstellungen von Optionsfeldern/Schaltern nicht gespeichert wurden.
 – Problem behoben, bei dem nach fehlgeschlagenen Zahlungen sporadisch ein Fehlerbildschirm angezeigt wurde.

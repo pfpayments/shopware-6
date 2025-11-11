@@ -70,14 +70,17 @@ Component.register('postfinancecheckout-order-action-refund-by-amount', {
 				});
 			}).catch((errorResponse) => {
 				try {
-					var errorTitle;
+					var errorTitle = errorResponse?.response?.data?.errors?.[0]?.title ?? this.$tc('postfinancecheckout-order.refundAction.refundCreateError.errorTitle')
 					var errorMessage;
-					if (errorResponse.response.data == 'refundExceedsAmount') {
-						errorTitle = this.$tc('postfinancecheckout-order.refundAction.refundExceedsTotalError.title');
-						errorMessage = this.$tc('postfinancecheckout-order.refundAction.refundExceedsTotalError.messageRefundAmountExceedsAvailableBalance');
-					} else {
-						errorTitle = errorResponse.response.data.errors[0].title;
-						errorMessage = errorResponse.response.data.errors[0].detail;
+					switch(errorResponse.response.data) {
+						case 'refundAmountZero':
+							errorMessage = this.$tc('postfinancecheckout-order.refundAction.refundCreateError.messageRefundAmountIsZero');
+						break;
+						case 'refundExceedsAmount':
+							errorMessage = this.$tc('postfinancecheckout-order.refundAction.refundCreateError.messageRefundAmountExceedsAvailableBalance');
+						break;
+						default:
+							errorMessage = errorResponse.response.data.errors[0].detail;
 					}
 					this.createNotificationError({
 						title: errorTitle,

@@ -661,6 +661,13 @@ class PaymentMethodConfigurationService {
 			], $context);
 
 			// Media insert/update
+
+			// detect if collision, return existing id
+			$existingId = $this->checkMediaAlreadyExists($paymentMethodConfiguration->getResolvedImageUrl(), $context);
+			if ($existingId) {
+				return $existingId;
+			}
+
 			$mediaDefinition = $this->container->get(MediaDefinition::class);
 			$this->mediaSerializer->setRegistry($this->serializerRegistry);
 
@@ -679,6 +686,22 @@ class PaymentMethodConfigurationService {
 			$this->logger->critical($e->getMessage(), [$e->getTraceAsString()]);
 			return null;
 		}
+	}
+
+	private function checkMediaAlreadyExists($paymentMethodUrl, $context) {
+		// detect if collision, return existing id
+		if (preg_match('#/([^/]+)\.[^/.]+$#', $paymentMethodUrl, $matches)) {
+			$filename = $matches[1];
+		}
+		$criteria = new Criteria();
+		$criteria->addFilter(new EqualsFilter('fileName', $filename));
+
+		$existing = $this->mediaRepository->search($criteria, $context)->first();
+
+		if ($existing) {
+			return $existing->getId();
+		}
+		return false;
 	}
 
 	/**

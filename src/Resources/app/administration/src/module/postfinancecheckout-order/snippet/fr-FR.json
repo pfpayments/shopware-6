@@ -78,9 +78,12 @@
 	  "successTitle": "Succès",
 	  "maxAvailableItemsToRefund": "Nombre maximum d'articles disponibles pour le remboursement",
 	  "maxAvailableAmountToRefund": "Montant maximal disponible pour le remboursement",
-	  "refundExceedsTotalError": {
-		"title": "Erreur lors de la création du remboursement.",
-		"messageRefundAmountExceedsAvailableBalance": "Le montant du remboursement dépasse le solde disponible."
+	  "refundCreateError": {
+		"errorTitle": "Erreur lors de la création du remboursement.",
+		"messageRefundAmountExceedsAvailableBalance": "Le montant du remboursement dépasse le solde disponible.",
+		"messageRefundAmountIsZero": "Le montant du remboursement doit être supérieur à 0.",
+		"messageRefundQuantityExceedsAvailableBalance": "Le remboursement par quantité dépasse le nombre maximal d’articles remboursables.",
+		"messageRefundQuantityIsZero": "Le remboursement par quantité doit être supérieur à 0."
 	  }
 	},
 	"transactionHistory": {

@@ -9,7 +9,6 @@
 		"void": "Cancel authorization",
 	    "refund-whole-line-item": "Refund whole line item",
 	    "refund-line-item-by-quantity": "Refund by quantity",
-	    "refund-line-item-selected": "Rembourser sélectionnés",
 	    "refund-line-item-selected": "Refund selected",
 	    "refund-line-item-parial": "Partial refund"
 	  }
@@ -79,9 +78,12 @@
 	  "successTitle": "Success",
 	  "maxAvailableItemsToRefund": "Maximum available items to refund",
 	  "maxAvailableAmountToRefund": "Maximum available amount to refund",
-	  "refundExceedsTotalError": {
-		"title": "Error while creating the refund.",
-		"messageRefundAmountExceedsAvailableBalance": "Refund amount exceeds available balance."
+	  "refundCreateError": {
+		"errorTitle": "Error while creating the refund.",
+		"messageRefundAmountExceedsAvailableBalance": "Refund amount exceeds available balance.",
+		"messageRefundAmountIsZero": "Refund amount must be greater than 0.",
+		"messageRefundQuantityExceedsAvailableBalance": "Refund by quantity exceeds maximum available items to refund.",
+		"messageRefundQuantityIsZero": "Refund by quantity must be greater than 0."
 	  }
 	},
 	"transactionHistory": {

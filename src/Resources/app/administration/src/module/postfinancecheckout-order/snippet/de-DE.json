@@ -78,9 +78,12 @@
 	  "successTitle": "Erfolg",
 	  "maxAvailableItemsToRefund": "Maximal Verfügbare Artikel zum Erstatten",
 	  "maxAvailableAmountToRefund": "Maximal verfügbarer Erstattungsbetrag",
-	  "refundExceedsTotalError": {
-		"title": "Fehler beim Erstellen der Rückerstattung.",
-		"messageRefundAmountExceedsAvailableBalance": "Der Rückerstattungsbetrag übersteigt das verfügbare Guthaben."
+	  "refundCreateError": {
+		"errorTitle": "Fehler beim Erstellen der Rückerstattung.",
+		"messageRefundAmountExceedsAvailableBalance": "Der Rückerstattungsbetrag übersteigt das verfügbare Guthaben.",
+		"messageRefundAmountIsZero": "Der Rückerstattungsbetrag muss größer als 0 sein.",
+		"messageRefundQuantityExceedsAvailableBalance": "Rückerstattung nach Menge überschreitet die maximal verfügbare Anzahl an Artikeln zur Rückerstattung.",
+		"messageRefundQuantityIsZero": "Rückerstattung nach Menge muss größer als 0 sein."
 	  }
 	},
 	"transactionHistory": {

@@ -45,7 +45,8 @@ use PostFinanceCheckoutPayment\Core\{
     Settings\Service\SettingsService,
     Util\LocaleCodeProvider,
     Util\Payload\CustomProducts\CustomProductsLineItemTypes,
-    Util\Payload\TransactionPayload
+    Util\Payload\TransactionPayload,
+    Util\Analytics\Analytics
 };
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
 use Shopware\Core\Framework\Struct\ArrayEntity;
@@ -221,9 +222,14 @@ class TransactionService
             $spaceId = $settings->getSpaceId();
         }
 
-        $sdkTransaction = $settings->getApiClient()->getTransactionService()->create($spaceId, $sdkTransactionCreate);
+        $apiClient = $settings->getApiClient();
+        Analytics::addHeaders($apiClient, [
+            Analytics::SUBSCRIPTION_TRANSACTION => true
+        ]);
+
+        $sdkTransaction = $apiClient->getTransactionService()->create($spaceId, $sdkTransactionCreate);
         if ($sdkTransaction->valid()) {
-            return $settings->getApiClient()->getTransactionService()->processWithoutUserInteraction($spaceId, $sdkTransaction->getId());
+            return $apiClient->getTransactionService()->processWithoutUserInteraction($spaceId, $sdkTransaction->getId());
         }
 
         throw new \Exception("The transacion is not valid and could not be created.");

@@ -1,3 +1,10 @@
+# 7.1.5
+- Improved analytics
+- Improved error handling for refunding amount 0 and too many items
+
+# 7.1.4
+- Updated SDK to 4.8.1
+
 # 7.1.3
 - Fixed issue with radio button/switch settings not saving
 - Fixed issue with error screen sporadically happening after failed payments
