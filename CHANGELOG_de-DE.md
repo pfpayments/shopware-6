@@ -1,3 +1,9 @@
+# 7.1.6
+- Verbesserte Rundungsbehandlung für zwei Dezimalstellen
+- Entfernte Verweise auf ungenutzte Klassen
+- Behebung einiger Typfehler
+- Weitere Verbesserung von Transaktionen mit dem Betrag 0 und Zustandsübergängen
+
 # 7.1.5
 - Verbesserte Analysefunktionen
 - Verbesserte Fehlerbehandlung bei Rückerstattungen von 0 Beträgen und zu vielen Artikeln

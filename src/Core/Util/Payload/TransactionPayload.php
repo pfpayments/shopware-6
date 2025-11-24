@@ -397,7 +397,9 @@ class TransactionPayload extends AbstractPayload
             $discountTitle = sprintf('DISCOUNT: %s', $discountName);
         }
 
-        $lineItem->setAmountIncludingTax($amount)
+        $roundedAmount = self::round($amount);
+
+        $lineItem->setAmountIncludingTax($roundedAmount)
             ->setName($discountTitle)
             ->setQuantity(1)
             ->setShippingRequired(false)
@@ -520,12 +522,14 @@ class TransactionPayload extends AbstractPayload
             $amount = self::round($amount + $shopLineItem->getPrice()->getCalculatedTaxes()->getAmount());
         }
 
+        $roundedAmount = self::round($amount);
+
         $lineItem = (new LineItemCreate())
             ->setName($this->fixLength($shopLineItem->getLabel(), 150))
             ->setUniqueId($uniqueId)
             ->setSku($sku)
             ->setQuantity($shopLineItem->getQuantity() ?? 1)
-            ->setAmountIncludingTax($amount);
+            ->setAmountIncludingTax($roundedAmount);
 
 
         if (!empty($shopLineItem->getType()) && $shopLineItem->getType() == CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
@@ -644,9 +648,10 @@ class TransactionPayload extends AbstractPayload
                     $amount = self::round($amount + $this->order->getShippingCosts()->getCalculatedTaxes()->getAmount());
                 }
 
+                $roundedAmount = self::round($amount);
 
                 $lineItem = (new LineItemCreate())
-                    ->setAmountIncludingTax($amount)
+                    ->setAmountIncludingTax($roundedAmount)
                     ->setName($this->fixLength($shippingName . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
                     ->setQuantity($this->order->getShippingCosts()->getQuantity() ?? 1)
                     ->setSku($this->fixLength($shippingName . '-Shipping', 200))
@@ -694,9 +699,11 @@ class TransactionPayload extends AbstractPayload
                       ->setRate($taxRate)
                       ->setTitle('Tax rate: '.$taxRate);
 
+                    $roundedAmount = self::round($amount);
+
                     $name = $taxRate . '%-' . $shippingName;
                     $lineItem = (new LineItemCreate())
-                      ->setAmountIncludingTax($amount)
+                      ->setAmountIncludingTax($roundedAmount)
                       ->setName($this->fixLength($name . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
                       ->setQuantity($this->order->getShippingCosts()->getQuantity() ?? 1)
                       ->setSku($this->fixLength($name . '-Shipping', 200))
@@ -768,7 +775,8 @@ class TransactionPayload extends AbstractPayload
                     ->setSku('Adjustment-Line-Item')
                     ->setQuantity(1);
                 /** @noinspection PhpParamsInspection */
-                $lineItem->setAmountIncludingTax($adjustmentPrice)
+                $roundedAdjustmentPrice = self::round($adjustmentPrice);
+                $lineItem->setAmountIncludingTax($roundedAdjustmentPrice)
                     ->setType(($adjustmentPrice > 0) ? LineItemType::FEE : LineItemType::DISCOUNT);
 
                 if (!$lineItem->valid()) {

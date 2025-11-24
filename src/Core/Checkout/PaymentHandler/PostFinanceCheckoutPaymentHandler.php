@@ -125,7 +125,9 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
             $orderTransactionId = $transaction->getOrderTransactionId();
             $orderTransaction = $this->orderTransactionRepository->search(
                 (new Criteria([$orderTransactionId]))
-                    ->addAssociation('order'), $context
+                    ->addAssociation('order')
+                    ->addAssociation('stateMachineState'),
+                    $context
             )->getEntities()->first();
 
             $contextSource = $context->getSource();
@@ -133,20 +135,9 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
                 $salesChannelContextId = $contextSource->getSalesChannelId();
             }
 
-            $orderCustomer = $orderTransaction->getOrder()?->getOrderCustomer();
-            
-            if ($orderCustomer) {
-                $customerId = $orderCustomer->getCustomerId();
-            } else {
-                $customerId = null;
-            }
+            $contextToken = $this->getContextToken($request);
+            $parameters = new SalesChannelContextServiceParameters($salesChannelContextId, $contextToken, originalContext: $context);
 
-            $parameters = new SalesChannelContextServiceParameters(
-                $salesChannelContextId, 
-                $request->getSession()->get("sw-context-token", Random::getAlphanumericString(32)), 
-                originalContext: $context,
-                customerId: $customerId
-            );
             $salesChannelContext = $this->salesChannelContextService->get($parameters);
             $redirectUrl = $transaction->getReturnUrl();
 
@@ -162,7 +153,10 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
             $request->getSession()->remove('transactionId');
             $errorMessage = 'An error occurred during the communication with external payment gateway : ' . $e->getMessage();
             $this->logger->critical($errorMessage);
-            throw PaymentException::customerCanceled($orderTransactionId, $errorMessage);
+            if ($orderTransaction->getState()?->getTechnicalName() === OrderTransactionStates::STATE_CANCELLED) {
+                throw PaymentException::asyncFinalizeInterrupted($orderTransaction->getOrder()->getId(), $errorMessage);
+            }
+            throw PaymentException::customerCanceled($transaction->getOrderTransactionId(), $errorMessage);
         }
     }
 
@@ -186,7 +180,9 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
         $orderTransactionId = $transaction->getOrderTransactionId();
         $orderTransaction = $this->orderTransactionRepository->search(
             (new Criteria([$orderTransactionId]))
-                ->addAssociation('order'), $context
+                ->addAssociation('order')
+                ->addAssociation('stateMachineState'),
+                $context
         )->getEntities()->first();
 
         if ($orderTransaction->getOrder()->getAmountTotal() > 0) {
@@ -215,7 +211,11 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
 
         $token = $request->getSession()->get('sw-context-token');
         if ($token) {
-            $salesChannelId = $transactionEntity->getSalesChannelId();
+            $orderEntity = $this->pluginTransactionService->getOrderEntity(
+                $orderTransaction->getOrder()->getId(),
+                $context
+            );
+            $salesChannelId = $orderEntity->getSalesChannelId();
             $parameters = new SalesChannelContextServiceParameters($salesChannelId, $token, originalContext: $context);
             $salesChannelContext = $this->salesChannelContextService->get($parameters);
 
@@ -432,7 +432,9 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
     {
         $lineItemCreate = new \PostFinanceCheckout\Sdk\Model\LineItemCreate();
 
-        $lineItemCreate->setAmountIncludingTax($lineItem->getAmountIncludingTax());
+        $roundedPrice = $this->round($lineItem->getAmountIncludingTax());
+
+        $lineItemCreate->setAmountIncludingTax($roundedPrice);
 
         $attributes = $lineItem->getAttributes();
         $attributesCreate = [];
@@ -468,5 +470,29 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
         $lineItemCreate->setUniqueId($lineItem->getUniqueId());
 
         return $lineItemCreate;
+    }
+
+    /**
+	 * @param     $amount
+	 * @param int $precision
+	 *
+	 * @return float
+	 */
+    private function round($value, $precision = 2): float {
+        return \round($value, $precision);
+    }
+    
+    private function getContextToken(Request $request): string
+    {
+        $headerContextToken = $request->headers->get('sw-context-token');
+        if ($headerContextToken) {
+            return $headerContextToken;
+        }
+
+        $sessionContextToken = $request->getSession()->get("sw-context-token");
+        if (!$sessionContextToken) {
+            return $sessionContextToken;
+        }
+        return Random::getAlphanumericString(32);
     }
 }

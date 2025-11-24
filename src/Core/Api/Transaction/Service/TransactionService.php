@@ -387,7 +387,7 @@ class TransactionService
      *
      * @return \Shopware\Core\Checkout\Order\OrderEntity
      */
-    protected function getOrderEntity(string $orderId, Context $context): OrderEntity
+    public function getOrderEntity(string $orderId, Context $context): OrderEntity
     {
         try {
             $criteria = (new Criteria([$orderId]))->addAssociations(['deliveries']);
@@ -721,18 +721,20 @@ class TransactionService
 	{
 		$lineItem = new LineItemCreate();
 
+		$roundedPrice = $this->round($productData->getPrice()->getUnitPrice());
+
 		if ($productData instanceof LineItem) {
 			$lineItem->setName($productData->getLabel());
 			$lineItem->setUniqueId($productData->getId());
 			$lineItem->setSku($productData->getReferencedId() ?? $productData->getId());
 			$lineItem->setQuantity($productData->getQuantity());
-			$lineItem->setAmountIncludingTax($productData->getPrice()->getUnitPrice());
+			$lineItem->setAmountIncludingTax($roundedPrice);
 		} elseif ($productData instanceof OrderLineItemEntity) {
 			$lineItem->setName($productData->getLabel());
 			$lineItem->setUniqueId($productData->getId());
 			$lineItem->setSku($productData->getProductId() ?? $productData->getIdentifier() ?? $productData->getId());
 			$lineItem->setQuantity($productData->getQuantity());
-			$lineItem->setAmountIncludingTax($productData->getUnitPrice());
+			$lineItem->setAmountIncludingTax($roundedPrice);
 		} else {
 			throw new \InvalidArgumentException('Unsupported line item type: ' . get_class($productData));
 		}
@@ -805,5 +807,15 @@ class TransactionService
             return true;
         }
         return false;
+    }
+
+    /**
+	 * @param     $amount
+	 * @param int $precision
+	 *
+	 * @return float
+	 */
+    private function round($value, $precision = 2): float {
+        return \round($value, $precision);
     }
 }

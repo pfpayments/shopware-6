@@ -1,3 +1,9 @@
+# 7.1.6
+- Improved rounding handling to force 2 decimal places
+- Removed references to unused classes
+- Fixed some type errors
+- Further improved 0 amount transaction; state transitions
+
 # 7.1.5
 - Improved analytics
 - Improved error handling for refunding amount 0 and too many items
