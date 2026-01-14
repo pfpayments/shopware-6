@@ -39,6 +39,7 @@ use PostFinanceCheckoutPayment\Sdk\{Model\AddressCreate,
   Model\TransactionCreate,
   Model\TransactionPending};
 use Shopware\Core\Framework\Struct\ArrayEntity;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 
 /**
  * Class CheckoutSubscriber
@@ -337,6 +338,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $criteria->addFilter(
                 new EqualsFilter('salesChannels.id', $event->getSalesChannelContext()->getSalesChannelId())
             );
+            $criteria->addSorting(new FieldSorting('position', FieldSorting::ASCENDING));
 
             $result = $this->paymentMethodRepository->search($criteria, $event->getContext());
             foreach ($result->getEntities() as $method) {

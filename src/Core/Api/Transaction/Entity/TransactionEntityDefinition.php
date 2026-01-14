@@ -32,7 +32,7 @@ use PostFinanceCheckoutPayment\Core\Api\Refund\Entity\RefundEntityDefinition;
  */
 class TransactionEntityDefinition extends EntityDefinition {
 
-	public const ENTITY_NAME = 'postfinancecheckout_transaction';
+	public const ENTITY_NAME = 'postfinancecheckout_transaction_data';
 
 	/**
 	 * @return string

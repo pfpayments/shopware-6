@@ -1,3 +1,7 @@
+# 7.2.0
+- Datenbanktabelle umbenannt, um Namenskonflikte mit älteren Plugins zu vermeiden.
+- Problem mit fehlgeschlagenen Rückerstattungen bei Zahlungen mit Rechnungen behoben.
+
 # 7.1.6
 - Verbesserte Rundungsbehandlung für zwei Dezimalstellen
 - Entfernte Verweise auf ungenutzte Klassen

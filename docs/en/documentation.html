@@ -23,7 +23,7 @@
 		</a>
 	</li>
 	<li>
-		<a href="https://github.com/pfpayments/shopware-6/releases/tag/7.1.6/">
+		<a href="https://github.com/pfpayments/shopware-6/releases/tag/7.2.0/">
 			Source
 		</a>
 	</li>
@@ -193,10 +193,59 @@ php bin/console plugin:install --activate --clearCache PostFinanceCheckout</code
 </div>
 </div>					</div>
 </div>			</div>
+</div>	<div class="chapter" id="_update">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">5</span>Update					</h1>
+	</div>
+	<div class="chapter-body">
+							<div class="section" id="_via_administration">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">5.1</span>Via Administration					</h2>
+	</div>
+	<div class="section-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Go to Shopware Admin &gt; Extensions &gt; My extensions.</p>
+</li>
+<li>
+<p>Find PostFinanceCheckoutPayment.</p>
+</li>
+<li>
+<p>Click Update.</p>
+</li>
+</ol>
+</div>					</div>
+</div>					<div class="section" id="_via_cli">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">5.2</span>Via CLI					</h2>
+	</div>
+	<div class="section-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Deploy the new plugin files (replace the folder in <code>custom/plugins/PostFinanceCheckoutPayment</code> or upload/install a new ZIP).</p>
+</li>
+<li>
+<p>Run:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">bin/console plugin:refresh
+bin/console plugin:update --clearCache PostFinanceCheckoutPayment
+bin/console cache:clear</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>					</div>
+</div>			</div>
 </div>	<div class="chapter" id="portal-startup-guide">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">5</span>Portal Startup Guide					</h1>
+			<span class="title-number">6</span>Portal Startup Guide					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -215,7 +264,7 @@ Please select the proper subscription plan - it should support ecommerce transac
 </div>							<div class="section" id="_create_the_api_key">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">5.1</span>Create the API key:					</h2>
+			<span class="title-number">6.1</span>Create the API key:					</h2>
 	</div>
 	<div class="section-body">
 					<div class="olist arabic">
@@ -301,7 +350,7 @@ Please note that Roles might be loading for few seconds
 </div>					<div class="section" id="_setup_payment_methods">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">5.2</span>Setup Payment Methods					</h2>
+			<span class="title-number">6.2</span>Setup Payment Methods					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -363,7 +412,7 @@ Please note that the connectors seems duplicated but it because one is for Physi
 </div>	<div class="chapter" id="_shop_startup_guide">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">6</span>Shop Startup Guide					</h1>
+			<span class="title-number">7</span>Shop Startup Guide					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="olist arabic">
@@ -502,7 +551,7 @@ Please note that if you do not use the Space View Id; this option should stay em
 </div>	<div class="chapter" id="_transaction_state_graph">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">7</span>Transaction State graph					</h1>
+			<span class="title-number">8</span>Transaction State graph					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -514,7 +563,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div>							<div class="section" id="_state_mapping_of_shopware_orders">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">7.1</span>State mapping of Shopware orders					</h2>
+			<span class="title-number">8.1</span>State mapping of Shopware orders					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -522,7 +571,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div>							<div class="section" id="_general_remarks_regarding_order_statuses">
 	<div class="section-title">
 		<h3>
-			<span class="title-number">7.1.1</span>General remarks regarding order statuses					</h3>
+			<span class="title-number">8.1.1</span>General remarks regarding order statuses					</h3>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -532,7 +581,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div>					<div class="section" id="_state_mapping_of_shopware_payment_status">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">7.2</span>State mapping of Shopware payment status					</h2>
+			<span class="title-number">8.2</span>State mapping of Shopware payment status					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -559,7 +608,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div>							<div class="section" id="_general_remarks_regarding_payment_statuses">
 	<div class="section-title">
 		<h3>
-			<span class="title-number">7.2.1</span>General remarks regarding payment statuses					</h3>
+			<span class="title-number">8.2.1</span>General remarks regarding payment statuses					</h3>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -569,7 +618,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div>					<div class="section" id="_state_mapping_of_shopware_delivery_status">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">7.3</span>State mapping of Shopware delivery status					</h2>
+			<span class="title-number">8.3</span>State mapping of Shopware delivery status					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -595,7 +644,7 @@ can be found in the <a href="https://checkout.postfinance.ch/en-us/doc/payment/t
 </div>	<div class="chapter" id="_transaction_management">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">8</span>Transaction management					</h1>
+			<span class="title-number">9</span>Transaction management					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -605,7 +654,7 @@ Shopware. However, there are some limitations (see below).</p>
 </div>							<div class="section" id="_complete_capture_an_order">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.1</span>Complete (capture) an order					</h2>
+			<span class="title-number">9.1</span>Complete (capture) an order					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -639,7 +688,7 @@ the fulfill state is reached. Initially the transaction will be in the <code>Aut
 </div>					<div class="section" id="_void_a_transaction">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.2</span>Void a transaction					</h2>
+			<span class="title-number">9.2</span>Void a transaction					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -663,7 +712,7 @@ You can only void transactions that are not yet completed.
 </div>					<div class="section" id="_refund_of_a_transaction">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.3</span>Refund of a transaction					</h2>
+			<span class="title-number">9.3</span>Refund of a transaction					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -690,7 +739,7 @@ It can take some time until you see the refund in Shopware. Refunds will only be
 </div>					<div class="section" id="_on_hold_orders">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.4</span>On hold orders					</h2>
+			<span class="title-number">9.4</span>On hold orders					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -714,7 +763,7 @@ within the defined time frame, PostFinance Checkout will generate a manual task 
 </div>					<div class="section" id="_limitations_of_the_synchronization_between_whitelabelname_and_shopware">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.5</span>Limitations of the synchronization between PostFinance Checkout and Shopware					</h2>
+			<span class="title-number">9.5</span>Limitations of the synchronization between PostFinance Checkout and Shopware					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -730,7 +779,7 @@ your Shopware backend.</p>
 </div>					<div class="section" id="_tokenization">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.6</span>Tokenization					</h2>
+			<span class="title-number">9.6</span>Tokenization					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -751,7 +800,7 @@ Tokenization is not available for guest checkouts.
 </div>					<div class="section" id="_recurring_payments">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.7</span>Recurring payments					</h2>
+			<span class="title-number">9.7</span>Recurring payments					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -761,7 +810,7 @@ tokenization, it can be used for subscriptions. The recurring payment is fully m
 </div>					<div class="section" id="_key_features">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.8</span>Key Features					</h2>
+			<span class="title-number">9.8</span>Key Features					</h2>
 	</div>
 	<div class="section-body">
 					<div class="ulist">
@@ -786,7 +835,7 @@ tokenization, it can be used for subscriptions. The recurring payment is fully m
 </div>					<div class="section" id="_troubleshooting">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.9</span>Troubleshooting					</h2>
+			<span class="title-number">9.9</span>Troubleshooting					</h2>
 	</div>
 	<div class="section-body">
 					<div class="ulist">
@@ -817,7 +866,7 @@ tokenization, it can be used for subscriptions. The recurring payment is fully m
 </div>					<div class="section" id="_faqs">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.10</span>FAQs					</h2>
+			<span class="title-number">9.10</span>FAQs					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -849,7 +898,7 @@ tokenization, it can be used for subscriptions. The recurring payment is fully m
 </div>	<div class="chapter" id="_changelog">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">9</span>Changelog					</h1>
+			<span class="title-number">10</span>Changelog					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -858,7 +907,7 @@ tokenization, it can be used for subscriptions. The recurring payment is fully m
 </div>	<div class="chapter" id="_contributing">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">10</span>Contributing					</h1>
+			<span class="title-number">11</span>Contributing					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -869,7 +918,7 @@ tokenization, it can be used for subscriptions. The recurring payment is fully m
 </div>	<div class="chapter" id="_support">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">11</span>Support					</h1>
+			<span class="title-number">12</span>Support					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -925,133 +974,150 @@ tokenization, it can be used for subscriptions. The recurring payment is fully m
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
-	<a href="#portal-startup-guide">
+	<a href="#_update">
 		<span class="item-number">5</span>
+		<span class="item-title">Update</span>
+			</a>
+        	<ul  class="nav">
+    		    			<li class="nav-level-2">
+	<a href="#_via_administration">
+		<span class="item-number">5.1</span>
+		<span class="item-title">Via Administration</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_via_cli">
+		<span class="item-number">5.2</span>
+		<span class="item-title">Via CLI</span>
+			</a>
+    </li>    		    	</ul>
+    </li>					<li class="nav-level-1">
+	<a href="#portal-startup-guide">
+		<span class="item-number">6</span>
 		<span class="item-title">Portal Startup Guide</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-2">
 	<a href="#_create_the_api_key">
-		<span class="item-number">5.1</span>
+		<span class="item-number">6.1</span>
 		<span class="item-title">Create the API key:</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_setup_payment_methods">
-		<span class="item-number">5.2</span>
+		<span class="item-number">6.2</span>
 		<span class="item-title">Setup Payment Methods</span>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
 	<a href="#_shop_startup_guide">
-		<span class="item-number">6</span>
+		<span class="item-number">7</span>
 		<span class="item-title">Shop Startup Guide</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_transaction_state_graph">
-		<span class="item-number">7</span>
+		<span class="item-number">8</span>
 		<span class="item-title">Transaction State graph</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-2">
 	<a href="#_state_mapping_of_shopware_orders">
-		<span class="item-number">7.1</span>
+		<span class="item-number">8.1</span>
 		<span class="item-title">State mapping of Shopware orders</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-3">
 	<a href="#_general_remarks_regarding_order_statuses">
-		<span class="item-number">7.1.1</span>
+		<span class="item-number">8.1.1</span>
 		<span class="item-title">General remarks regarding order statuses</span>
 			</a>
     </li>    		    	</ul>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_state_mapping_of_shopware_payment_status">
-		<span class="item-number">7.2</span>
+		<span class="item-number">8.2</span>
 		<span class="item-title">State mapping of Shopware payment status</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-3">
 	<a href="#_general_remarks_regarding_payment_statuses">
-		<span class="item-number">7.2.1</span>
+		<span class="item-number">8.2.1</span>
 		<span class="item-title">General remarks regarding payment statuses</span>
 			</a>
     </li>    		    	</ul>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_state_mapping_of_shopware_delivery_status">
-		<span class="item-number">7.3</span>
+		<span class="item-number">8.3</span>
 		<span class="item-title">State mapping of Shopware delivery status</span>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
 	<a href="#_transaction_management">
-		<span class="item-number">8</span>
+		<span class="item-number">9</span>
 		<span class="item-title">Transaction management</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-2">
 	<a href="#_complete_capture_an_order">
-		<span class="item-number">8.1</span>
+		<span class="item-number">9.1</span>
 		<span class="item-title">Complete (capture) an order</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_void_a_transaction">
-		<span class="item-number">8.2</span>
+		<span class="item-number">9.2</span>
 		<span class="item-title">Void a transaction</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_refund_of_a_transaction">
-		<span class="item-number">8.3</span>
+		<span class="item-number">9.3</span>
 		<span class="item-title">Refund of a transaction</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_on_hold_orders">
-		<span class="item-number">8.4</span>
+		<span class="item-number">9.4</span>
 		<span class="item-title">On hold orders</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_limitations_of_the_synchronization_between_whitelabelname_and_shopware">
-		<span class="item-number">8.5</span>
+		<span class="item-number">9.5</span>
 		<span class="item-title">Limitations of the synchronization between PostFinance Checkout and Shopware</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_tokenization">
-		<span class="item-number">8.6</span>
+		<span class="item-number">9.6</span>
 		<span class="item-title">Tokenization</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_recurring_payments">
-		<span class="item-number">8.7</span>
+		<span class="item-number">9.7</span>
 		<span class="item-title">Recurring payments</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_key_features">
-		<span class="item-number">8.8</span>
+		<span class="item-number">9.8</span>
 		<span class="item-title">Key Features</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_troubleshooting">
-		<span class="item-number">8.9</span>
+		<span class="item-number">9.9</span>
 		<span class="item-title">Troubleshooting</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_faqs">
-		<span class="item-number">8.10</span>
+		<span class="item-number">9.10</span>
 		<span class="item-title">FAQs</span>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
 	<a href="#_changelog">
-		<span class="item-number">9</span>
+		<span class="item-number">10</span>
 		<span class="item-title">Changelog</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_contributing">
-		<span class="item-number">10</span>
+		<span class="item-number">11</span>
 		<span class="item-title">Contributing</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_support">
-		<span class="item-number">11</span>
+		<span class="item-number">12</span>
 		<span class="item-title">Support</span>
 			</a>
     </li>			</ul>
