@@ -1,3 +1,7 @@
+# 6.2.0
+- Renamed database table to avoid a naming conflict with legacy plugins
+- Fixed issue with refunds failing for payments using Invoice
+
 # 6.1.17
 - Sales channels now support different spaces
 - Upgraded SDK to include latest fallback CA Bundle

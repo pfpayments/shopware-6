@@ -30,7 +30,7 @@ class Migration1590646356TransactionEntity extends MigrationStep {
 	public function update(Connection $connection): void
 	{
 		try {
-			$connection->executeStatement('ALTER TABLE `postfinancecheckout_transaction` ADD COLUMN `confirmation_email_sent` TINYINT(1) NOT NULL DEFAULT 0 AFTER `id`;');
+			$connection->executeStatement('ALTER TABLE `postfinancecheckout_transaction_tmp` ADD COLUMN `confirmation_email_sent` TINYINT(1) NOT NULL DEFAULT 0 AFTER `id`;');
 		}catch (\Exception $exception){
 			// column probably exists
 		}

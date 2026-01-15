@@ -13,11 +13,10 @@ The PostFinance Checkout Payment Plugin integrates modern payment processing int
 - **PostFinance Checkout Account:** Obtain `Space ID`, `User ID`, and `API Key` from the [PostFinance Checkout Dashboard](https://checkout.postfinance.ch/).
 
 ## Documentation
-
-- For English documentation click [here](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.17/docs/en/documentation.html)
-- Für die deutsche Dokumentation klicken Sie [hier](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.17/docs/de/documentation.html)
-- Pour la documentation Française, cliquez [ici](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.17/docs/fr/documentation.html)
-- Per la documentazione in tedesco, clicca [qui](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.1.17/docs/it/documentation.html)
+- For English documentation click [here](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.2.0/docs/en/documentation.html)
+- Für die deutsche Dokumentation klicken Sie [hier](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.2.0/docs/de/documentation.html)
+- Pour la documentation Française, cliquez [ici](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.2.0/docs/fr/documentation.html)
+- Per la documentazione in tedesco, clicca [qui](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.2.0/docs/it/documentation.html)
 
 ## Installation
 
@@ -41,6 +40,22 @@ php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPaymen
 Copy
 bin/console plugin:refresh  
 bin/console plugin:install --activate --clearCache PostFinanceCheckoutPayment  
+```
+
+## Update
+
+### Via Administration
+1. Go to Shopware Admin > Extensions > My extensions.
+2. Find PostFinanceCheckoutPayment.
+3. Click Update.
+
+### Via CLI
+1. Deploy the new plugin files (replace the folder in custom/plugins/PostFinanceCheckoutPayment or upload/install a new ZIP).
+2. Run:
+```bash
+bin/console plugin:refresh
+bin/console plugin:update --clearCache PostFinanceCheckoutPayment
+bin/console cache:clear
 ```
 
 ## Configuration

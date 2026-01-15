@@ -172,10 +172,59 @@ php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPaymen
 </ol>
 </div>					</div>
 </div>			</div>
+</div>	<div class="chapter" id="_aggiornamento">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">5</span>Aggiornamento					</h1>
+	</div>
+	<div class="chapter-body">
+							<div class="section" id="_tramite_amministrazione">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">5.1</span>Tramite Amministrazione					</h2>
+	</div>
+	<div class="section-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Vai su Shopware Admin &gt; Estensioni &gt; Le mie estensioni.</p>
+</li>
+<li>
+<p>Trova PostFinanceCheckoutPayment.</p>
+</li>
+<li>
+<p>Clicca su Aggiorna.</p>
+</li>
+</ol>
+</div>					</div>
+</div>					<div class="section" id="_tramite_cli">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">5.2</span>Tramite CLI					</h2>
+	</div>
+	<div class="section-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Distribuisci i nuovi file del plugin (sostituisci la cartella <code>custom/plugins/PostFinanceCheckoutPayment</code> oppure carica/installa un nuovo ZIP).</p>
+</li>
+<li>
+<p>Esegui:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">bin/console plugin:refresh
+bin/console plugin:update --clearCache PostFinanceCheckoutPayment
+bin/console cache:clear</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>					</div>
+</div>			</div>
 </div>	<div class="chapter" id="portal-startup-guide">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">5</span>Guida Rapida al Portale					</h1>
+			<span class="title-number">6</span>Guida Rapida al Portale					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -194,7 +243,7 @@ Selezionate il piano di abbonamento appropriato: dovrebbe supportare le transazi
 </div>							<div class="section" id="_create_la_chiave_api">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">5.1</span>Create la chiave API:					</h2>
+			<span class="title-number">6.1</span>Create la chiave API:					</h2>
 	</div>
 	<div class="section-body">
 					<div class="olist arabic">
@@ -280,7 +329,7 @@ Si prega di notare che il caricamento dei ruoli potrebbe richiedere alcuni secon
 </div>					<div class="section" id="_configurate_i_metodi_di_pagamento">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">5.2</span>Configurate i Metodi di Pagamento					</h2>
+			<span class="title-number">6.2</span>Configurate i Metodi di Pagamento					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -342,7 +391,7 @@ Si prega di notare che i connettori sembrano duplicati, ma è perché uno è per
 </div>	<div class="chapter" id="_guida_rapida_al_shop">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">6</span>Guida Rapida al Shop					</h1>
+			<span class="title-number">7</span>Guida Rapida al Shop					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="olist arabic">
@@ -481,7 +530,7 @@ Si prega di notare che se non utilizzate lo Space View Id, questa opzione dovreb
 </div>	<div class="chapter" id="_grafico_dello_stato_della_transazione">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">7</span>Grafico dello Stato della Transazione					</h1>
+			<span class="title-number">8</span>Grafico dello Stato della Transazione					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -491,7 +540,7 @@ Si prega di notare che se non utilizzate lo Space View Id, questa opzione dovreb
 </div>							<div class="section" id="_mappatura_degli_stati_degli_ordini_di_shopware">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">7.1</span>Mappatura degli Stati degli Ordini di Shopware					</h2>
+			<span class="title-number">8.1</span>Mappatura degli Stati degli Ordini di Shopware					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -499,7 +548,7 @@ Si prega di notare che se non utilizzate lo Space View Id, questa opzione dovreb
 </div>							<div class="section" id="_osservazioni_generali_riguardo_agli_stati_degli_ordini">
 	<div class="section-title">
 		<h3>
-			<span class="title-number">7.1.1</span>Osservazioni Generali Riguardo agli Stati degli Ordini					</h3>
+			<span class="title-number">8.1.1</span>Osservazioni Generali Riguardo agli Stati degli Ordini					</h3>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -509,7 +558,7 @@ Si prega di notare che se non utilizzate lo Space View Id, questa opzione dovreb
 </div>					<div class="section" id="_mappatura_dello_stato_di_pagamento_di_shopware">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">7.2</span>Mappatura dello Stato di Pagamento di Shopware					</h2>
+			<span class="title-number">8.2</span>Mappatura dello Stato di Pagamento di Shopware					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -536,7 +585,7 @@ Si prega di notare che se non utilizzate lo Space View Id, questa opzione dovreb
 </div>							<div class="section" id="_osservazioni_generali_riguardo_agli_stati_di_pagamento">
 	<div class="section-title">
 		<h3>
-			<span class="title-number">7.2.1</span>Osservazioni Generali Riguardo agli Stati di Pagamento					</h3>
+			<span class="title-number">8.2.1</span>Osservazioni Generali Riguardo agli Stati di Pagamento					</h3>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -546,7 +595,7 @@ Si prega di notare che se non utilizzate lo Space View Id, questa opzione dovreb
 </div>					<div class="section" id="_mappatura_dello_stato_di_spedizione_di_shopware">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">7.3</span>Mappatura dello Stato di Spedizione di Shopware					</h2>
+			<span class="title-number">8.3</span>Mappatura dello Stato di Spedizione di Shopware					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -572,7 +621,7 @@ Si prega di notare che se non utilizzate lo Space View Id, questa opzione dovreb
 </div>	<div class="chapter" id="_gestione_delle_transazioni">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">8</span>Gestione delle Transazioni					</h1>
+			<span class="title-number">9</span>Gestione delle Transazioni					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -580,7 +629,7 @@ Si prega di notare che se non utilizzate lo Space View Id, questa opzione dovreb
 </div>							<div class="section" id="_completare_acquisire_un_ordine">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.1</span>Completare (Acquisire) un Ordine					</h2>
+			<span class="title-number">9.1</span>Completare (Acquisire) un Ordine					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -612,7 +661,7 @@ Quando il completamento è in sospeso in Wallee, l&#8217;ordine rimarrà nello s
 </div>					<div class="section" id="_annullare_una_transazione">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.2</span>Annullare una transazione					</h2>
+			<span class="title-number">9.2</span>Annullare una transazione					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -636,7 +685,7 @@ Puoi annullare solo le transazioni che non sono ancora state completate
 </div>					<div class="section" id="_rimborso_di_una_transazione">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.3</span>Rimborso di una Transazione					</h2>
+			<span class="title-number">9.3</span>Rimborso di una Transazione					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -662,7 +711,7 @@ Potrebbe volerci un po' di tempo prima che vediate il rimborso in Shopware. I ri
 </div>					<div class="section" id="_ordini_in_attesa">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.4</span>Ordini in Attesa					</h2>
+			<span class="title-number">9.4</span>Ordini in Attesa					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -684,7 +733,7 @@ Potrebbe volerci un po' di tempo prima che vediate il rimborso in Shopware. I ri
 </div>					<div class="section" id="_limitazioni_della_sincronizzazione_tra_wallee_e_shopware">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.5</span>Limitazioni della Sincronizzazione tra Wallee e Shopware					</h2>
+			<span class="title-number">9.5</span>Limitazioni della Sincronizzazione tra Wallee e Shopware					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -695,7 +744,7 @@ Potrebbe volerci un po' di tempo prima che vediate il rimborso in Shopware. I ri
 </div>					<div class="section" id="_tokenization">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.6</span>Tokenization					</h2>
+			<span class="title-number">9.6</span>Tokenization					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -715,7 +764,7 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 </div>					<div class="section" id="_key_features">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.7</span>Key Features					</h2>
+			<span class="title-number">9.7</span>Key Features					</h2>
 	</div>
 	<div class="section-body">
 					<div class="ulist">
@@ -737,7 +786,7 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 </div>					<div class="section" id="_risoluzione_dei_problemi">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.8</span>Risoluzione dei Problemi					</h2>
+			<span class="title-number">9.8</span>Risoluzione dei Problemi					</h2>
 	</div>
 	<div class="section-body">
 					<div class="ulist">
@@ -768,7 +817,7 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 </div>					<div class="section" id="_faqs">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.9</span>FAQs					</h2>
+			<span class="title-number">9.9</span>FAQs					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -800,7 +849,7 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 </div>	<div class="chapter" id="_changelog">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">9</span>Changelog					</h1>
+			<span class="title-number">10</span>Changelog					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -809,7 +858,7 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 </div>	<div class="chapter" id="_contribuzione">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">10</span>Contribuzione					</h1>
+			<span class="title-number">11</span>Contribuzione					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -820,7 +869,7 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 </div>	<div class="chapter" id="_support">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">11</span>Support					</h1>
+			<span class="title-number">12</span>Support					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -871,128 +920,145 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
-	<a href="#portal-startup-guide">
+	<a href="#_aggiornamento">
 		<span class="item-number">5</span>
+		<span class="item-title">Aggiornamento</span>
+			</a>
+        	<ul  class="nav">
+    		    			<li class="nav-level-2">
+	<a href="#_tramite_amministrazione">
+		<span class="item-number">5.1</span>
+		<span class="item-title">Tramite Amministrazione</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_tramite_cli">
+		<span class="item-number">5.2</span>
+		<span class="item-title">Tramite CLI</span>
+			</a>
+    </li>    		    	</ul>
+    </li>					<li class="nav-level-1">
+	<a href="#portal-startup-guide">
+		<span class="item-number">6</span>
 		<span class="item-title">Guida Rapida al Portale</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-2">
 	<a href="#_create_la_chiave_api">
-		<span class="item-number">5.1</span>
+		<span class="item-number">6.1</span>
 		<span class="item-title">Create la chiave API:</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_configurate_i_metodi_di_pagamento">
-		<span class="item-number">5.2</span>
+		<span class="item-number">6.2</span>
 		<span class="item-title">Configurate i Metodi di Pagamento</span>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
 	<a href="#_guida_rapida_al_shop">
-		<span class="item-number">6</span>
+		<span class="item-number">7</span>
 		<span class="item-title">Guida Rapida al Shop</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_grafico_dello_stato_della_transazione">
-		<span class="item-number">7</span>
+		<span class="item-number">8</span>
 		<span class="item-title">Grafico dello Stato della Transazione</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-2">
 	<a href="#_mappatura_degli_stati_degli_ordini_di_shopware">
-		<span class="item-number">7.1</span>
+		<span class="item-number">8.1</span>
 		<span class="item-title">Mappatura degli Stati degli Ordini di Shopware</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-3">
 	<a href="#_osservazioni_generali_riguardo_agli_stati_degli_ordini">
-		<span class="item-number">7.1.1</span>
+		<span class="item-number">8.1.1</span>
 		<span class="item-title">Osservazioni Generali Riguardo agli Stati degli Ordini</span>
 			</a>
     </li>    		    	</ul>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_mappatura_dello_stato_di_pagamento_di_shopware">
-		<span class="item-number">7.2</span>
+		<span class="item-number">8.2</span>
 		<span class="item-title">Mappatura dello Stato di Pagamento di Shopware</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-3">
 	<a href="#_osservazioni_generali_riguardo_agli_stati_di_pagamento">
-		<span class="item-number">7.2.1</span>
+		<span class="item-number">8.2.1</span>
 		<span class="item-title">Osservazioni Generali Riguardo agli Stati di Pagamento</span>
 			</a>
     </li>    		    	</ul>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_mappatura_dello_stato_di_spedizione_di_shopware">
-		<span class="item-number">7.3</span>
+		<span class="item-number">8.3</span>
 		<span class="item-title">Mappatura dello Stato di Spedizione di Shopware</span>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
 	<a href="#_gestione_delle_transazioni">
-		<span class="item-number">8</span>
+		<span class="item-number">9</span>
 		<span class="item-title">Gestione delle Transazioni</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-2">
 	<a href="#_completare_acquisire_un_ordine">
-		<span class="item-number">8.1</span>
+		<span class="item-number">9.1</span>
 		<span class="item-title">Completare (Acquisire) un Ordine</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_annullare_una_transazione">
-		<span class="item-number">8.2</span>
+		<span class="item-number">9.2</span>
 		<span class="item-title">Annullare una transazione</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_rimborso_di_una_transazione">
-		<span class="item-number">8.3</span>
+		<span class="item-number">9.3</span>
 		<span class="item-title">Rimborso di una Transazione</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_ordini_in_attesa">
-		<span class="item-number">8.4</span>
+		<span class="item-number">9.4</span>
 		<span class="item-title">Ordini in Attesa</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_limitazioni_della_sincronizzazione_tra_wallee_e_shopware">
-		<span class="item-number">8.5</span>
+		<span class="item-number">9.5</span>
 		<span class="item-title">Limitazioni della Sincronizzazione tra Wallee e Shopware</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_tokenization">
-		<span class="item-number">8.6</span>
+		<span class="item-number">9.6</span>
 		<span class="item-title">Tokenization</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_key_features">
-		<span class="item-number">8.7</span>
+		<span class="item-number">9.7</span>
 		<span class="item-title">Key Features</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_risoluzione_dei_problemi">
-		<span class="item-number">8.8</span>
+		<span class="item-number">9.8</span>
 		<span class="item-title">Risoluzione dei Problemi</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_faqs">
-		<span class="item-number">8.9</span>
+		<span class="item-number">9.9</span>
 		<span class="item-title">FAQs</span>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
 	<a href="#_changelog">
-		<span class="item-number">9</span>
+		<span class="item-number">10</span>
 		<span class="item-title">Changelog</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_contribuzione">
-		<span class="item-number">10</span>
+		<span class="item-number">11</span>
 		<span class="item-title">Contribuzione</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_support">
-		<span class="item-number">11</span>
+		<span class="item-number">12</span>
 		<span class="item-title">Support</span>
 			</a>
     </li>			</ul>

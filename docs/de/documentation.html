@@ -178,10 +178,59 @@ php bin/console plugin:install --activate --clearCache PostFinanceCheckoutPaymen
 </ol>
 </div>					</div>
 </div>			</div>
+</div>	<div class="chapter" id="_update">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">5</span>Update					</h1>
+	</div>
+	<div class="chapter-body">
+							<div class="section" id="_via_administration">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">5.1</span>Via Administration					</h2>
+	</div>
+	<div class="section-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Gehe zu Shopware Admin &gt; Erweiterungen &gt; Meine Erweiterungen.</p>
+</li>
+<li>
+<p>Suche nach PostFinanceCheckoutPayment.</p>
+</li>
+<li>
+<p>Klicke auf Aktualisieren.</p>
+</li>
+</ol>
+</div>					</div>
+</div>					<div class="section" id="_via_cli">
+	<div class="section-title">
+		<h2>
+			<span class="title-number">5.2</span>Via CLI					</h2>
+	</div>
+	<div class="section-body">
+					<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Stelle die neuen Plugin-Dateien bereit (ersetze den Ordner <code>custom/plugins/PostFinanceCheckoutPayment</code> oder lade ein neues ZIP hoch/installiere es).</p>
+</li>
+<li>
+<p>Führe aus:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">bin/console plugin:refresh
+bin/console plugin:update --clearCache PostFinanceCheckoutPayment
+bin/console cache:clear</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>					</div>
+</div>			</div>
 </div>	<div class="chapter" id="portal-startup-guide">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">5</span>Portal-Startanleitung					</h1>
+			<span class="title-number">6</span>Portal-Startanleitung					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -200,7 +249,7 @@ Wählen Sie das passende Abo aus – es sollte E-Commerce-Transaktionen unterst�
 </div>							<div class="section" id="_erstellen_sie_den_api_schlüssel">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">5.1</span>Erstellen Sie den API-Schlüssel:					</h2>
+			<span class="title-number">6.1</span>Erstellen Sie den API-Schlüssel:					</h2>
 	</div>
 	<div class="section-body">
 					<div class="olist arabic">
@@ -286,7 +335,7 @@ Bitte beachten Sie, dass das Laden der Rollen einige Sekunden dauern kann.
 </div>					<div class="section" id="_zahlungsmethoden_einrichten">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">5.2</span>Zahlungsmethoden einrichten					</h2>
+			<span class="title-number">6.2</span>Zahlungsmethoden einrichten					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -348,7 +397,7 @@ Bitte beachten Sie, dass die Konnektoren doppelt erscheinen, da einer für Zahlu
 </div>	<div class="chapter" id="_shop_startanleitung">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">6</span>Shop-Startanleitung					</h1>
+			<span class="title-number">7</span>Shop-Startanleitung					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="olist arabic">
@@ -487,7 +536,7 @@ Bitte beachten Sie, dass diese Option leer bleiben sollte, wenn Sie die Space Vi
 </div>	<div class="chapter" id="_transaktionszustandsdiagramm">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">7</span>Transaktionszustandsdiagramm					</h1>
+			<span class="title-number">8</span>Transaktionszustandsdiagramm					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -497,7 +546,7 @@ Bitte beachten Sie, dass diese Option leer bleiben sollte, wenn Sie die Space Vi
 </div>							<div class="section" id="_zustandsabbildung_von_shopware_bestellungen">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">7.1</span>Zustandsabbildung von Shopware-Bestellungen					</h2>
+			<span class="title-number">8.1</span>Zustandsabbildung von Shopware-Bestellungen					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -505,7 +554,7 @@ Bitte beachten Sie, dass diese Option leer bleiben sollte, wenn Sie die Space Vi
 </div>							<div class="section" id="_allgemeine_anmerkungen_zu_bestellstatus">
 	<div class="section-title">
 		<h3>
-			<span class="title-number">7.1.1</span>Allgemeine Anmerkungen zu Bestellstatus					</h3>
+			<span class="title-number">8.1.1</span>Allgemeine Anmerkungen zu Bestellstatus					</h3>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -515,7 +564,7 @@ Bitte beachten Sie, dass diese Option leer bleiben sollte, wenn Sie die Space Vi
 </div>					<div class="section" id="_zustandsabbildung_des_shopware_zahlungsstatus">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">7.2</span>Zustandsabbildung des Shopware-Zahlungsstatus					</h2>
+			<span class="title-number">8.2</span>Zustandsabbildung des Shopware-Zahlungsstatus					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -542,7 +591,7 @@ Bitte beachten Sie, dass diese Option leer bleiben sollte, wenn Sie die Space Vi
 </div>							<div class="section" id="_allgemeine_anmerkungen_zu_zahlungsstatus">
 	<div class="section-title">
 		<h3>
-			<span class="title-number">7.2.1</span>Allgemeine Anmerkungen zu Zahlungsstatus					</h3>
+			<span class="title-number">8.2.1</span>Allgemeine Anmerkungen zu Zahlungsstatus					</h3>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -552,7 +601,7 @@ Bitte beachten Sie, dass diese Option leer bleiben sollte, wenn Sie die Space Vi
 </div>					<div class="section" id="_zustandsabbildung_des_shopware_lieferstatus">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">7.3</span>Zustandsabbildung des Shopware-Lieferstatus					</h2>
+			<span class="title-number">8.3</span>Zustandsabbildung des Shopware-Lieferstatus					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -578,7 +627,7 @@ Bitte beachten Sie, dass diese Option leer bleiben sollte, wenn Sie die Space Vi
 </div>	<div class="chapter" id="_transaktionsverwaltung">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">8</span>Transaktionsverwaltung					</h1>
+			<span class="title-number">9</span>Transaktionsverwaltung					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -586,7 +635,7 @@ Bitte beachten Sie, dass diese Option leer bleiben sollte, wenn Sie die Space Vi
 </div>							<div class="section" id="_bestellung_abschließen_erfassen">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.1</span>Bestellung abschließen (erfassen)					</h2>
+			<span class="title-number">9.1</span>Bestellung abschließen (erfassen)					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -614,7 +663,7 @@ Wenn der Abschluss in PostFinance Checkout ausstehend ist, bleibt die Bestellung
 </div>					<div class="section" id="_transaktion_stornieren">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.2</span>Transaktion stornieren					</h2>
+			<span class="title-number">9.2</span>Transaktion stornieren					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -638,7 +687,7 @@ Sie können nur Transaktionen stornieren, die noch nicht abgeschlossen sind.
 </div>					<div class="section" id="_rückerstattung_einer_transaktion">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.3</span>Rückerstattung einer Transaktion					</h2>
+			<span class="title-number">9.3</span>Rückerstattung einer Transaktion					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -664,7 +713,7 @@ Es kann einige Zeit dauern, bis Sie die Rückerstattung in Shopware sehen. Rück
 </div>					<div class="section" id="_bestellungen_auf_on_hold">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.4</span>Bestellungen auf On Hold					</h2>
+			<span class="title-number">9.4</span>Bestellungen auf On Hold					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -686,7 +735,7 @@ Es kann einige Zeit dauern, bis Sie die Rückerstattung in Shopware sehen. Rück
 </div>					<div class="section" id="_einschränkungen_der_synchronisierung_zwischen_whitelabelname_und_shopware">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.5</span>Einschränkungen der Synchronisierung zwischen PostFinance Checkout und Shopware					</h2>
+			<span class="title-number">9.5</span>Einschränkungen der Synchronisierung zwischen PostFinance Checkout und Shopware					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -697,7 +746,7 @@ Es kann einige Zeit dauern, bis Sie die Rückerstattung in Shopware sehen. Rück
 </div>					<div class="section" id="_tokenisierung">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.6</span>Tokenisierung					</h2>
+			<span class="title-number">9.6</span>Tokenisierung					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -717,7 +766,7 @@ Die Tokenisierung ist für Gast-Checkouts nicht verfügbar
 </div>					<div class="section" id="_hauptfunktionen">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.7</span>Hauptfunktionen					</h2>
+			<span class="title-number">9.7</span>Hauptfunktionen					</h2>
 	</div>
 	<div class="section-body">
 					<div class="ulist">
@@ -739,7 +788,7 @@ Die Tokenisierung ist für Gast-Checkouts nicht verfügbar
 </div>					<div class="section" id="_fehlerbehebung">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.8</span>Fehlerbehebung					</h2>
+			<span class="title-number">9.8</span>Fehlerbehebung					</h2>
 	</div>
 	<div class="section-body">
 					<div class="ulist">
@@ -771,7 +820,7 @@ tail -f var/log/whitelabelname_payment*.log</code></pre>
 </div>					<div class="section" id="_faqs">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">8.9</span>FAQs					</h2>
+			<span class="title-number">9.9</span>FAQs					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -800,7 +849,7 @@ A: Ja, das Plugin unterstützt Wallets wie Apple Pay.</p>
 </div>	<div class="chapter" id="_änderungsprotokoll">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">9</span>Änderungsprotokoll					</h1>
+			<span class="title-number">10</span>Änderungsprotokoll					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -809,7 +858,7 @@ A: Ja, das Plugin unterstützt Wallets wie Apple Pay.</p>
 </div>	<div class="chapter" id="_mitwirken">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">10</span>Mitwirken					</h1>
+			<span class="title-number">11</span>Mitwirken					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -820,7 +869,7 @@ A: Ja, das Plugin unterstützt Wallets wie Apple Pay.</p>
 </div>	<div class="chapter" id="_support">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">11</span>Support					</h1>
+			<span class="title-number">12</span>Support					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -871,128 +920,145 @@ A: Ja, das Plugin unterstützt Wallets wie Apple Pay.</p>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
-	<a href="#portal-startup-guide">
+	<a href="#_update">
 		<span class="item-number">5</span>
+		<span class="item-title">Update</span>
+			</a>
+        	<ul  class="nav">
+    		    			<li class="nav-level-2">
+	<a href="#_via_administration">
+		<span class="item-number">5.1</span>
+		<span class="item-title">Via Administration</span>
+			</a>
+    </li>    		    			<li class="nav-level-2">
+	<a href="#_via_cli">
+		<span class="item-number">5.2</span>
+		<span class="item-title">Via CLI</span>
+			</a>
+    </li>    		    	</ul>
+    </li>					<li class="nav-level-1">
+	<a href="#portal-startup-guide">
+		<span class="item-number">6</span>
 		<span class="item-title">Portal-Startanleitung</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-2">
 	<a href="#_erstellen_sie_den_api_schlüssel">
-		<span class="item-number">5.1</span>
+		<span class="item-number">6.1</span>
 		<span class="item-title">Erstellen Sie den API-Schlüssel:</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_zahlungsmethoden_einrichten">
-		<span class="item-number">5.2</span>
+		<span class="item-number">6.2</span>
 		<span class="item-title">Zahlungsmethoden einrichten</span>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
 	<a href="#_shop_startanleitung">
-		<span class="item-number">6</span>
+		<span class="item-number">7</span>
 		<span class="item-title">Shop-Startanleitung</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_transaktionszustandsdiagramm">
-		<span class="item-number">7</span>
+		<span class="item-number">8</span>
 		<span class="item-title">Transaktionszustandsdiagramm</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-2">
 	<a href="#_zustandsabbildung_von_shopware_bestellungen">
-		<span class="item-number">7.1</span>
+		<span class="item-number">8.1</span>
 		<span class="item-title">Zustandsabbildung von Shopware-Bestellungen</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-3">
 	<a href="#_allgemeine_anmerkungen_zu_bestellstatus">
-		<span class="item-number">7.1.1</span>
+		<span class="item-number">8.1.1</span>
 		<span class="item-title">Allgemeine Anmerkungen zu Bestellstatus</span>
 			</a>
     </li>    		    	</ul>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_zustandsabbildung_des_shopware_zahlungsstatus">
-		<span class="item-number">7.2</span>
+		<span class="item-number">8.2</span>
 		<span class="item-title">Zustandsabbildung des Shopware-Zahlungsstatus</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-3">
 	<a href="#_allgemeine_anmerkungen_zu_zahlungsstatus">
-		<span class="item-number">7.2.1</span>
+		<span class="item-number">8.2.1</span>
 		<span class="item-title">Allgemeine Anmerkungen zu Zahlungsstatus</span>
 			</a>
     </li>    		    	</ul>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_zustandsabbildung_des_shopware_lieferstatus">
-		<span class="item-number">7.3</span>
+		<span class="item-number">8.3</span>
 		<span class="item-title">Zustandsabbildung des Shopware-Lieferstatus</span>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
 	<a href="#_transaktionsverwaltung">
-		<span class="item-number">8</span>
+		<span class="item-number">9</span>
 		<span class="item-title">Transaktionsverwaltung</span>
 			</a>
         	<ul  class="nav">
     		    			<li class="nav-level-2">
 	<a href="#_bestellung_abschließen_erfassen">
-		<span class="item-number">8.1</span>
+		<span class="item-number">9.1</span>
 		<span class="item-title">Bestellung abschließen (erfassen)</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_transaktion_stornieren">
-		<span class="item-number">8.2</span>
+		<span class="item-number">9.2</span>
 		<span class="item-title">Transaktion stornieren</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_rückerstattung_einer_transaktion">
-		<span class="item-number">8.3</span>
+		<span class="item-number">9.3</span>
 		<span class="item-title">Rückerstattung einer Transaktion</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_bestellungen_auf_on_hold">
-		<span class="item-number">8.4</span>
+		<span class="item-number">9.4</span>
 		<span class="item-title">Bestellungen auf On Hold</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_einschränkungen_der_synchronisierung_zwischen_whitelabelname_und_shopware">
-		<span class="item-number">8.5</span>
+		<span class="item-number">9.5</span>
 		<span class="item-title">Einschränkungen der Synchronisierung zwischen PostFinance Checkout und Shopware</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_tokenisierung">
-		<span class="item-number">8.6</span>
+		<span class="item-number">9.6</span>
 		<span class="item-title">Tokenisierung</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_hauptfunktionen">
-		<span class="item-number">8.7</span>
+		<span class="item-number">9.7</span>
 		<span class="item-title">Hauptfunktionen</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_fehlerbehebung">
-		<span class="item-number">8.8</span>
+		<span class="item-number">9.8</span>
 		<span class="item-title">Fehlerbehebung</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_faqs">
-		<span class="item-number">8.9</span>
+		<span class="item-number">9.9</span>
 		<span class="item-title">FAQs</span>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
 	<a href="#_änderungsprotokoll">
-		<span class="item-number">9</span>
+		<span class="item-number">10</span>
 		<span class="item-title">Änderungsprotokoll</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_mitwirken">
-		<span class="item-number">10</span>
+		<span class="item-number">11</span>
 		<span class="item-title">Mitwirken</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_support">
-		<span class="item-number">11</span>
+		<span class="item-number">12</span>
 		<span class="item-title">Support</span>
 			</a>
     </li>			</ul>

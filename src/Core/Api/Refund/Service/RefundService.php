@@ -12,14 +12,20 @@ use Shopware\Core\{
 };
 use PostFinanceCheckout\Sdk\{
   Model\Refund,
-  Model\Transaction
+  Model\Transaction,
+  Model\CriteriaOperator,
+  Model\EntityQueryFilter,
+  Model\EntityQueryFilterType,
+  Model\EntityQuery,
+  ApiException
 };
 use PostFinanceCheckoutPayment\Core\{
   Api\Refund\Entity\RefundEntity,
   Api\Transaction\Entity\TransactionEntity,
   Api\Transaction\Entity\TransactionEntityDefinition,
   Settings\Service\SettingsService,
-  Util\Payload\RefundPayload
+  Util\Payload\RefundPayload,
+  Util\Exception\RefundNotSupportedException
 };
 
 /**
@@ -99,6 +105,12 @@ class RefundService
                 $this->upsert($refund, $context);
                 return $refund;
             }
+        } catch (ApiException $exception) {
+            $message = $exception->getMessage();
+            $this->logger->critical($message);
+            if ($exception->getCode() === 442 && str_contains($message, 'does not support online refunds')) {
+                throw new RefundNotSupportedException($message, 0, $exception);
+            }
         } catch (\Exception $exception) {
             $this->logger->critical($exception->getMessage());
         }
@@ -133,6 +145,12 @@ class RefundService
                 $refund = $apiClient->getRefundService()->refund($settings->getSpaceId(), $refundPayload);
                 $this->upsert($refund, $context);
                 return $refund;
+            }
+        } catch (ApiException $exception) {
+            $message = $exception->getMessage();
+            $this->logger->critical($message);
+            if ($exception->getCode() === 442 && str_contains($message, 'does not support online refunds')) {
+                throw new RefundNotSupportedException($message, 0, $exception);
             }
         } catch (\Exception $exception) {
             $this->logger->critical($exception->getMessage());
@@ -169,6 +187,12 @@ class RefundService
                 $refund = $apiClient->getRefundService()->refund($settings->getSpaceId(), $refundPayload);
                 $this->upsert($refund, $context);
                 return $refund;
+            }
+        } catch (ApiException $exception) {
+            $message = $exception->getMessage();
+            $this->logger->critical($message);
+            if ($exception->getCode() === 442 && str_contains($message, 'does not support online refunds')) {
+                throw new RefundNotSupportedException($message, 0, $exception);
             }
         } catch (\Exception $exception) {
             $this->logger->critical($exception->getMessage());
@@ -240,5 +264,68 @@ class RefundService
           )
           ->first();
     }
-    
+
+    /**
+     * Get total refunded quantity for transaction's line item by lineItemId.
+     *
+     * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
+     * @param \Shopware\Core\Framework\Context $context
+     * @param string $lineItemId
+     *
+     * @return int
+     */
+    public function getRefundedQuantity(Transaction $transaction, Context $context, string $lineItemId): int {
+        $transactionEntity = $this->getTransactionEntityByTransactionId($transaction->getId(), $context);
+        $settings = $this->settingsService->getSettings($transactionEntity->getSalesChannel()->getId());
+        $apiClient = $settings->getApiClient();
+
+        $entityQueryFilter = (new EntityQueryFilter())
+            ->setType(EntityQueryFilterType::LEAF)
+            ->setOperator(CriteriaOperator::EQUALS)
+            ->setFieldName('transaction.id')
+            ->setValue($transaction->getId());
+
+        $query = (new EntityQuery())->setFilter($entityQueryFilter);
+
+        $refunds = $apiClient->getRefundService()->search($settings->getSpaceId(), $query);
+
+        $refundedQuantity = 0;
+
+        foreach ($refunds as $refund) {
+            foreach ($refund->getReductions() as $reduction) {
+                if ($reduction->getLineItemUniqueId() === $lineItemId) {
+                    $refundedQuantity += (int) $reduction->getQuantityReduction();
+                }
+            }
+        }
+
+        return $refundedQuantity;
+    }
+
+    /**
+     * Get maximum quantity of available items to refund for line item.
+     *
+     * @param \PostFinanceCheckout\Sdk\Model\Transaction $transaction
+     * @param \Shopware\Core\Framework\Context $context
+     * @param string $lineItemId
+     *
+     * @return int
+     */
+    public function getMaxRefundableQuantity(Transaction $transaction, Context $context, string $lineItemId): int {
+
+        $originalQuantity = 0;
+
+        foreach ($transaction->getLineItems() as $lineItem) {
+            if ($lineItem->getUniqueId() === $lineItemId) {
+                $originalQuantity = (int) $lineItem->getQuantity();
+                break;
+            }
+        }
+
+        $refundedQuantity = $this->getRefundedQuantity($transaction, $context, $lineItemId);
+
+        $maxQuantity = $originalQuantity - $refundedQuantity;
+
+        return $maxQuantity;
+    }
 }

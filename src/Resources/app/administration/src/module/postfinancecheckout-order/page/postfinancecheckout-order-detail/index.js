@@ -332,12 +332,12 @@ Component.register('postfinancecheckout-order-detail', {
 			this.modalType = '';
 		},
 
-		lineItemRefund(lineItemId) {
+		lineItemRefund(lineItemId, itemQuantity) {
 			this.isLoading = true;
 			this.PostFinanceCheckoutRefundService.createRefund(
 				this.transactionData.transactions[0].metaData.salesChannelId,
 				this.transactionData.transactions[0].id,
-				0,
+				itemQuantity,
 				lineItemId
 			).then(() => {
 				this.createNotificationSuccess({
@@ -351,9 +351,18 @@ Component.register('postfinancecheckout-order-detail', {
                 });
 			}).catch((errorResponse) => {
 				try {
+					var errorTitle = errorResponse?.response?.data?.errors?.[0]?.title ?? this.$tc('postfinancecheckout-order.refundAction.refundCreateError.errorTitle')
+					var errorMessage;
+					switch(errorResponse.response.data) {
+						case 'methodDoesNotSupportRefund':
+							errorMessage = this.$tc('postfinancecheckout-order.refundAction.refundCreateError.messagePaymentMethodDoesNotSupportRefund');
+						break;
+						default:
+							errorMessage = errorResponse.response.data.errors[0].detail;
+					}
 					this.createNotificationError({
-						title: errorResponse.response.data.errors[0].title,
-						message: errorResponse.response.data.errors[0].detail,
+						title: errorTitle,
+						message: errorMessage,
 						autoClose: false
 					});
 				} catch (e) {
@@ -385,7 +394,7 @@ Component.register('postfinancecheckout-order-detail', {
                 // Force the DOM to update before proceeding with the asynchronous operations
                 this.$nextTick(() => {
                     const refundPromises = this.selectedItems.map((item) => {
-                        return this.lineItemRefundBulk(item.uniqueId); // Simulated refund action with delay
+                        return this.lineItemRefundBulk(item.uniqueId, item.quantity); // Simulated refund action with delay
                     });
 
                     // Wait for all refund promises to complete
@@ -410,7 +419,7 @@ Component.register('postfinancecheckout-order-detail', {
                 });
             }
         },
-        lineItemRefundBulk(lineItemId) {
+        lineItemRefundBulk(lineItemId, itemQuantity) {
             return new Promise((resolve, reject) => {
                 this.PostFinanceCheckoutRefundService.createRefund(
                     this.transactionData.transactions[0].metaData.salesChannelId,
@@ -427,11 +436,20 @@ Component.register('postfinancecheckout-order-detail', {
                 })
                 .catch((errorResponse) => {
                     try {
-                        this.createNotificationError({
-                            title: errorResponse.response.data.errors[0].title,
-                            message: errorResponse.response.data.errors[0].detail,
-                            autoClose: false
-                        });
+                        var errorTitle = errorResponse?.response?.data?.errors?.[0]?.title ?? this.$tc('postfinancecheckout-order.refundAction.refundCreateError.errorTitle')
+						var errorMessage;
+						switch(errorResponse.response.data) {
+							case 'methodDoesNotSupportRefund':
+								errorMessage = this.$tc('postfinancecheckout-order.refundAction.refundCreateError.messagePaymentMethodDoesNotSupportRefund');
+							break;
+							default:
+								errorMessage = errorResponse.response.data.errors[0].detail;
+						}
+						this.createNotificationError({
+							title: errorTitle,
+							message: errorMessage,
+							autoClose: false
+						});
                     } catch (e) {
                         this.createNotificationError({
                             title: errorResponse.title,

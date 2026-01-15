@@ -1,3 +1,7 @@
+# 6.2.0
+- Datenbanktabelle umbenannt, um Namenskonflikte mit älteren Plugins zu vermeiden.
+- Problem mit fehlgeschlagenen Rückerstattungen bei Zahlungen mit Rechnungen behoben.
+
 # 6.1.17
 - Vertriebskanäle unterstützen jetzt verschiedene Bereiche
 - SDK aktualisiert und enthält nun das neueste CA-Fallback-Bundle

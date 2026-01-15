@@ -77,7 +77,15 @@
 	  "successMessage": "Il tuo rimborso è andato a buon fine.",
 	  "successTitle": "Successo",
 	  "maxAvailableItemsToRefund": "Numero massimo di articoli disponibili da rimborsare",
-	  "maxAvailableAmountToRefund": "Importo massimo disponibile per il rimborso"
+	  "maxAvailableAmountToRefund": "Importo massimo disponibile per il rimborso",
+	  "refundCreateError": {
+		"errorTitle": "Errore durante la creazione del rimborso.",
+		"messageRefundAmountExceedsAvailableBalance": "LL'importo del rimborso supera il saldo disponibile.",
+		"messageRefundAmountIsZero": "L'importo del rimborso deve essere superiore a 0.",
+		"messageRefundQuantityExceedsAvailableBalance": "Il rimborso per quantità supera il numero massimo di articoli rimborsabili.",
+		"messageRefundQuantityIsZero": "Il rimborso per quantità deve essere maggiore di 0.",
+		"messagePaymentMethodDoesNotSupportRefund": "Il metodo di pagamento non supporta i rimborsi online."
+	  }
 	},
 	"transactionHistory": {
 	  "cardTitle": "Dettagli",
