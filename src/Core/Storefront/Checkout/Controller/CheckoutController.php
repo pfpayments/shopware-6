@@ -1,568 +1,234 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace PostFinanceCheckoutPayment\Core\Storefront\Checkout\Controller;
 
+use PostFinanceCheckout\Sdk\Model\TransactionState as SdkTransactionState;
+use PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
-	Checkout\Cart\Cart,
-	Checkout\Cart\CartException,
-	Checkout\Cart\LineItemFactoryRegistry,
-	Checkout\Cart\SalesChannel\CartService,
-	Checkout\Order\Aggregate\OrderLineItem\OrderLineItemCollection,
-	Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity,
-	Checkout\Order\OrderEntity,
-	Checkout\Order\SalesChannel\AbstractOrderRoute,
-	Framework\Context,
-	Framework\DataAbstractionLayer\Search\Criteria,
-	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
-	Framework\DataAbstractionLayer\Search\Sorting\FieldSorting,
+    Checkout\Cart\CartException,
+    Checkout\Order\SalesChannel\AbstractOrderRoute,
     Framework\Log\Package,
-	Framework\Routing\Exception\MissingRequestParameterException,
-	Framework\Uuid\Uuid,
-	Framework\Uuid\Exception\InvalidUuidException,
-	Framework\Validation\DataBag\RequestDataBag,
-	System\SalesChannel\SalesChannelContext
+    Framework\Routing\RoutingException,
+    Framework\DataAbstractionLayer\Search\Criteria,
+    System\SalesChannel\SalesChannelContext
 };
 use Shopware\Storefront\{
-	Controller\StorefrontController,
-	Page\Checkout\Finish\CheckoutFinishPage,
-	Page\GenericPageLoaderInterface
+    Controller\StorefrontController,
+    Page\Checkout\Finish\CheckoutFinishPage,
+    Page\GenericPageLoaderInterface
 };
 use Symfony\Component\{
-	HttpFoundation\Request,
-	HttpFoundation\Response,
-	Routing\Attribute\Route,
-	Routing\Generator\UrlGeneratorInterface
-};
-use PostFinanceCheckout\Sdk\{
-	Model\Transaction,
-	Model\TransactionState
+    HttpFoundation\Request,
+    HttpFoundation\Response,
+    Routing\Attribute\Route
 };
 use PostFinanceCheckoutPayment\Core\{
-	Api\Transaction\Service\TransactionService,
-	Settings\Options\Integration,
-	Settings\Service\SettingsService,
-	Storefront\Checkout\Struct\CheckoutPageData,
-	Util\Payload\CustomProducts\CustomProductsLineItemTypes
+    Checkout\Service\CartRecoveryService,
+    Checkout\Service\PaymentIntegrationService,
+    Settings\Service\SettingsService
 };
 
 
-/**
- * Class CheckoutController
- *
- * @package PostFinanceCheckoutPayment\Core\Storefront\Checkout\Controller
- *
- */
 #[Package('checkout')]
 #[Route(defaults: ['_routeScope' => ['storefront']])]
-class CheckoutController extends StorefrontController {
+/**
+ * This controller handles Storefront-specific actions for the WhitelabelMachineName integration,
+ * such as rendering the payment page and recreating a cart from a failed order.
+ */
+class CheckoutController extends StorefrontController
+{
+    /**
+     * @var GenericPageLoaderInterface
+     * Loader for basic Shopware page data.
+     */
+    protected GenericPageLoaderInterface $genericLoader;
 
-	/**
-	 * @var \Shopware\Storefront\Page\GenericPageLoader
-	 */
-	protected $genericLoader;
+    /**
+     * @var SettingsService
+     * Plugin settings service.
+     */
+    protected SettingsService $settingsService;
 
-	/**
-	 * @var \Shopware\Core\Checkout\Cart\SalesChannel\CartService
-	 */
-	protected $cartService;
+    /**
+     * @var LoggerInterface|null
+     * Logger for recording errors and important information.
+     */
+    private ?LoggerInterface $logger = null;
 
-	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
-	 */
-	protected $settingsService;
+    /**
+     * @var AbstractOrderRoute
+     * Shopware service for order retrieval.
+     */
+    private AbstractOrderRoute $orderRoute;
 
-	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Settings\Struct\Settings
-	 */
-	protected $settings;
+    /**
+     * @var CartRecoveryService
+     * Service to help customers recover their cart from a past order.
+     */
+    private CartRecoveryService $cartRecoveryService;
 
-	/**
-	 * @var \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService
-	 */
-	protected $transactionService;
+    /**
+     * @var PaymentIntegrationService
+     * Service to provide the integration parameters (JS URL, transaction ID, etc.).
+     */
+    private PaymentIntegrationService $paymentIntegrationService;
 
-	/**
-	 * @var \Psr\Log\LoggerInterface
-	 */
-	private $logger;
+    /**
+     * @var TransactionService
+     * Service to check transaction details.
+     */
+    private TransactionService $transactionService;
 
-	/**
-	 * @var \Shopware\Core\Checkout\Cart\LineItemFactoryRegistry
-	 */
-	private $lineItemFactoryRegistry;
+    /**
+     * @param SettingsService $settingsService
+     * @param GenericPageLoaderInterface $genericLoader
+     * @param AbstractOrderRoute $orderRoute
+     * @param CartRecoveryService $cartRecoveryService
+     * @param PaymentIntegrationService $paymentIntegrationService
+     */
+    public function __construct(
+        SettingsService $settingsService,
+        GenericPageLoaderInterface $genericLoader,
+        AbstractOrderRoute $orderRoute,
+        CartRecoveryService $cartRecoveryService,
+        PaymentIntegrationService $paymentIntegrationService,
+        TransactionService $transactionService
+    ) {
+        $this->genericLoader = $genericLoader;
+        $this->settingsService = $settingsService;
+        $this->orderRoute = $orderRoute;
+        $this->cartRecoveryService = $cartRecoveryService;
+        $this->paymentIntegrationService = $paymentIntegrationService;
+        $this->transactionService = $transactionService;
+    }
 
-	/**
-	 * @var \Shopware\Core\Checkout\Order\SalesChannel\AbstractOrderRoute
-	 */
-	private $orderRoute;
+    /**
+     * @param LoggerInterface $logger
+     */
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
 
-	/**
-	 * PaymentController constructor.
-	 *
-	 * @param \Shopware\Core\Checkout\Cart\LineItemFactoryRegistry                          $lineItemFactoryRegistry
-	 * @param \Shopware\Core\Checkout\Cart\SalesChannel\CartService                         $cartService
-	 * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService           $settingsService
-	 * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService $transactionService
-	 * @param \Shopware\Storefront\Page\GenericPageLoaderInterface                          $genericLoader
-	 * @param \Shopware\Core\Checkout\Order\SalesChannel\AbstractOrderRoute                 $orderRoute
-	 */
-	public function __construct(
-		LineItemFactoryRegistry $lineItemFactoryRegistry,
-		CartService $cartService,
-		SettingsService $settingsService,
-		TransactionService $transactionService,
-		GenericPageLoaderInterface $genericLoader,
-		AbstractOrderRoute $orderRoute
-	)
-	{
-		$this->cartService             = $cartService;
-		$this->genericLoader           = $genericLoader;
-		$this->settingsService         = $settingsService;
-		$this->transactionService      = $transactionService;
-		$this->lineItemFactoryRegistry = $lineItemFactoryRegistry;
-		$this->orderRoute = $orderRoute;
-	}
-
-	/**
-	 * @param \Psr\Log\LoggerInterface $logger
-	 *
-	 * @internal
-	 * @required
-	 *
-	 */
-	public function setLogger(LoggerInterface $logger): void
-	{
-		$this->logger = $logger;
-	}
-
-	/**
-	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
-	 * @param \Symfony\Component\HttpFoundation\Request              $request
-	 *
-	 * @return \Symfony\Component\HttpFoundation\Response
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
-	 *
-	 */
+    /**
+     * Renders the WhitelabelMachineName payment page (usually contains the iframe or lightbox script).
+     *
+     * @param SalesChannelContext $salesChannelContext The current context.
+     * @param Request $request The incoming request.
+     * @return Response The rendered payment page.
+     */
     #[Route(
         path: "/postfinancecheckout/checkout/pay",
         name: "frontend.postfinancecheckout.checkout.pay",
         options: ["seo" => false],
         methods: ["GET"],
     )]
-	public function pay(SalesChannelContext $salesChannelContext, Request $request): Response
-	{
-		$orderId = $request->query->get('orderId');
+    public function pay(SalesChannelContext $salesChannelContext, Request $request): Response
+    {
+        $orderId = (string)$request->query->get('orderId');
 
-		if (empty($orderId)) {
-			throw new MissingRequestParameterException('orderId');
-		}
+        if (empty($orderId)) {
+            throw RoutingException::missingRequestParameter('orderId');
+        }
 
-		// Configuration
-		$this->settings = $this->settingsService->getSettings($salesChannelContext->getSalesChannel()->getId());
+        try {
+            // Load the order with necessary associations for the product table and addresses.
+            $criteria = new Criteria([$orderId]);
+            $criteria->addAssociation('lineItems.product')
+                ->addAssociation('deliveries.shippingOrderAddress.country')
+                ->addAssociation('orderCustomer.customer')
+                ->addAssociation('transactions.paymentMethod');
 
-		$transaction     = $this->getTransaction($orderId, $salesChannelContext->getContext());
-		$recreateCartUrl = $this->generateUrl(
-			'frontend.postfinancecheckout.checkout.recreate-cart',
-			['orderId' => $orderId,],
-			UrlGeneratorInterface::ABSOLUTE_URL
-		);
+            $order = $this->orderRoute->load(new Request(), $salesChannelContext, $criteria)->getOrders()->first();
 
-		if (in_array(
-			$transaction->getState(),
-			[
-				TransactionState::AUTHORIZED,
-				TransactionState::COMPLETED,
-				TransactionState::FULFILL,
-			]
-		)) {
-			return $this->redirect($transaction->getSuccessUrl(), Response::HTTP_MOVED_PERMANENTLY);
-		} else {
-			if (in_array(
-				$transaction->getState(),
-				[
-					TransactionState::DECLINE,
-					TransactionState::FAILED,
-					TransactionState::VOIDED,
-				]
-			)) {
-				return $this->redirect($transaction->getFailedUrl(), Response::HTTP_MOVED_PERMANENTLY);
-			}
-		}
+            if (!$order) {
+                throw RoutingException::missingRequestParameter('orderId');
+            }
 
-		$possiblePaymentMethods = $this->settings->getApiClient()
-												 ->getTransactionService()
-												 ->fetchPaymentMethods(
-													 $this->settings->getSpaceId(),
-													 $transaction->getId(),
-													 $this->settings->getIntegration()
-												 );
+            // Fetch the configuration required for the frontend integration.
+            $paymentConfig = $this->paymentIntegrationService->getPaymentConfig($orderId, $salesChannelContext);
 
-		if (empty($possiblePaymentMethods)) {
-			$this->addFlash('danger', $this->trans('postfinancecheckout.paymentMethod.notAvailable'));
-			return $this->redirect($recreateCartUrl, Response::HTTP_MOVED_PERMANENTLY);
-		}
+            // Load a generic Shopware page to have layout headers/footers.
+            $page = $this->genericLoader->load($request, $salesChannelContext);
+            $page->addExtension('postFinanceCheckoutData', $paymentConfig);
 
-		$javascriptUrl = $this->getTransactionJavaScriptUrl($transaction->getId());
+            // Assign the order to the page so the templates can access page.order.
+            $page->assign(['order' => $order]);
 
-		// Set Checkout Page Data
-		$checkoutPageData = (new CheckoutPageData())
-			->setIntegration($this->settings->getIntegration())
-			->setJavascriptUrl($javascriptUrl)
-			->setDeviceJavascriptUrl($this->settings->getSpaceId(), Uuid::randomHex())
-			->setTransactionPossiblePaymentMethods($possiblePaymentMethods)
-			->setCheckoutUrl($this->generateUrl(
-				'frontend.postfinancecheckout.checkout.pay',
-				['orderId' => $orderId,],
-				UrlGeneratorInterface::ABSOLUTE_URL
-			))
-			->setCartRecreateUrl($recreateCartUrl);
-		$page             = $this->load($request, $salesChannelContext);
-		$page->addExtension('postFinanceCheckoutData', $checkoutPageData);
+            // Render the specialized Twig template for WhitelabelMachineName.
+            return $this->renderStorefront(
+                '@PostFinanceCheckoutPayment/storefront/page/checkout/order/postfinancecheckout.html.twig',
+                ['page' => $page]
+            );
+        } catch (\Exception $e) {
+            if ($this->logger) {
+                $this->logger->error($e->getMessage());
+            }
+            $this->addFlash('danger', $this->trans('postfinancecheckout.paymentMethod.notAvailable'));
+            return $this->redirectToRoute('frontend.home.page');
+        }
+    }
 
-		return $this->renderStorefront(
-			'@PostFinanceCheckoutPayment/storefront/page/checkout/order/postfinancecheckout.html.twig',
-			['page' => $page]
-		);
-	}
-
-	/**
-	 * Get transaction Javascript URL
-	 *
-	 * @param int $transactionId
-	 *
-	 * @return string
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
-	 */
-	private function getTransactionJavaScriptUrl(int $transactionId): string
-	{
-		$javascriptUrl = '';
-		switch ($this->settings->getIntegration()) {
-			case Integration::IFRAME:
-				$javascriptUrl = $this->settings->getApiClient()->getTransactionIframeService()
-												->javascriptUrl($this->settings->getSpaceId(), $transactionId);
-				break;
-			case Integration::LIGHTBOX:
-				$javascriptUrl = $this->settings->getApiClient()->getTransactionLightboxService()
-												->javascriptUrl($this->settings->getSpaceId(), $transactionId);
-				break;
-			default:
-				$this->logger->critical(strtr('invalid integration : :integration', [':integration' => $this->settings->getIntegration()]));
-
-		}
-		return $javascriptUrl;
-	}
-
-	/**
-	 * @param                                  $orderId
-	 * @param \Shopware\Core\Framework\Context $context
-	 *
-	 * @return \PostFinanceCheckout\Sdk\Model\Transaction
-	 * @throws \PostFinanceCheckout\Sdk\ApiException
-	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-	 * @throws \PostFinanceCheckout\Sdk\VersioningException
-	 */
-	private function getTransaction($orderId, Context $context): Transaction
-	{
-		$transactionEntity = $this->transactionService->getByOrderId($orderId, $context);
-		return $this->settings->getApiClient()->getTransactionService()->read($this->settings->getSpaceId(), $transactionEntity->getTransactionId());
-	}
-
-	/**
-	 * @param \Symfony\Component\HttpFoundation\Request              $request
-	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
-	 *
-	 * @return \Shopware\Storefront\Page\Checkout\Finish\CheckoutFinishPage
-	 */
-	protected function load(Request $request, SalesChannelContext $salesChannelContext): CheckoutFinishPage
-	{
-		$page = CheckoutFinishPage::createFrom($this->genericLoader->load($request, $salesChannelContext));
-		$page->setOrder($this->getOrder($request, $salesChannelContext));
-
-		return $page;
-	}
-
-
-	/**
-	 * @param \Symfony\Component\HttpFoundation\Request              $request
-	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
-	 *
-	 * @return \Shopware\Core\Checkout\Order\OrderEntity
-	 */
-	private function getOrder(Request $request, SalesChannelContext $salesChannelContext): OrderEntity
-	{
-
-		$orderId = $request->get('orderId');
-		if (!$orderId) {
-			throw new MissingRequestParameterException('orderId', '/orderId');
-		}
-
-		$criteria = (new Criteria([$orderId]))
-			->addAssociation('lineItems.cover')
-			->addAssociation('transactions.paymentMethod')
-			->addAssociation('deliveries.shippingMethod');
-
-		$customer = $salesChannelContext->getCustomer();
-		if ($customer !== null) {
-			$criteria = $criteria->addFilter(new EqualsFilter('order.orderCustomer.customerId', $customer->getId()));
-		}
-
-		$criteria->getAssociation('transactions')->addSorting(new FieldSorting('createdAt'));
-
-		try {
-			$searchResult = $this->orderRoute
-				->load(new Request(), $salesChannelContext, $criteria)
-				->getOrders();
-		} catch (InvalidUuidException $e) {
-			throw CartException::orderNotFound($orderId);
-		}
-
-		/** @var OrderEntity|null $order */
-		$order = $searchResult->get($orderId);
-
-		if (!$order) {
-			throw CartException::orderNotFound($orderId);
-		}
-
-		return $order;
-	}
-
-	/**
-	 * Recreate Cart
-	 *
-	 * @param \Symfony\Component\HttpFoundation\Request              $request
-	 * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
-	 *
-	 * @return \Symfony\Component\HttpFoundation\Response
-	 *
-	 */
+    /**
+     * Redirects the user to a route that recreates their cart from an existing order.
+     * This is useful for allowing users to try payment again with different details.
+     *
+     * @param Request $request The incoming request.
+     * @param SalesChannelContext $salesChannelContext The context.
+     * @return Response Redirect to the checkout confirmation page.
+     */
     #[Route(
         path: "/postfinancecheckout/checkout/recreate-cart",
         name: "frontend.postfinancecheckout.checkout.recreate-cart",
         options: ["seo" => false],
         methods: ["GET"],
     )]
-	public function recreateCart(Request $request, SalesChannelContext $salesChannelContext)
-	{
-		$orderId = $request->query->get('orderId');
+    public function recreateCart(Request $request, SalesChannelContext $salesChannelContext): Response
+    {
+        $orderId = (string)$request->query->get('orderId');
 
-		if (empty($orderId)) {
-			throw new MissingRequestParameterException('orderId');
-		}
+        if (empty($orderId)) {
+            throw RoutingException::missingRequestParameter('orderId');
+        }
 
-		// Adoption for Headless Storefronts
-		$orderRepo = $this->container->get('order.repository');
-		$criteria = new Criteria([$orderId]);
+        try {
+            // Find the order that should be recovered.
+            $order = $this->cartRecoveryService->getOrderEntity($orderId, $salesChannelContext->getContext());
 
-		$orderEntity = $orderRepo->search($criteria, $salesChannelContext->getContext())->first();
+            // Security: Order must belong to the active sales channel.
+            if ($order->getSalesChannelId() !== $salesChannelContext->getSalesChannelId()) {
+                return $this->redirectToRoute('frontend.home.page');
+            }
 
-		if($orderEntity->getSalesChannelId() !== $salesChannelContext->getSalesChannelId()) {
-			$this->settings = $this->settingsService->getSettings($orderEntity->getSalesChannelId());
-			$trans = $this->getTransaction($orderId, $salesChannelContext->getContext());
-			return $this->redirect($trans->getSuccessUrl());
-		}
-		// End Adoption for Headless Storefronts
+            // Perform the recovery process.
+            $transactionEntity = $this->transactionService->getByOrderId($order->getId(), $salesChannelContext->getContext());
+            if ($transactionEntity) {
+                $transaction = $this->transactionService->read($transactionEntity->getTransactionId(), $salesChannelContext->getSalesChannelId());
+                if (in_array($transaction->getState(), [
+                    SdkTransactionState::AUTHORIZED,
+                    SdkTransactionState::CONFIRMED,
+                    SdkTransactionState::FULFILL
+                ])) {
+                    return $this->redirectToRoute('frontend.checkout.finish.page', ['orderId' => $orderId]);
+                }
 
-		try {
-			$this->cartService->deleteCart($salesChannelContext);
-			$cart = $this->cartService->createNew($salesChannelContext->getToken());
+                if ($transaction->getUserFailureMessage()) {
+                    $this->addFlash('danger', $transaction->getUserFailureMessage());
+                }
+            }
+            $this->cartRecoveryService->recreateCartFromOrder($order, $salesChannelContext);
+        } catch (\Exception $exception) {
+            $this->addFlash('danger', $this->trans('error.addToCartError'));
+            if ($this->logger) {
+                $this->logger->critical($exception->getMessage());
+            }
+            return $this->redirectToRoute('frontend.home.page');
+        }
 
-			// Configuration
-			$this->settings = $this->settingsService->getSettings($salesChannelContext->getSalesChannel()->getId());
-			$orderEntity    = $this->getOrder($request, $salesChannelContext);
-			$lastTransaction = $orderEntity->getTransactions()->last();
-			if ($lastTransaction && !$lastTransaction->getPaymentMethod()->getAfterOrderEnabled()) {
-				return $this->redirectToRoute('frontend.home.page');
-			}
-
-			$transaction = $this->getTransaction($orderId, $salesChannelContext->getContext());
-			if (!empty($transaction->getUserFailureMessage())) {
-				$this->addFlash('danger', $transaction->getUserFailureMessage());
-			}
-
-			$orderItems        = $orderEntity->getLineItems();
-			$hasCustomProducts = $this->hasCustomProducts($orderItems);
-
-			if ($hasCustomProducts === true) {
-				$cart = $this->addCustomProducts($orderItems, $request, $salesChannelContext);
-			}
-
-			foreach ($orderItems as $orderLineItemEntity) {
-				$type = $orderLineItemEntity->getType();
-
-				if ($type !== CustomProductsLineItemTypes::LINE_ITEM_TYPE_PRODUCT || $orderLineItemEntity->getParentid() !== null) {
-					continue;
-				}
-
-				$lineItem = $this->lineItemFactoryRegistry->create([
-					'id'           => $orderLineItemEntity->getId(),
-					'quantity'     => $orderLineItemEntity->getQuantity(),
-					'referencedId' => $orderLineItemEntity->getReferencedId(),
-					'type'         => $type,
-				], $salesChannelContext);
-
-				$lineItemPayload = $orderLineItemEntity->getPayload();
-				if (!empty($lineItemPayload)) {
-					$lineItem->setPayload($lineItemPayload);
-				}
-
-				$cart = $this->cartService->add($cart, $lineItem, $salesChannelContext);
-
-			}
-
-		} catch (\Exception $exception) {
-			$this->addFlash('danger', $this->trans('error.addToCartError'));
-			$this->logger->critical($exception->getMessage());
-			return $this->redirectToRoute('frontend.home.page');
-		}
-
-		return $this->redirectToRoute('frontend.checkout.confirm.page');
-	}
-
-	/**
-	 * @param OrderLineItemCollection $orderItems
-	 *
-	 * @return bool
-	 */
-	private function hasCustomProducts(OrderLineItemCollection $orderItems): bool
-	{
-		foreach ($orderItems as $orderItem) {
-			if ($orderItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * @param OrderLineItemCollection $orderItems
-	 * @param string                  $parentId
-	 *
-	 * @return OrderLineItemEntity|null
-	 */
-	private function getCustomProduct(OrderLineItemCollection $orderItems, string $parentId): ?OrderLineItemEntity
-	{
-		foreach ($orderItems as $orderItem) {
-			if ($orderItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_PRODUCT && $orderItem->getParentId() === $parentId) {
-				return $orderItem;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * @param OrderLineItemCollection $orderItems
-	 * @param string                  $parentId
-	 *
-	 * @return array
-	 */
-	private function getCustomProductOptions(OrderLineItemCollection $orderItems, string $parentId): array
-	{
-		$options = [];
-		foreach ($orderItems as $orderItem) {
-			if ($orderItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS_OPTION && $orderItem->getParentId() === $parentId) {
-				$options[] = $orderItem;
-			}
-		}
-		return $options;
-	}
-
-	/**
-	 * @param $orderItems
-	 * @param $request
-	 * @param $salesChannelContext
-	 *
-	 * @return Cart
-	 */
-	private function addCustomProducts(OrderLineItemCollection $orderItems, Request $request, SalesChannelContext $salesChannelContext): Cart
-	{
-
-		$cart = $this->cartService->getCart($salesChannelContext->getToken(), $salesChannelContext);
-		if (!\class_exists('Swag\\CustomizedProducts\\Core\\Checkout\\Cart\\Route\\AddCustomizedProductsToCartRoute')) {
-			return $cart;
-		}
-
-		$customProductsService = $this->get('Swag\CustomizedProducts\Core\Checkout\Cart\Route\AddCustomizedProductsToCartRoute');
-
-		foreach ($orderItems as $orderItem) {
-			if ($orderItem->getType() !== CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
-				continue;
-			}
-
-			$product        = $this->getCustomProduct($orderItems, $orderItem->getId());
-			$productOptions = $this->getCustomProductOptions($orderItems, $orderItem->getId());
-			$optionValues   = $this->getOptionValues($productOptions);
-
-			$params = new RequestDataBag([
-				'customized-products-template' => new RequestDataBag([
-					'id'      => $orderItem->getReferencedId(),
-					'options' => new RequestDataBag($optionValues),
-				]),
-			]);
-
-			$request->request->add(
-				[
-					'lineItems' =>
-						[
-							$product->getProductId() =>
-								[
-									'quantity' => $orderItem->getQuantity(),
-									'id'           => $product->getProductId(),
-									'type'         => CustomProductsLineItemTypes::LINE_ITEM_TYPE_PRODUCT,
-									'referencedId' => $product->getReferencedId(),
-									'stackable'    => $orderItem->getStackable(),
-									'removable'    => $orderItem->getRemovable(),
-								]
-						]
-				]
-			);
-
-			$customProductsService->add($params, $request, $salesChannelContext, $cart);
-			$cart = $this->cartService->getCart($salesChannelContext->getToken(), $salesChannelContext);
-		}
-
-		return $cart;
-	}
-
-	/**
-	 * @param array $productOptions
-	 *
-	 * @return array
-	 */
-	private function getOptionValues(array $productOptions): array
-	{
-		$optionValues = [];
-		foreach ($productOptions as $productOption) {
-			$optionType = $productOption->getPayload()['type'] ?: '';
-
-			switch ($optionType) {
-				case CustomProductsLineItemTypes::PRODUCT_OPTION_TYPE_IMAGE_UPLOAD:
-				case CustomProductsLineItemTypes::PRODUCT_OPTION_TYPE_FILE_UPLOAD:
-					$media = $productOption->getPayload()['media'] ?: [];
-					foreach ($media as $mediaItem) {
-						$optionValues[$productOption->getReferencedId()] = new RequestDataBag([
-							'media' => new RequestDataBag([
-								$mediaItem['filename'] => new RequestDataBag([
-									'id'       => $mediaItem['mediaId'],
-									'filename' => $mediaItem['filename'],
-								]),
-							]),
-						]);
-					}
-					break;
-
-				default:
-					$optionValues[$productOption->getReferencedId()] = new RequestDataBag([
-						'value' => $productOption->getPayload()['value'] ?: '',
-					]);
-			}
-		}
-
-		return $optionValues;
-	}
+        // Send the user back to the checkout confirm page with their items restored.
+        return $this->redirectToRoute('frontend.checkout.confirm.page');
+    }
 }

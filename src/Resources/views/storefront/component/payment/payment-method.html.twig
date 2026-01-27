@@ -1,0 +1,20 @@
+{% sw_extends '@Storefront/storefront/component/payment/payment-method.html.twig' %}
+
+{% block component_payment_method_description %}
+    {{ parent() }}
+
+    {# Check if the payment method handler belongs to WhitelabelMachineName #}
+    {% if payment.handlerIdentifier == 'PostFinanceCheckoutPayment\\Core\\Checkout\\PaymentHandler\\PostFinanceCheckoutPaymentHandler' %}
+        {# Retrieve the runtime-attached configuration from the extension #}
+        {% set pfcConfig = payment.extensions.postfinancecheckout_config %}
+
+        {% if pfcConfig %}
+            {% set paymentMethodConfigurationId = pfcConfig.paymentMethodConfigurationId %}
+
+            {# Include the iframe container template #}
+            {% sw_include '@PostFinanceCheckoutPayment/storefront/component/payment/postfinancecheckout_iframe.html.twig' with {
+                'paymentMethodConfigurationId': paymentMethodConfigurationId
+            } %}
+        {% endif %}
+    {% endif %}
+{% endblock %}

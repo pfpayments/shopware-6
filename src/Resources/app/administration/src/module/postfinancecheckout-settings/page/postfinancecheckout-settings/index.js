@@ -3,7 +3,7 @@
 import template from './index.html.twig';
 import constants from './configuration-constants';
 
-const {Component, Mixin} = Shopware;
+const { Component, Mixin } = Shopware;
 
 Component.register('postfinancecheckout-settings', {
 
@@ -11,7 +11,8 @@ Component.register('postfinancecheckout-settings', {
 
     inject: [
         'acl',
-        'PostFinanceCheckoutConfigurationService'
+        'PostFinanceCheckoutConfigurationService',
+        'repositoryFactory'
     ],
 
     mixins: [
@@ -161,19 +162,91 @@ Component.register('postfinancecheckout-settings', {
         },
 
         getInheritValue(key) {
-            if (this.selectedSalesChannelId == null ) {
+            if (this.selectedSalesChannelId == null) {
                 return this.actualConfigData[key];
             } else {
                 return this.allConfigs['null'][key];
             }
         },
 
-        onSave() {
+        async onSave() {
             if (!(this.spaceIdFilled && this.userIdFilled && this.applicationKeyFilled)) {
                 this.setErrorStates();
                 return;
             }
+
+            this.isLoading = true;
+            const validationError = await this.validateHeadlessIntegration();
+
+            if (validationError === 'HEADLESS') {
+                this.createNotificationError({
+                    title: this.$tc('postfinancecheckout-settings.settingForm.titleError'),
+                    message: this.$tc('postfinancecheckout-settings.settingForm.messageHeadlessIntegrationError')
+                });
+                this.isLoading = false;
+                return;
+            } else if (validationError === 'GLOBAL') {
+                this.createNotificationError({
+                    title: this.$tc('postfinancecheckout-settings.settingForm.titleError'),
+                    message: this.$tc('postfinancecheckout-settings.settingForm.messageGlobalIframeError')
+                });
+                this.isLoading = false;
+                return;
+            }
+
             this.save();
+        },
+
+        async validateHeadlessIntegration() {
+            const salesChannelId = this.$refs.configComponent.selectedSalesChannelId;
+            const currentIntegration = this.config[this.CONFIG_INTEGRATION];
+
+            // If integration is 'payment_page', it is always valid.
+            if (currentIntegration === 'payment_page') {
+                return null;
+            }
+
+            const salesChannelRepo = this.repositoryFactory.create('sales_channel');
+
+            try {
+                if (salesChannelId) {
+                    // Specific Sales Channel Check
+                    const salesChannel = await salesChannelRepo.get(salesChannelId, Shopware.Context.api);
+
+                    const currentTypeId = salesChannel.typeId.replace(/-/g, '');
+
+                    // REST-2: Inverted Logic
+                    // We only allow 'iframe' integration if the Sales Channel is of type 'Storefront'.
+                    // Any other type (Headless, Product Export, Custom, etc.) does not support Iframe injection.
+                    const isStorefront = currentTypeId === constants.STOREFRONT_SALES_CHANNEL_TYPE_ID;
+                    if (!isStorefront) {
+                        return 'HEADLESS';
+                    }
+                } else {
+                    // Global Scope ("All Sales Channels") Check
+                    // We must check if there is ANY Sales Channel that is NOT Storefront.
+                    // If so, we cannot allow "Iframe" globally, as it would break those channels.
+                    const criteria = new Shopware.Data.Criteria();
+                    criteria.addFilter(
+                        Shopware.Data.Criteria.not(
+                            'AND',
+                            [Shopware.Data.Criteria.equals('typeId', constants.STOREFRONT_SALES_CHANNEL_TYPE_ID)]
+                        )
+                    );
+                    criteria.setLimit(1); // We only need to know if at least one exists
+
+                    const result = await salesChannelRepo.search(criteria, Shopware.Context.api);
+
+                    if (result.total > 0) {
+                        return 'GLOBAL';
+                    }
+                }
+
+                return null;
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
         },
 
         save() {
@@ -210,7 +283,7 @@ Component.register('postfinancecheckout-settings', {
                     });
                     this.isLoading = false;
                     console.error('Error:', e);
-            });
+                });
         },
 
         synchronizePaymentMethodConfiguration() {
@@ -232,10 +305,10 @@ Component.register('postfinancecheckout-settings', {
                     });
                     this.isLoading = false;
                     console.error('Error:', e);
-            });
+                });
         },
 
-        installOrderDeliveryStates(){
+        installOrderDeliveryStates() {
             this.PostFinanceCheckoutConfigurationService.installOrderDeliveryStates()
                 .then(() => {
                     this.createNotificationSuccess({
@@ -249,7 +322,7 @@ Component.register('postfinancecheckout-settings', {
                         message: this.$tc('postfinancecheckout-settings.settingForm.messageOrderDeliveryStateError')
                     });
                     this.isLoading = false;
-            });
+                });
         },
 
         onSetPaymentMethodDefault() {
@@ -311,7 +384,7 @@ Component.register('postfinancecheckout-settings', {
                         message: this.$tc('postfinancecheckout-settings.settingForm.credentials.alert.errorMessage')
                     });
                     this.isTesting = false;
-            });
+                });
         }
     }
 });

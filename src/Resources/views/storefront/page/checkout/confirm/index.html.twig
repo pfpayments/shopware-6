@@ -1,0 +1,26 @@
+{% sw_extends '@Storefront/storefront/page/checkout/confirm/index.html.twig' %}
+
+{% block base_body_script %}
+    {{ parent() }}
+
+    {# Provide WhitelabelMachineName integration data if available in page extensions #}
+    {% if page.extensions.postFinanceCheckoutData %}
+        {% set pfcData = page.extensions.postFinanceCheckoutData %}
+
+        {# Hidden inputs required by the JS components #}
+        <input type="hidden" id="cartRecreateUrl" value="{{ pfcData.cartRecreateUrl }}" />
+        <input type="hidden" id="checkoutUrl" value="{{ pfcData.checkoutUrl }}" />
+
+        {# Load WhitelabelMachineName SDK scripts #}
+        {% if pfcData.deviceJavascriptUrl %}
+            <script src="{{ pfcData.deviceJavascriptUrl }}" async="async"></script>
+        {% endif %}
+        {% if pfcData.javascriptUrl %}
+            <script src="{{ pfcData.javascriptUrl }}"></script>
+        {% endif %}
+
+        {# We don't need app.js if we use the modern plugin, but we might keep it for now if other pages depend on it.
+           However, for the confirm page, the modern plugin registered in main.js will take over
+           whenever it finds [data-postfinancecheckout-checkout-plugin]. #}
+    {% endif %}
+{% endblock %}

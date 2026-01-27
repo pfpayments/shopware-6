@@ -13,7 +13,9 @@
 		<import resource="./services/core/storefront/checkout.xml"/>
 
 		<import resource="./services/core/checkout.xml"/>
+		<import resource="./services/core/checkout_services.xml"/>
 		<import resource="./services/core/settings.xml"/>
+		<import resource="./services/core/store_api.xml"/>
 		<import resource="./services/core/util.xml"/>
 	</imports>
 	<services>

@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace PostFinanceCheckoutPayment\Core\Util\Payload;
 
 
 use Psr\Container\ContainerInterface;
-use Shopware\Core\{Checkout\Cart\Tax\Struct\CalculatedTaxCollection,
+use Shopware\Core\{
+    Checkout\Cart\Tax\Struct\CalculatedTaxCollection,
     Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity,
     Checkout\Customer\CustomerEntity,
     Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity,
@@ -15,10 +18,12 @@ use Shopware\Core\{Checkout\Cart\Tax\Struct\CalculatedTaxCollection,
 };
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
 
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use PostFinanceCheckout\Sdk\{Model\AddressCreate,
+use PostFinanceCheckout\Sdk\{
+    Model\AddressCreate,
     Model\ChargeAttempt,
     Model\CreationEntityState,
     Model\CriteriaOperator,
@@ -32,7 +37,8 @@ use PostFinanceCheckout\Sdk\{Model\AddressCreate,
     Model\TransactionCreate,
     Model\TransactionPending
 };
-use PostFinanceCheckoutPayment\Core\{Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity,
+use PostFinanceCheckoutPayment\Core\{
+    Api\PaymentMethodConfiguration\Entity\PaymentMethodConfigurationEntity,
     Settings\Struct\Settings,
     Util\Exception\InvalidPayloadException,
     Util\LocaleCodeProvider,
@@ -99,6 +105,16 @@ class TransactionPayload extends AbstractPayload
     protected OrderEntity $order;
 
     /**
+     * @var int
+     */
+    protected $transactionId;
+
+    public function setTransactionId(int $transactionId): void
+    {
+        $this->transactionId = $transactionId;
+    }
+
+    /**
      * TransactionPayload constructor.
      *
      * @param \Psr\Container\ContainerInterface $container
@@ -113,8 +129,7 @@ class TransactionPayload extends AbstractPayload
         SalesChannelContext           $salesChannelContext,
         Settings                      $settings,
         PaymentTransactionStruct $transaction
-    )
-    {
+    ) {
         $this->localeCodeProvider = $localeCodeProvider;
         $this->salesChannelContext = $salesChannelContext;
         $this->settings = $settings;
@@ -135,7 +150,7 @@ class TransactionPayload extends AbstractPayload
             ->addAssociation('orderCustomer')
             ->addAssociation('transactions')
             ->addAssociation('currency')
-            ;
+        ;
 
         $this->order = $this->container->get('order.repository')->search($criteria, $this->salesChannelContext->getContext())->getEntities()->first();
     }
@@ -218,7 +233,7 @@ class TransactionPayload extends AbstractPayload
         }
 
         $transactionPayload = (new TransactionPending())
-            ->setId($_SESSION['transactionId'])
+            ->setId($this->transactionId)
             ->setVersion($version)
             ->setBillingAddress($billingAddress)
             ->setCurrency($transactionData['currency'])
@@ -243,7 +258,9 @@ class TransactionPayload extends AbstractPayload
         }
 
         $successUrl = $this->transaction->getReturnUrl() . '&status=paid';
-        $failedUrl = $this->getFailUrl($this->order->getId()) . '&status=fail';
+        // For headless clients, use the returnUrl for failure as well (they handle the status parameter).
+        // For Storefront, use the recreate-cart route.
+        $failedUrl = $this->getFailUrl($this->order->getId(), $this->transaction->getReturnUrl()) . '&status=fail';
         $transactionPayload->setSuccessUrl($successUrl)
             ->setFailedUrl($failedUrl);
 
@@ -295,8 +312,8 @@ class TransactionPayload extends AbstractPayload
     protected function shouldSkipLineItem($shopLineItem): bool
     {
         return in_array($shopLineItem->getType(), [
-          CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS,
-          'promotion'
+            CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS,
+            'promotion'
         ]);
     }
 
@@ -540,7 +557,6 @@ class TransactionPayload extends AbstractPayload
                 $this->translator->trans('postfinancecheckout.payload.taxes'),
                 $amount
             );
-
         } else {
             $productAttributes = $this->getProductAttributes($shopLineItem);
 
@@ -590,7 +606,7 @@ class TransactionPayload extends AbstractPayload
                 throw new InvalidPayloadException('Tax payload invalid:' . json_encode($tax->listInvalidProperties()));
             }
 
-            $taxes [] = $tax;
+            $taxes[] = $tax;
         }
 
         return $taxes;
@@ -670,7 +686,6 @@ class TransactionPayload extends AbstractPayload
 
                 return $lineItem;
             }
-
         } catch (\Exception $exception) {
             $this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage());
         }
@@ -696,19 +711,19 @@ class TransactionPayload extends AbstractPayload
                     }
                     $taxRate = $taxItem->getTaxRate();
                     $tax = (new TaxCreate())
-                      ->setRate($taxRate)
-                      ->setTitle('Tax rate: '.$taxRate);
+                        ->setRate($taxRate)
+                        ->setTitle('Tax rate: ' . $taxRate);
 
                     $roundedAmount = self::round($amount);
 
                     $name = $taxRate . '%-' . $shippingName;
                     $lineItem = (new LineItemCreate())
-                      ->setAmountIncludingTax($roundedAmount)
-                      ->setName($this->fixLength($name . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
-                      ->setQuantity($this->order->getShippingCosts()->getQuantity() ?? 1)
-                      ->setSku($this->fixLength($name . '-Shipping', 200))
-                      ->setType($isFirst ? LineItemType::SHIPPING : LineItemType::FEE) // First item as SHIPPING, rest as FEE
-                      ->setUniqueId($this->fixLength($name . '-Shipping', 200));
+                        ->setAmountIncludingTax($roundedAmount)
+                        ->setName($this->fixLength($name . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
+                        ->setQuantity($this->order->getShippingCosts()->getQuantity() ?? 1)
+                        ->setSku($this->fixLength($name . '-Shipping', 200))
+                        ->setType($isFirst ? LineItemType::SHIPPING : LineItemType::FEE) // First item as SHIPPING, rest as FEE
+                        ->setUniqueId($this->fixLength($name . '-Shipping', 200));
 
                     if ($this->order->getTaxStatus() !== 'tax-free') {
                         $lineItem->setTaxes([$tax]);
@@ -724,7 +739,6 @@ class TransactionPayload extends AbstractPayload
                 }
                 return $lineItems;
             }
-
         } catch (\Exception $exception) {
             $this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage());
         }
@@ -767,7 +781,6 @@ class TransactionPayload extends AbstractPayload
                 ]);
                 $this->logger->critical($error);
                 throw new \Exception($error);
-
             } else {
                 $lineItem = (new LineItemCreate())
                     ->setName($this->translator->trans('postfinancecheckout.payload.adjustmentLineItem'))
@@ -849,7 +862,6 @@ class TransactionPayload extends AbstractPayload
         } else {
             if (!empty($customer->getSalutation())) {
                 $salutation = $customer->getSalutation()->getDisplayName();
-
             }
         }
         $salutation = !empty($salutation) ? $this->fixLength($salutation, 20) : null;
@@ -914,31 +926,65 @@ class TransactionPayload extends AbstractPayload
         return $addressPayload;
     }
 
-	/**
-	 * @param string $paymentMethodId
-	 * @param int $spaceId
-	 * @return PaymentMethodConfigurationEntity|null
-	 */
-	protected function getPaymentConfiguration(string $paymentMethodId, int $spaceId): ?PaymentMethodConfigurationEntity
-	{
-		$criteria = new Criteria();
-		$criteria->addFilter(new EqualsFilter('paymentMethodId', $paymentMethodId));
-		$criteria->addFilter(new EqualsFilter('spaceId', $spaceId));
+    /**
+     * @param string $paymentMethodId
+     * @param int $spaceId
+     * @return PaymentMethodConfigurationEntity|null
+     */
+    protected function getPaymentConfiguration(string $paymentMethodId, int $spaceId): ?PaymentMethodConfigurationEntity
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('paymentMethodId', $paymentMethodId));
+        $criteria->addFilter(new EqualsFilter('spaceId', $spaceId));
 
-		return $this->container->get('postfinancecheckout_payment_method_configuration.repository')
-		  ->search($criteria, $this->salesChannelContext->getContext())
-		  ->first();
-	}
+        return $this->container->get('postfinancecheckout_payment_method_configuration.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
+            ->first();
+    }
 
     /**
-     * Get failure URL
+     * Generates the failure URL for payment transactions.
+     * For headless clients (Store API), returns the client's returnUrl.
+     * For Storefront, returns the recreate-cart route.
      *
-     * @param string $orderId
-     *
-     * @return string
+     * @param string $orderId The order ID for the Storefront route.
+     * @param string|null $returnUrl The client's return URL (used for headless).
+     * @return string The failure URL.
      */
-    protected function getFailUrl(string $orderId): string
+    protected function getFailUrl(string $orderId, ?string $returnUrl = null): string
     {
+        // For headless clients (Store API) or custom integrations, we use the returnUrl so the client can handle the failure.
+        // We detect "Standard Storefront" usage by checking if the returnUrl matches the standard Shopware 'finalize-transaction' route.
+        // If it DOES match, we usually redirect to 'recreate-cart' for better error handling. (Storefront / Edit Order)
+        // If it DOES NOT match (e.g. custom URL, headless URL), we return it as is.
+
+        $isStandardShopwareUrl = strpos($returnUrl ?? '', 'payment/finalize-transaction') !== false;
+
+        $request = $this->container->get('request_stack')->getCurrentRequest();
+        $isJsonRequest = false;
+        if ($request) {
+            // Check for JSON preference
+            $format = $request->getPreferredFormat();
+            $contentTypes = $request->getAcceptableContentTypes();
+            $isJsonRequest = $format === 'json' || in_array('application/json', $contentTypes);
+        }
+
+        if ($returnUrl) {
+            // Case 1: Custom URL (Headless detection part 1)
+            // If the URL is custom (not standard Shopware), we always respect it.
+            if (!$isStandardShopwareUrl) {
+                return $returnUrl;
+            }
+
+            // Case 2: Standard URL + JSON Request (Headless detection part 2)
+            // If URL is standard BUT request prefers JSON, it's likely a headless app (Store API) being proxied.
+            if ($isStandardShopwareUrl && $isJsonRequest) {
+                return $returnUrl;
+            }
+        }
+
+        // Default: Storefront (SystemSource, SalesChannelSource, or AdminSalesChannelApiSource via Edit Order/HTML)
+        // We generate the recreate-cart route to restore the cart and show the error.
         return $this->container->get('router')->generate(
             'frontend.postfinancecheckout.checkout.recreate-cart',
             ['orderId' => $orderId,],

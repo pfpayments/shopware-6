@@ -1,7 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace PostFinanceCheckoutPayment\Core\Api\Transaction\Service;
 
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
@@ -79,6 +82,12 @@ class TransactionService
      */
     private $settingsService;
 
+    /**
+     * Cache for storing pending transaction IDs across headless requests.
+     * @var CacheItemPoolInterface
+     */
+    private CacheItemPoolInterface $cache;
+
     const CARD_HOLDER_KEY = '1456765000789';
     const PSEUDO_CODE_KEY = '1485172176673';
     const CARD_VALIDITY_KEY = '1456765711187';
@@ -91,16 +100,18 @@ class TransactionService
      * @param \Psr\Container\ContainerInterface $container
      * @param \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider $localeCodeProvider
      * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService $settingsService
+     * @param CacheItemPoolInterface $cache Cache for headless transaction persistence
      */
     public function __construct(
         ContainerInterface $container,
         LocaleCodeProvider $localeCodeProvider,
-        SettingsService    $settingsService
-    )
-    {
+        SettingsService    $settingsService,
+        CacheItemPoolInterface $cache
+    ) {
         $this->container = $container;
         $this->localeCodeProvider = $localeCodeProvider;
         $this->settingsService = $settingsService;
+        $this->cache = $cache;
     }
 
     /**
@@ -132,8 +143,7 @@ class TransactionService
     public function create(
         PaymentTransactionStruct $transaction,
         SalesChannelContext      $salesChannelContext
-    ): string
-    {
+    ): string {
         $criteria = new Criteria([$transaction->getOrderTransactionId()]);
         $criteria->addAssociation('order');
         $orderTransaction = $this->container->get('order_transaction.repository')->search($criteria, $salesChannelContext->getContext())->first();
@@ -142,13 +152,28 @@ class TransactionService
         $settings = $this->settingsService->getSettings($salesChannelId);
         $apiClient = $settings->getApiClient();
 
-        $transactionId = $_SESSION['transactionId'] ?? null;
+        // Get transaction ID from cache (headless) or session (storefront).
+        $transactionId = $this->getTransactionIdFromContext($salesChannelContext);
+        $pendingTransaction = null;
+
+        // Try to read the pending transaction if we have an ID stored.
         if ($transactionId !== null) {
-            $pendingTransaction = $this->read($_SESSION['transactionId'], $salesChannelId);
+            try {
+                $pendingTransaction = $this->read($transactionId, $salesChannelId);
+                // Verify it's still in PENDING state - otherwise we can't reuse it.
+                if ($pendingTransaction != null && $pendingTransaction->getState() !== TransactionState::PENDING) {
+                    $pendingTransaction = null;
+                }
+            } catch (\Exception $e) {
+                // Transaction may have been deleted, expired, or is invalid - we'll create a new one.
+                $this->logger?->debug('Could not read pending transaction, will create new one: ' . $e->getMessage());
+                $pendingTransaction = null;
+            }
         }
 
-        if ($transactionId === null || $pendingTransaction === null || $pendingTransaction->getState() !== TransactionState::PENDING) {
-            unset($_SESSION['transactionId']);
+        // Create a new transaction if we don't have a valid pending one.
+        if ($pendingTransaction === null) {
+            $this->clearTransactionIdFromContext($salesChannelContext);
             $pendingTransactionId = $this->createPendingTransaction($salesChannelContext);
             $pendingTransaction = $this->read($pendingTransactionId, $salesChannelId);
         }
@@ -161,6 +186,7 @@ class TransactionService
             $transaction
         ));
         $transactionPayloadClass->setLogger($this->logger);
+        $transactionPayloadClass->setTransactionId($pendingTransaction->getId());
         $transactionPayload = $transactionPayloadClass->get($pendingTransaction->getVersion());
 
         $createdTransaction = $apiClient->getTransactionService()
@@ -170,7 +196,8 @@ class TransactionService
             $transaction,
             $salesChannelContext->getContext(),
             $createdTransaction->getId(),
-            $settings->getSpaceId()
+            $settings->getSpaceId(),
+            $salesChannelContext->getToken()
         );
 
         $redirectUrl = $this->container->get('router')->generate(
@@ -178,6 +205,16 @@ class TransactionService
             ['orderId' => $orderTransaction->getOrder()->getId(),],
             UrlGeneratorInterface::ABSOLUTE_URL
         );
+
+        // If the request comes from the Store API (headless), we should not redirect to a Storefront Twig page.
+        // Instead, we return the returnUrl so the headless client can handle the next steps (e.g. rendering the iframe).
+        $request = $this->container->get('request_stack')->getCurrentRequest();
+        if ($request) {
+            $routeScope = $request->attributes->get('_route_scope', []);
+            if (in_array('store-api', $routeScope, true)) {
+                $redirectUrl = $transaction->getReturnUrl();
+            }
+        }
 
         if ($settings->getIntegration() == Integration::PAYMENT_PAGE) {
             $redirectUrl = $apiClient->getTransactionPaymentPageService()
@@ -216,7 +253,8 @@ class TransactionService
      *
      * @return void
      */
-    public function createRecurringTransaction(TransactionCreate $sdkTransactionCreate, string $spaceId = ""): Transaction {
+    public function createRecurringTransaction(TransactionCreate $sdkTransactionCreate, string $spaceId = ""): Transaction
+    {
         $settings = $this->settingsService->getSettings();
         if (empty($spaceId)) {
             $spaceId = $settings->getSpaceId();
@@ -245,15 +283,21 @@ class TransactionService
         PaymentTransactionStruct $transaction,
         Context                       $context,
         int                           $postfinancecheckoutTransactionId,
-        int                           $spaceId
-    ): void
-    {
+        int                           $spaceId,
+        ?string                       $token = null
+    ): void {
+        $customFields = [
+            TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_TRANSACTION_ID => $postfinancecheckoutTransactionId,
+            TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_SPACE_ID => $spaceId,
+        ];
+
+        if ($token) {
+            $customFields[TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_TOKEN] = $token;
+        }
+
         $data = [
             'id' => $transaction->getOrderTransactionId(),
-            'customFields' => [
-                TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_TRANSACTION_ID => $postfinancecheckoutTransactionId,
-                TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_SPACE_ID => $spaceId,
-            ],
+            'customFields' => $customFields,
         ];
         $this->container->get('order_transaction.repository')->update([$data], $context);
     }
@@ -271,8 +315,7 @@ class TransactionService
         Context     $context,
         string      $paymentMethodId = null,
         string      $salesChannelId = null
-    ): void
-    {
+    ): void {
         try {
 
             $transactionId = $transaction->getId();
@@ -351,7 +394,6 @@ class TransactionService
 
             $data = array_filter($data);
             $this->container->get(TransactionEntityDefinition::ENTITY_NAME . '.repository')->upsert([$data], $context);
-
         } catch (\Exception $exception) {
             $this->logger->critical(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage());
         }
@@ -402,7 +444,6 @@ class TransactionService
         } catch (\Exception $e) {
             throw CartException::orderNotFound($orderId);
         }
-
     }
 
     /**
@@ -450,7 +491,8 @@ class TransactionService
         return $this->container->get(TransactionEntityDefinition::ENTITY_NAME . '.repository')
             ->search(
                 (new Criteria())->addFilter(new EqualsFilter('transactionId', $transactionId))
-                    ->addAssociations(['refunds']), $context
+                    ->addAssociations(['refunds']),
+                $context
             )
             ->first();
     }
@@ -468,7 +510,8 @@ class TransactionService
         return $this->container->get(TransactionEntityDefinition::ENTITY_NAME . '.repository')
             ->search(
                 (new Criteria())->addFilter(new EqualsFilter('orderTransactionId', $orderTransactionId))
-                    ->addAssociations(['refunds']), $context
+                    ->addAssociations(['refunds']),
+                $context
             )
             ->first();
     }
@@ -485,7 +528,8 @@ class TransactionService
     {
         return $this->container->get(RefundEntityDefinition::ENTITY_NAME . '.repository')
             ->search(
-                (new Criteria())->addFilter(new EqualsFilter('transactionId', $transactionId)), $context
+                (new Criteria())->addFilter(new EqualsFilter('transactionId', $transactionId)),
+                $context
             )
             ->getEntities();
     }
@@ -528,17 +572,23 @@ class TransactionService
     public function createPendingTransaction(SalesChannelContext $salesChannelContext, $event = null): int
     {
         $expiredTransaction = true;
-        $transactionId = $_SESSION['transactionId'] ?? null;
+        // Get transaction ID from cache (headless) or session (storefront).
+        $transactionId = $this->getTransactionIdFromContext($salesChannelContext);
         $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
         if (!$settings) {
             throw new \Exception('Space settings not configured');
         }
 
         if ($transactionId) {
-            $transactionService = $settings->getApiClient()->getTransactionService();
-            $pendingTransaction = $transactionService->read($settings->getSpaceId(), $transactionId);
-            if ($pendingTransaction->getState() === TransactionState::PENDING) {
-                $expiredTransaction = false;
+            try {
+                $transactionService = $settings->getApiClient()->getTransactionService();
+                $pendingTransaction = $transactionService->read($settings->getSpaceId(), $transactionId);
+                if ($pendingTransaction->getState() === TransactionState::PENDING) {
+                    $expiredTransaction = false;
+                }
+            } catch (\Exception $e) {
+                // Transaction may have been deleted, expired, or is invalid - treat as expired.
+                $expiredTransaction = true;
             }
         }
 
@@ -546,23 +596,10 @@ class TransactionService
             $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
 
             $customer = $salesChannelContext->getCustomer();
-            $lineItems = [];
-            if ($event) {
-                if ($event instanceof CheckoutConfirmPageLoadedEvent) {
-                    $cartLineItems = $event->getPage()->getCart()->getLineItems()->getElements();
-                    foreach ($cartLineItems as $cartLineItem) {
-                        if ($cartLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
-                            continue;
-                        }
-                        $lineItems[] = $this->createTempLineItem($cartLineItem);
-                    }
-                } elseif ($event instanceof AccountEditOrderPageLoadedEvent) {
-                    $order = $event->getPage()->getOrder();
-                    foreach ($order->getLineItems() as $orderLineItem) {
-                        $lineItems[] = $this->createTempLineItem($orderLineItem);
-                    }
-                }
+            if ($customer === null) {
+                throw new \Exception('Customer is required to create a transaction');
             }
+            $lineItems = $this->extractLineItems($event);
 
             $customerId = "";
             if ($customer->getGuest() === false) {
@@ -593,14 +630,16 @@ class TransactionService
                 ->setSuccessUrl($homeUrl . '?success')
                 ->setFailedUrl($homeUrl . '?fail');
 
-            if($this->isSubscription($salesChannelContext)) {
+            if ($this->isSubscription($salesChannelContext)) {
                 $transactionPayload->setTokenizationMode(TokenizationMode::FORCE_CREATION);
             }
 
             $transactionService = $settings->getApiClient()->getTransactionService();
             $transaction = $transactionService->create($settings->getSpaceId(), $transactionPayload);
             $transactionId = $transaction->getId();
-            $_SESSION['transactionId'] = $transactionId;
+
+            // Store in cache and session for transaction reuse.
+            $this->storeTransactionIdInContext($salesChannelContext, $transactionId);
         }
 
         return $transactionId;
@@ -611,7 +650,7 @@ class TransactionService
      * @param int $transactionId
      * @return void
      */
-    public function updateTempTransaction(SalesChannelContext $salesChannelContext, int $transactionId): void
+    public function updateTempTransaction(SalesChannelContext $salesChannelContext, int $transactionId, array $lineItems = []): void
     {
         $pendingTransaction = new TransactionPending();
         $pendingTransaction->setId($transactionId);
@@ -629,8 +668,48 @@ class TransactionService
         $pendingTransaction->setBillingAddress($billingAddress);
         $pendingTransaction->setShippingAddress($shippingAddress);
 
+        if (!empty($lineItems)) {
+            $pendingTransaction->setLineItems($lineItems);
+        }
+
         $settings->getApiClient()->getTransactionService()
             ->update($settings->getSpaceId(), $pendingTransaction);
+    }
+
+    /**
+     * Extracts line items from the given source (Event or Cart).
+     *
+     * @param mixed $source
+     * @return array
+     */
+    public function extractLineItems($source): array
+    {
+        $lineItems = [];
+        if ($source) {
+            if ($source instanceof CheckoutConfirmPageLoadedEvent) {
+                $cartLineItems = $source->getPage()->getCart()->getLineItems()->getElements();
+                foreach ($cartLineItems as $cartLineItem) {
+                    if ($cartLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
+                        continue;
+                    }
+                    $lineItems[] = $this->createTempLineItem($cartLineItem);
+                }
+            } elseif ($source instanceof AccountEditOrderPageLoadedEvent) {
+                $order = $source->getPage()->getOrder();
+                foreach ($order->getLineItems() as $orderLineItem) {
+                    $lineItems[] = $this->createTempLineItem($orderLineItem);
+                }
+            } elseif ($source instanceof \Shopware\Core\Checkout\Cart\Cart) {
+                $cartLineItems = $source->getLineItems()->getElements();
+                foreach ($cartLineItems as $cartLineItem) {
+                    if ($cartLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
+                        continue;
+                    }
+                    $lineItems[] = $this->createTempLineItem($cartLineItem);
+                }
+            }
+        }
+        return $lineItems;
     }
 
     /**
@@ -717,32 +796,32 @@ class TransactionService
         return $chargeAttempts ? $chargeAttempts[0] : null;
     }
 
-	private function createTempLineItem($productData): LineItemCreate
-	{
-		$lineItem = new LineItemCreate();
+    private function createTempLineItem($productData): LineItemCreate
+    {
+        $lineItem = new LineItemCreate();
 
-		$roundedPrice = $this->round($productData->getPrice()->getUnitPrice());
+        $roundedPrice = $this->round($productData->getPrice()->getUnitPrice());
 
-		if ($productData instanceof LineItem) {
-			$lineItem->setName($productData->getLabel());
-			$lineItem->setUniqueId($productData->getId());
-			$lineItem->setSku($productData->getReferencedId() ?? $productData->getId());
-			$lineItem->setQuantity($productData->getQuantity());
-			$lineItem->setAmountIncludingTax($roundedPrice);
-		} elseif ($productData instanceof OrderLineItemEntity) {
-			$lineItem->setName($productData->getLabel());
-			$lineItem->setUniqueId($productData->getId());
-			$lineItem->setSku($productData->getProductId() ?? $productData->getIdentifier() ?? $productData->getId());
-			$lineItem->setQuantity($productData->getQuantity());
-			$lineItem->setAmountIncludingTax($roundedPrice);
-		} else {
-			throw new \InvalidArgumentException('Unsupported line item type: ' . get_class($productData));
-		}
+        if ($productData instanceof LineItem) {
+            $lineItem->setName($productData->getLabel());
+            $lineItem->setUniqueId($productData->getId());
+            $lineItem->setSku($productData->getReferencedId() ?? $productData->getId());
+            $lineItem->setQuantity($productData->getQuantity());
+            $lineItem->setAmountIncludingTax($roundedPrice);
+        } elseif ($productData instanceof OrderLineItemEntity) {
+            $lineItem->setName($productData->getLabel());
+            $lineItem->setUniqueId($productData->getId());
+            $lineItem->setSku($productData->getProductId() ?? $productData->getIdentifier() ?? $productData->getId());
+            $lineItem->setQuantity($productData->getQuantity());
+            $lineItem->setAmountIncludingTax($roundedPrice);
+        } else {
+            throw new \InvalidArgumentException('Unsupported line item type: ' . get_class($productData));
+        }
 
-		$lineItem->setType(LineItemType::PRODUCT);
+        $lineItem->setType(LineItemType::PRODUCT);
 
-		return $lineItem;
-	}
+        return $lineItem;
+    }
 
     /**
      * Build a PostFinanceCheckout address from Shopware customer address.
@@ -785,8 +864,8 @@ class TransactionService
         $address->setSalutation($salutationEntity?->getDisplayName() ?? '');
         $address->setGender(
             strtolower($salutationEntity?->getSalutationKey() ?? '') === 'mr'
-            ? Gender::MALE
-            : Gender::FEMALE
+                ? Gender::MALE
+                : Gender::FEMALE
         );
 
         return $address;
@@ -798,7 +877,8 @@ class TransactionService
      * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
      * @return bool
      */
-    private function isSubscription(SalesChannelContext $salesChannelContext): bool {
+    private function isSubscription(SalesChannelContext $salesChannelContext): bool
+    {
         $extensionName = 'subscription';
         if (class_exists(\Shopware\Commercial\Subscription\Framework\Struct\SubscriptionContextStruct::class)) {
             $extensionName = SubscriptionContextStruct::SUBSCRIPTION_EXTENSION;
@@ -810,12 +890,98 @@ class TransactionService
     }
 
     /**
-	 * @param     $amount
-	 * @param int $precision
-	 *
-	 * @return float
-	 */
-    private function round($value, $precision = 2): float {
+     * @param     $amount
+     * @param int $precision
+     *
+     * @return float
+     */
+    private function round($value, $precision = 2): float
+    {
         return \round($value, $precision);
+    }
+
+    /**
+     * Generates a cache key for the pending transaction ID.
+     * Uses customer ID for authenticated users, which works for both headless and storefront.
+     *
+     * @param SalesChannelContext $salesChannelContext
+     * @return string|null
+     */
+    private function getPendingTransactionCacheKey(SalesChannelContext $salesChannelContext): ?string
+    {
+        $customer = $salesChannelContext->getCustomer();
+        if ($customer) {
+            return 'pfcn_pending_transaction_id_customer_' . $customer->getId();
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves the stored pending transaction ID from cache or session.
+     * Uses customer ID as cache key for headless (stateless) support.
+     * Falls back to session for Storefront (stateful) compatibility.
+     *
+     * @param SalesChannelContext $salesChannelContext
+     * @return int|null The transaction ID if found, otherwise null.
+     */
+    private function getTransactionIdFromContext(SalesChannelContext $salesChannelContext): ?int
+    {
+        // Try cache first (for headless/API where session might not persist or be shared).
+        $cacheKey = $this->getPendingTransactionCacheKey($salesChannelContext);
+        if ($cacheKey) {
+            $item = $this->cache->getItem($cacheKey);
+            if ($item->isHit()) {
+                return (int) $item->get();
+            }
+        }
+
+        // Fallback to PHP session for traditional Storefront compatibility.
+        if (isset($_SESSION['transactionId'])) {
+            return (int) $_SESSION['transactionId'];
+        }
+
+        return null;
+    }
+
+    /**
+     * Clears the pending transaction ID from cache and session.
+     *
+     * @param SalesChannelContext $salesChannelContext
+     */
+    private function clearTransactionIdFromContext(SalesChannelContext $salesChannelContext): void
+    {
+        // Clear from cache key.
+        $cacheKey = $this->getPendingTransactionCacheKey($salesChannelContext);
+        if ($cacheKey) {
+            $this->cache->deleteItem($cacheKey);
+        }
+
+        // Clear from session.
+        if (isset($_SESSION['transactionId'])) {
+            unset($_SESSION['transactionId']);
+        }
+    }
+
+    /**
+     * Stores the pending transaction ID in cache and session.
+     * This persists in the database (via cache) and works across all request types (Storefront & headless).
+     *
+     * @param SalesChannelContext $salesChannelContext
+     * @param int $transactionId
+     */
+    private function storeTransactionIdInContext(SalesChannelContext $salesChannelContext, int $transactionId): void
+    {
+        // Store in cache for headless.
+        $cacheKey = $this->getPendingTransactionCacheKey($salesChannelContext);
+        if ($cacheKey) {
+            $item = $this->cache->getItem($cacheKey);
+            $item->set($transactionId);
+            // Expire after 2 hours to avoid stale data (matching typical cart lifetime).
+            $item->expiresAfter(7200);
+            $this->cache->save($item);
+        }
+
+        // Store in session for Storefront.
+        $_SESSION['transactionId'] = $transactionId;
     }
 }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace PostFinanceCheckoutPayment\Core\Checkout\PaymentHandler;
 
@@ -119,15 +121,14 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
         PaymentTransactionStruct $transaction,
         Context           $context,
         ?Struct $validateStruct
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         try {
             $orderTransactionId = $transaction->getOrderTransactionId();
             $orderTransaction = $this->orderTransactionRepository->search(
                 (new Criteria([$orderTransactionId]))
                     ->addAssociation('order')
                     ->addAssociation('stateMachineState'),
-                    $context
+                $context
             )->getEntities()->first();
 
             $contextSource = $context->getSource();
@@ -175,14 +176,13 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
         Request                  $request,
         PaymentTransactionStruct $transaction,
         Context                  $context
-    ): void
-    {
+    ): void {
         $orderTransactionId = $transaction->getOrderTransactionId();
         $orderTransaction = $this->orderTransactionRepository->search(
             (new Criteria([$orderTransactionId]))
                 ->addAssociation('order')
                 ->addAssociation('stateMachineState'),
-                $context
+            $context
         )->getEntities()->first();
 
         if ($orderTransaction->getOrder()->getAmountTotal() > 0) {
@@ -209,7 +209,7 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
             $this->orderTransactionStateHandler->paid($orderTransaction->getId(), $context);
         }
 
-        $token = $request->getSession()->get('sw-context-token');
+        $token = $this->getContextToken($request);
         if ($token) {
             $orderEntity = $this->pluginTransactionService->getOrderEntity(
                 $orderTransaction->getOrder()->getId(),
@@ -222,6 +222,24 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
             $salesChannelContext->getContext()->addState('do-cart-delete');
             $this->logger->info('Clearing cart with token: ' . $token);
             $this->cartPersister->delete($salesChannelContext->getToken(), $salesChannelContext);
+        } else {
+            // Fallback: Try to get token from transaction custom fields (for Headless redirects)
+            $customFields = $orderTransaction->getCustomFields() ?? [];
+            $storedToken = $customFields[TransactionPayload::ORDER_TRANSACTION_CUSTOM_FIELDS_POSTFINANCECHECKOUT_TOKEN] ?? null;
+
+            if ($storedToken) {
+                $this->logger->info('Clearing cart with stored token: ' . $storedToken);
+                $orderEntity = $this->pluginTransactionService->getOrderEntity(
+                    $orderTransaction->getOrder()->getId(),
+                    $context
+                );
+                $salesChannelId = $orderEntity->getSalesChannelId();
+                $parameters = new SalesChannelContextServiceParameters($salesChannelId, $storedToken, originalContext: $context);
+                $salesChannelContext = $this->salesChannelContextService->get($parameters);
+
+                $salesChannelContext->getContext()->addState('do-cart-delete');
+                $this->cartPersister->delete($salesChannelContext->getToken(), $salesChannelContext);
+            }
         }
     }
 
@@ -232,7 +250,7 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
         PaymentHandlerType $type,
         string $paymentMethodId,
         Context $context
-        ): bool {
+    ): bool {
         // Both PaymentHandlerType::RECURRING and PaymentHandlerType::REFUND are supported
         //TODO: check that the payment method really supports recurring.
         // In order to do that, we need to get this information in when synching the payment methods.
@@ -284,7 +302,7 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
                 throw PaymentException::recurringInterrupted($newTransactionId, 'No orders found associated with the subscription.');
             }
 
-            $orders->sort(fn (OrderEntity $a, OrderEntity $b) => $a->getCreatedAt() <=> $b->getCreatedAt());
+            $orders->sort(fn(OrderEntity $a, OrderEntity $b) => $a->getCreatedAt() <=> $b->getCreatedAt());
             /** @var OrderEntity|null $originalOrder */
             $originalOrder = $orders->first();
 
@@ -296,7 +314,7 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
 
             /** @var OrderTransactionEntity|null $originalTransaction */
             $originalTransaction = $originalTransactions->filter(
-                fn (OrderTransactionEntity $t) => $t->getStateMachineState()?->getTechnicalName() === OrderTransactionStates::STATE_PAID
+                fn(OrderTransactionEntity $t) => $t->getStateMachineState()?->getTechnicalName() === OrderTransactionStates::STATE_PAID
             )->first();
 
             if ($originalTransaction === null) {
@@ -305,7 +323,8 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
 
             $newOrderTransaction = $this->orderTransactionRepository->search(
                 (new Criteria([$newTransactionId]))
-                    ->addAssociation('order'), $context
+                    ->addAssociation('order'),
+                $context
             )->getEntities()->first();
             $orderNumber = $newOrderTransaction->getOrder()->getOrderNumber();
 
@@ -378,8 +397,7 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
             // Update the new order transaction with the new transaction details
             $this->orderTransactionRepository->update([$data], $context);
             $this->pluginTransactionService->upsert($newSdkTransaction, $context);
-        }
-        catch (\Throwable $e) {
+        } catch (\Throwable $e) {
             $errorMessage = 'An error occurred during the communication with external payment gateway : ' . $e->getMessage();
             $this->logger->critical($errorMessage);
             throw PaymentException::recurringInterrupted($transaction->getOrderTransactionId(), $errorMessage);
@@ -392,7 +410,8 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
      * @param \PostFinanceCheckout\Sdk\Model\Address $address The address model from the SDK.
      * @return \PostFinanceCheckout\Sdk\Model\AddressCreate The newly created AddressCreate instance.
      */
-    private function addressCreateFromSdk(\PostFinanceCheckout\Sdk\Model\Address $address): \PostFinanceCheckout\Sdk\Model\AddressCreate {
+    private function addressCreateFromSdk(\PostFinanceCheckout\Sdk\Model\Address $address): \PostFinanceCheckout\Sdk\Model\AddressCreate
+    {
         $addressCreate = new \PostFinanceCheckout\Sdk\Model\AddressCreate;
 
         $addressCreate->setCity($address->getCity());
@@ -473,16 +492,17 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
     }
 
     /**
-	 * @param     $amount
-	 * @param int $precision
-	 *
-	 * @return float
-	 */
-    private function round($value, $precision = 2): float {
+     * @param     $amount
+     * @param int $precision
+     *
+     * @return float
+     */
+    private function round($value, $precision = 2): float
+    {
         return \round($value, $precision);
     }
-    
-    private function getContextToken(Request $request): string
+
+    private function getContextToken(Request $request): ?string
     {
         $headerContextToken = $request->headers->get('sw-context-token');
         if ($headerContextToken) {
@@ -490,9 +510,10 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
         }
 
         $sessionContextToken = $request->getSession()->get("sw-context-token");
-        if (!$sessionContextToken) {
+        if ($sessionContextToken) {
             return $sessionContextToken;
         }
-        return Random::getAlphanumericString(32);
+
+        return null;
     }
 }

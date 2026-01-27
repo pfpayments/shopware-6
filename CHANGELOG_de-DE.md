@@ -1,3 +1,6 @@
+# 7.3.0
+- Headless Storefront unterstützung
+
 # 7.2.0
 - Datenbanktabelle umbenannt, um Namenskonflikte mit älteren Plugins zu vermeiden.
 - Problem mit fehlgeschlagenen Rückerstattungen bei Zahlungen mit Rechnungen behoben.

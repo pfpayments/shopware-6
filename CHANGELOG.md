@@ -1,6 +1,10 @@
+# 7.3.0
+- Headless storefront support
+
 # 7.2.0
-- Datenbanktabelle umbenannt, um Namenskonflikte mit älteren Plugins zu vermeiden.
-- Problem mit fehlgeschlagenen Rückerstattungen bei Zahlungen mit Rechnungen behoben.
+- Renamed database table to avoid a naming conflict with legacy plugins
+- Fixed issue with refunds failing for payments using Invoice
+- Fix to respect sort order of payment methods
 
 # 7.1.6
 - Improved rounding handling to force 2 decimal places

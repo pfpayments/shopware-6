@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace PostFinanceCheckoutPayment\Core\Storefront\Account\Controller;
 
@@ -20,111 +22,134 @@ use Symfony\Component\{
 };
 use PostFinanceCheckoutPayment\Core\{
   Api\Transaction\Service\TransactionService,
-  Settings\Service\SettingsService
+  Checkout\Service\InvoiceService
 };
 
 #[Package('storefront')]
 #[Route(defaults: ['_routeScope' => ['storefront']])]
+/**
+ * This controller handles account-related actions for orders, specifically
+ * allowing customers to download their invoice documents.
+ */
 class AccountOrderController extends StorefrontController
 {
-    /**
-     * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
-     */
-    protected $settingsService;
-    
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $logger;
-    
-    /**
-     * @var \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService
-     */
-    protected $transactionService;
-    
-    /**
-     * @var RequestStack
-     */
-    protected $requestStack;
-    
-    /**
-     * AccountOrderController constructor.
-     * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService $settingsService
-     * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService $transactionService
-     * @param RequestStack $requestStack
-     */
-    public function __construct(SettingsService $settingsService, TransactionService $transactionService, RequestStack $requestStack)
-    {
-        $this->settingsService = $settingsService;
-        $this->transactionService = $transactionService;
-        $this->requestStack = $requestStack;
+  /**
+   * @var LoggerInterface
+   */
+  protected LoggerInterface $logger;
+
+  /**
+   * @var TransactionService
+   * Local transaction service for order data retrieval.
+   */
+  protected TransactionService $transactionService;
+
+  /**
+   * @var RequestStack
+   * Symfony service to access the current request context.
+   */
+  protected RequestStack $requestStack;
+
+  /**
+   * @var InvoiceService
+   * Service to fetch invoice documents from WhitelabelMachineName.
+   */
+  private InvoiceService $invoiceService;
+
+  /**
+   * @param TransactionService $transactionService
+   * @param RequestStack $requestStack
+   * @param InvoiceService $invoiceService
+   */
+  public function __construct(
+    TransactionService $transactionService,
+    RequestStack $requestStack,
+    InvoiceService $invoiceService
+  ) {
+    $this->transactionService = $transactionService;
+    $this->requestStack = $requestStack;
+    $this->invoiceService = $invoiceService;
+  }
+
+  /**
+   * @param LoggerInterface $logger
+   */
+  public function setLogger(LoggerInterface $logger): void
+  {
+    $this->logger = $logger;
+  }
+
+  /**
+   * Downloads an invoice document for a specific order.
+   *
+   * @param string $orderId The ID of the order.
+   * @param SalesChannelContext $salesChannelContext The context.
+   * @return Response The PDF document as a download response.
+   */
+  #[Route(
+    path: "/postfinancecheckout/account/order/download/invoice/document/{orderId}",
+    name: "frontend.postfinancecheckout.account.order.download.invoice.document",
+    methods: ['GET']
+  )]
+  public function downloadInvoiceDocument(string $orderId, SalesChannelContext $salesChannelContext): Response
+  {
+    try {
+      // Ensure the user is logged in.
+      $customer = $this->getLoggedInCustomer();
+
+      // Fetch the transaction entity to verify ownership.
+      $transactionEntity = $this->transactionService->getByOrderId($orderId, $salesChannelContext->getContext());
+
+      // Security check: ensure the document belongs to the logged-in customer.
+      if (strcasecmp((string)$customer->getCustomerNumber(), (string)$transactionEntity->getData()['customerId']) != 0) {
+        throw new AccessDeniedException();
+      }
+
+      // Retrieve the invoice document metadata and content.
+      /** @var object $invoiceDocument */
+      $invoiceDocument = $this->invoiceService->getInvoiceDocument($orderId, $salesChannelContext);
+
+      // Sanitize the filename for the download.
+      $filename = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '_', (string)$invoiceDocument->getTitle()) . '.pdf';
+      $disposition = HeaderUtils::makeDisposition(
+        HeaderUtils::DISPOSITION_ATTACHMENT,
+        $filename,
+        $filename
+      );
+
+      // Create the response with the PDF content (base64 decoded).
+      $response = new Response(base64_decode((string)$invoiceDocument->getData()));
+      $response->headers->set('Content-Type', (string)$invoiceDocument->getMimeType());
+      $response->headers->set('Content-Disposition', $disposition);
+
+      return $response;
+    } catch (\Exception $e) {
+      $this->logger->error($e->getMessage());
+      return $this->redirectToRoute('frontend.home.page');
     }
-    
-    /**
-     * @param \Psr\Log\LoggerInterface $logger
-     * @internal
-     * @required
-     *
-     */
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
+  }
+
+  /**
+   * Helper to retrieve the currently logged-in customer.
+   *
+   * @return CustomerEntity
+   * @throws CustomerNotLoggedInException
+   */
+  protected function getLoggedInCustomer(): CustomerEntity
+  {
+    $request = $this->requestStack->getCurrentRequest();
+
+    if (!$request) {
+      throw new CustomerNotLoggedInException();
     }
 
-    /**
-     * Download invoice document
-     *
-     * @param string $orderId
-     * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
-     * @return \Symfony\Component\HttpFoundation\Response
-     *
-     * @throws \PostFinanceCheckout\Sdk\ApiException
-     * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
-     * @throws \PostFinanceCheckout\Sdk\VersioningException
-     */
-    #[Route("/postfinancecheckout/account/order/download/invoice/document/{orderId}",
-      name: "frontend.postfinancecheckout.account.order.download.invoice.document",
-      methods: ['GET'])]
-    public function downloadInvoiceDocument(string $orderId, SalesChannelContext $salesChannelContext): Response
-    {
-        $customer = $this->getLoggedInCustomer();
-        $settings = $this->settingsService->getSettings($salesChannelContext->getSalesChannel()->getId());
-        $transactionEntity = $this->transactionService->getByOrderId($orderId, $salesChannelContext->getContext());
-        if (strcasecmp($customer->getCustomerNumber(), $transactionEntity->getData()['customerId']) != 0) {
-            throw new AccessDeniedException();
-        }
-        $invoiceDocument = $settings->getApiClient()->getTransactionService()->getInvoiceDocument($settings->getSpaceId(), $transactionEntity->getTransactionId());
-        $forceDownload = true;
-        $filename = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '_', $invoiceDocument->getTitle()) . '.pdf';
-        $disposition = HeaderUtils::makeDisposition(
-          $forceDownload ? HeaderUtils::DISPOSITION_ATTACHMENT : HeaderUtils::DISPOSITION_INLINE,
-          $filename,
-          $filename
-        );
-        $response = new Response(base64_decode($invoiceDocument->getData()));
-        $response->headers->set('Content-Type', $invoiceDocument->getMimeType());
-        $response->headers->set('Content-Disposition', $disposition);
-        
-        return $response;
+    /** @var SalesChannelContext|null $context */
+    $context = $request->attributes->get(PlatformRequest::ATTRIBUTE_SALES_CHANNEL_CONTEXT_OBJECT);
+
+    if ($context && $context->getCustomer() && $context->getCustomer()->getGuest() === false) {
+      return $context->getCustomer();
     }
-    
-    /**
-     * @return CustomerEntity
-     */
-    protected function getLoggedInCustomer(): CustomerEntity
-    {
-        $request = $this->requestStack->getCurrentRequest();
-        
-        if (!$request) {
-            throw new CustomerNotLoggedInException();
-        }
-        
-        $context = $request->attributes->get(PlatformRequest::ATTRIBUTE_SALES_CHANNEL_CONTEXT_OBJECT);
-        
-        if ($context && $context->getCustomer() && $context->getCustomer()->getGuest() === false) {
-            return $context->getCustomer();
-        }
-        
-        throw new CustomerNotLoggedInException();
-    }
+
+    throw new CustomerNotLoggedInException();
+  }
 }

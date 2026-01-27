@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+
+<container xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		   xmlns="http://symfony.com/schema/dic/services"
+		   xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+	<services>
+		<service id="PostFinanceCheckoutPayment\Core\Checkout\PaymentMethod\SalesChannel\PaymentMethodRouteDecorator"
+				 decorates="Shopware\Core\Checkout\Payment\SalesChannel\PaymentMethodRoute"
+				 decoration-inner-name="PostFinanceCheckoutPayment\Core\Checkout\PaymentMethod\SalesChannel\PaymentMethodRouteDecorator.inner">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Checkout\PaymentMethod\SalesChannel\PaymentMethodRouteDecorator.inner"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Checkout\Service\PaymentMethodFilterService"/>
+		</service>
+
+		<service id="PostFinanceCheckoutPayment\Core\Checkout\StoreApi\Route\WhitelabelMachineNameTransactionInfoRoute">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Checkout\Service\PaymentIntegrationService"/>
+		</service>
+
+		<service id="PostFinanceCheckoutPayment\Core\Checkout\StoreApi\Route\CartRecoveryRoute">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Checkout\Service\CartRecoveryService"/>
+		</service>
+
+		<service id="PostFinanceCheckoutPayment\Core\Checkout\StoreApi\Route\InvoiceRoute">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Checkout\Service\InvoiceService"/>
+		</service>
+	</services>
+</container>
