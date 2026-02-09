@@ -119,7 +119,9 @@ class WebHookTransactionStrategy extends WebHookStrategyBase implements WebhookS
 			$orderId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
 			if (!empty($orderId) && !$transaction->getParent()) {
 				$this->executeLocked($orderId, $context, function () use ($orderId, $transaction, $context, $request, $token) {
-					$this->transactionService->upsert($transaction, $context);
+					if ($this->allowUpsert($transaction, $orderId, $context)) {
+						$this->transactionService->upsert($transaction, $context);
+					}
 					$orderTransactionId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
 					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
 					$this->logger->info("OrderId: {orderId} Current state: {state}", [
@@ -177,5 +179,27 @@ class WebHookTransactionStrategy extends WebHookStrategyBase implements WebhookS
 		}
 
 		return new JsonResponse(['data' => $request->jsonSerialize()], $status);
+	}
+
+	/**
+	 * Checks the incoming transaction ID against the current transaction ID of the order.
+	 * If they don’t match, the saved transaction in the database remains unchanged.
+	 *
+	 * @param Transaction $transaction The transaction data retrieved from the portal.
+	 * @param string $orderId The order ID of the current transaction.
+	 * @param Context $context The operational context providing settings and environment for transaction processing.
+	 * @return bool Returns a value that determines whether to upsert the transaction into the database.
+	 */
+	private function allowUpsert(Transaction $transaction, string $orderId, Context $context): bool
+	{
+		try {
+			$transactionEntity = $this->transactionService->getByOrderId($orderId, $context);
+			if ($transactionEntity->getTransactionId() !== $transaction->getId()) {
+				return false;
+			}
+		} catch (\Throwable $e) {
+
+		}
+		return true;
 	}
 }

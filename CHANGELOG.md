@@ -1,3 +1,10 @@
+# 7.3.1
+- Shopware 6.7.7.0 compatibility
+- Fix for missing payment icons
+- Fixed issue with 'Entire Set' coupons returning error due to totals mismatch
+- Fixed issue with orphaned order_transactions causing an admin UI failure
+- Fixed error thrown when customers who aren't logged in attempt to download an invoice
+
 # 7.3.0
 - Headless storefront support
 

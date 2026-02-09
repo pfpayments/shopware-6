@@ -197,7 +197,7 @@ class TransactionPayload extends AbstractPayload
             'merchant_reference' => $this->fixLength($this->order->getOrderNumber(), 100),
             'meta_data' => [
                 self::POSTFINANCECHECKOUT_METADATA_ORDER_ID => $this->order->getId(),
-                self::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID => $this->order->getTransactions()->first()->getId(),
+                self::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID => $this->transaction->getOrderTransactionId(),
                 self::POSTFINANCECHECKOUT_METADATA_SALES_CHANNEL_ID => $this->salesChannelContext->getSalesChannel()->getId(),
                 self::POSTFINANCECHECKOUT_METADATA_CUSTOMER_NAME => $customerName,
             ],
@@ -378,7 +378,7 @@ class TransactionPayload extends AbstractPayload
                 $rate = $calculatedTax->getTaxRate();
                 $amount = $this->calculateDiscountAmount($calculatedTax);
 
-                $lineItems[] = $this->createDiscountLineItem($discountName, $amount, $rate);
+                $lineItems[] = $this->createDiscountLineItem($discountName, $amount, $rate, $discount->getId());
             }
         } else {
             $taxRules = $calculatedPrice->getTaxRules();
@@ -387,12 +387,12 @@ class TransactionPayload extends AbstractPayload
                 foreach ($taxRules as $taxRule) {
                     $rate = $taxRule->getTaxRate();
                     $amount = $calculatedPrice->getTotalPrice();
-                    $lineItems[] = $this->createDiscountLineItem($discountName, $amount, $rate);
+                    $lineItems[] = $this->createDiscountLineItem($discountName, $amount, $rate, $discount->getId());
                 }
             } else {
                 $rate = $this->getDefaultTaxRate();
                 $amount = $calculatedPrice->getTotalPrice();
-                $lineItems[] = $this->createDiscountLineItem($discountName, $amount, $rate);
+                $lineItems[] = $this->createDiscountLineItem($discountName, $amount, $rate, $discount->getId());
             }
         }
     }
@@ -403,7 +403,7 @@ class TransactionPayload extends AbstractPayload
      * @param float $rate
      * @return LineItemCreate
      */
-    private function createDiscountLineItem(string $discountName, float $amount, float $rate): LineItemCreate
+    private function createDiscountLineItem(string $discountName, float $amount, float $rate, string $discountId): LineItemCreate
     {
         $lineItem = new LineItemCreate();
 
@@ -422,7 +422,7 @@ class TransactionPayload extends AbstractPayload
             ->setShippingRequired(false)
             ->setSku($discountSkuName, 200)
             ->setType(LineItemType::DISCOUNT)
-            ->setUniqueId('coupon-' . $discountSkuName);
+            ->setUniqueId('coupon-' . $discountSkuName . '-' . $discountId);
 
         $taxRate = new TaxCreate([
             'title' => 'Discount Tax: ' . $rate,

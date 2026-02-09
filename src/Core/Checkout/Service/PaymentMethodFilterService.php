@@ -262,7 +262,7 @@ class PaymentMethodFilterService
                 new EqualsFilter('salesChannels.id', $salesChannelContext->getSalesChannelId())
             );
             $criteria->addSorting(new FieldSorting('position', FieldSorting::ASCENDING));
-
+            $criteria->addAssociation('media');
             // Re-fetch the entities to ensure we have valid objects with all associations.
             $result = $this->paymentMethodRepository->search($criteria, $salesChannelContext->getContext());
             /** @var \Shopware\Core\Checkout\Payment\PaymentMethodEntity $method */

@@ -6,7 +6,7 @@ namespace PostFinanceCheckoutPayment\Core\Storefront\Account\Controller;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
-  Checkout\Cart\Exception\CustomerNotLoggedInException,
+  Checkout\Cart\CartException,
   Checkout\Customer\CustomerEntity,
   PlatformRequest,
   System\SalesChannel\SalesChannelContext
@@ -133,14 +133,14 @@ class AccountOrderController extends StorefrontController
    * Helper to retrieve the currently logged-in customer.
    *
    * @return CustomerEntity
-   * @throws CustomerNotLoggedInException
+   * @throws CartException
    */
   protected function getLoggedInCustomer(): CustomerEntity
   {
     $request = $this->requestStack->getCurrentRequest();
 
     if (!$request) {
-      throw new CustomerNotLoggedInException();
+      throw CartException::customerNotLoggedIn();
     }
 
     /** @var SalesChannelContext|null $context */
@@ -150,6 +150,6 @@ class AccountOrderController extends StorefrontController
       return $context->getCustomer();
     }
 
-    throw new CustomerNotLoggedInException();
+    throw CartException::customerNotLoggedIn();
   }
 }

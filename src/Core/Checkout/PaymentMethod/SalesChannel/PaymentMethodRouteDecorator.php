@@ -76,7 +76,7 @@ class PaymentMethodRouteDecorator extends AbstractPaymentMethodRoute
         $response = $this->decorated->load($request, $context, $criteria);
 
         $currentRoute = $request->attributes->get('_route');
-        if ($currentRoute === 'frontend.checkout.finish.page') {
+        if ($currentRoute === 'frontend.checkout.finish.page' || !$this->allowFilterPaymentMethods($request)) {
             return $response;
         }
 
@@ -99,5 +99,23 @@ class PaymentMethodRouteDecorator extends AbstractPaymentMethodRoute
                 $context->getContext()
             )
         );
+    }
+
+    /**
+     * We prevent filtering methods unless onlyAvailable is true.
+     * This is because the filterPaymentMethods() function creates unnecessary pending transactions in the
+     * portal when logged-in users navigate between pages.
+     * The onlyAvailable flag applies rule-based filtering of payment methods and is usually true on checkout pages,
+     * so we apply filterPaymentMethods() only when relevant.
+     *
+     * @param Request $request
+     * @return bool
+     */
+    private function allowFilterPaymentMethods(Request $request): bool
+    {
+        if ($request->query->getBoolean('onlyAvailable') || $request->request->getBoolean('onlyAvailable')) {
+            return true;
+        }
+        return false;
     }
 }

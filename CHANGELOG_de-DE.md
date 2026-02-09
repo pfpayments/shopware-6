@@ -1,3 +1,10 @@
+# 7.3.1
+- Kompatibilität mit Shopware 6.7.7.0
+- Fehlende Zahlungssymbole behoben
+- Problem mit „Gesamtes Set“-Gutscheinen aufgrund von Summenabweichungen behoben
+- Problem mit verwaisten Bestelltransaktionen behoben, die zu einem Fehler in der Admin-Oberfläche führten
+- Ein Fehler wurde behoben, der auftrat, wenn nicht angemeldete Kunden versuchten, eine Rechnung herunterzuladen.
+
 # 7.3.0
 - Headless Storefront unterstützung
 
