@@ -345,7 +345,7 @@ class TransactionPayload extends AbstractPayload
               ->setShippingRequired(false)
               ->setSku('sku-discount-' . $rate . '-' . $discountName, 200)
               ->setType(LineItemType::DISCOUNT)
-              ->setUniqueId('coupon-sku-discount-' . $rate . '-' . $rate . '-' . $discountName);
+              ->setUniqueId('coupon-sku-discount-' . $rate . '-' . $rate . '-' . $discountName . '-' . $discount->getId());
 
             $taxRate = new TaxCreate(['title' => 'Discount Tax: ' . $rate, 'rate' => $rate]);
             $lineItem->setTaxes([$taxRate]);

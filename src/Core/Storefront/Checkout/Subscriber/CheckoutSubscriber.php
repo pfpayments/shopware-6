@@ -337,6 +337,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
 			  new EqualsFilter('salesChannels.id', $event->getSalesChannelContext()->getSalesChannelId())
 			);
 			$criteria->addSorting(new FieldSorting('position', FieldSorting::ASCENDING));
+			$criteria->addAssociation('media');
 
 			$result = $this->paymentMethodRepository->search($criteria, $event->getContext());
 			foreach ($result->getEntities() as $method) {

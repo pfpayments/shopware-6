@@ -1,3 +1,6 @@
+# 6.2.1
+- Fixed issue with multiple discount codes
+
 # 6.2.0
 - Renamed database table to avoid a naming conflict with legacy plugins
 - Fixed issue with refunds failing for payments using Invoice

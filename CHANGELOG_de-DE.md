@@ -1,3 +1,6 @@
+# 6.2.1
+- Problem mit mehreren Rabattcodes behoben
+
 # 6.2.0
 - Datenbanktabelle umbenannt, um Namenskonflikte mit älteren Plugins zu vermeiden.
 - Problem mit fehlgeschlagenen Rückerstattungen bei Zahlungen mit Rechnungen behoben.
