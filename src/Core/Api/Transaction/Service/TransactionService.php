@@ -313,8 +313,8 @@ class TransactionService
     public function upsert(
         Transaction $transaction,
         Context     $context,
-        string      $paymentMethodId = null,
-        string      $salesChannelId = null
+        ?string     $paymentMethodId = null,
+        ?string     $salesChannelId = null
     ): void {
         try {
 
@@ -327,6 +327,13 @@ class TransactionService
 
             $orderId = $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
             $orderTransactionId = $transactionMetaData[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
+
+            if (!$paymentMethodId) {
+                $criteria = new Criteria([$orderTransactionId]);
+                $criteria->addAssociation('order');
+                $orderTransaction = $this->container->get('order_transaction.repository')->search($criteria, $context)->first();
+                $paymentMethodId = $orderTransaction->getPaymentMethodId();
+            }
 
             $dataParamValue = json_decode(strval($transaction), true);
             $brandName = '';

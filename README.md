@@ -13,10 +13,10 @@ Please note that this plugin is for versions 6.5, 6.6 or 6.7. For the 6.4 plugin
 
 ## Documentation
 
-- For English documentation click [here](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.3.1/docs/en/documentation.html)
-- Für die deutsche Dokumentation klicken Sie [hier](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.3.1/docs/de/documentation.html)
-- Pour la documentation Française, cliquez [ici](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.3.1/docs/fr/documentation.html)
-- Per la documentazione in tedesco, clicca [qui](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.3.1/docs/it/documentation.html)
+- For English documentation click [here](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.3.2/docs/en/documentation.html)
+- Für die deutsche Dokumentation klicken Sie [hier](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.3.2/docs/de/documentation.html)
+- Pour la documentation Française, cliquez [ici](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.3.2/docs/fr/documentation.html)
+- Per la documentazione in tedesco, clicca [qui](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/7.3.2/docs/it/documentation.html)
 
 ## Installation
 

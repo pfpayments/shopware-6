@@ -25,7 +25,7 @@ use Shopware\Core\{
     Framework\Struct\Struct,
     Framework\Validation\DataBag\RequestDataBag,
     System\StateMachine\Aggregation\StateMachineState\StateMachineStateEntity,
-    System\SalesChannel\Context\SalesChannelContextService,
+    System\SalesChannel\Context\SalesChannelContextServiceInterface,
     System\SalesChannel\Context\SalesChannelContextServiceParameters
 };
 use Shopware\Core\Framework\Util\Random;
@@ -71,7 +71,7 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
      */
     private $orderTransactionStateHandler;
 
-    protected SalesChannelContextService $salesChannelContextService;
+    protected SalesChannelContextServiceInterface $salesChannelContextService;
 
     protected EntityRepository $orderTransactionRepository;
 
@@ -84,7 +84,7 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
         CustomCartPersister $cartPersister,
         PluginTransactionService $pluginTransactionService,
         OrderTransactionStateHandler $orderTransactionStateHandler,
-        SalesChannelContextService $salesChannelContextService,
+        SalesChannelContextServiceInterface $salesChannelContextService,
         EntityRepository $orderTransactionRepository,
         ?EntityRepository $subscriptionRepository,
     ) {

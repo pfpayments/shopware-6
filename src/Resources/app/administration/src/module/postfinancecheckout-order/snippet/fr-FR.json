@@ -83,7 +83,8 @@
 		"messageRefundAmountExceedsAvailableBalance": "Le montant du remboursement dépasse le solde disponible.",
 		"messageRefundAmountIsZero": "Le montant du remboursement doit être supérieur à 0.",
 		"messageRefundQuantityExceedsAvailableBalance": "Le remboursement par quantité dépasse le nombre maximal d’articles remboursables.",
-		"messageRefundQuantityIsZero": "Le remboursement par quantité doit être supérieur à 0."
+		"messageRefundQuantityIsZero": "Le remboursement par quantité doit être supérieur à 0.",
+		"messagePaymentMethodDoesNotSupportRefund": "Le mode de paiement ne prend pas en charge les remboursements en ligne."
 	  }
 	},
 	"transactionHistory": {

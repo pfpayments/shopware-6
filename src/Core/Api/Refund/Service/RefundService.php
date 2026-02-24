@@ -17,13 +17,15 @@ use PostFinanceCheckout\Sdk\{
   Model\EntityQueryFilter,
   Model\EntityQueryFilterType,
   Model\EntityQuery,
+  ApiException
 };
 use PostFinanceCheckoutPayment\Core\{
   Api\Refund\Entity\RefundEntity,
   Api\Transaction\Entity\TransactionEntity,
   Api\Transaction\Entity\TransactionEntityDefinition,
   Settings\Service\SettingsService,
-  Util\Payload\RefundPayload
+  Util\Payload\RefundPayload,
+  Util\Exception\RefundNotSupportedException
 };
 
 /**
@@ -103,6 +105,12 @@ class RefundService
                 $this->upsert($refund, $context);
                 return $refund;
             }
+        } catch (ApiException $exception) {
+            $message = $exception->getMessage();
+            $this->logger->critical($message);
+            if ($exception->getCode() === 442 && str_contains($message, 'does not support online refunds')) {
+                throw new RefundNotSupportedException($message, 0, $exception);
+            }
         } catch (\Exception $exception) {
             $this->logger->critical($exception->getMessage());
         }
@@ -137,6 +145,12 @@ class RefundService
                 $refund = $apiClient->getRefundService()->refund($settings->getSpaceId(), $refundPayload);
                 $this->upsert($refund, $context);
                 return $refund;
+            }
+        } catch (ApiException $exception) {
+            $message = $exception->getMessage();
+            $this->logger->critical($message);
+            if ($exception->getCode() === 442 && str_contains($message, 'does not support online refunds')) {
+                throw new RefundNotSupportedException($message, 0, $exception);
             }
         } catch (\Exception $exception) {
             $this->logger->critical($exception->getMessage());
@@ -173,6 +187,12 @@ class RefundService
                 $refund = $apiClient->getRefundService()->refund($settings->getSpaceId(), $refundPayload);
                 $this->upsert($refund, $context);
                 return $refund;
+            }
+        } catch (ApiException $exception) {
+            $message = $exception->getMessage();
+            $this->logger->critical($message);
+            if ($exception->getCode() === 442 && str_contains($message, 'does not support online refunds')) {
+                throw new RefundNotSupportedException($message, 0, $exception);
             }
         } catch (\Exception $exception) {
             $this->logger->critical($exception->getMessage());

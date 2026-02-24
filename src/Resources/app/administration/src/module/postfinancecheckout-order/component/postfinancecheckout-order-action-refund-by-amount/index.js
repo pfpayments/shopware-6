@@ -79,6 +79,9 @@ Component.register('postfinancecheckout-order-action-refund-by-amount', {
 						case 'refundExceedsAmount':
 							errorMessage = this.$tc('postfinancecheckout-order.refundAction.refundCreateError.messageRefundAmountExceedsAvailableBalance');
 						break;
+						case 'methodDoesNotSupportRefund':
+							errorMessage = this.$tc('postfinancecheckout-order.refundAction.refundCreateError.messagePaymentMethodDoesNotSupportRefund');
+						break;
 						default:
 							errorMessage = errorResponse.response.data.errors[0].detail;
 					}

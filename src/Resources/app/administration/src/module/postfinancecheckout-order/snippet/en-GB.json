@@ -83,7 +83,8 @@
 		"messageRefundAmountExceedsAvailableBalance": "Refund amount exceeds available balance.",
 		"messageRefundAmountIsZero": "Refund amount must be greater than 0.",
 		"messageRefundQuantityExceedsAvailableBalance": "Refund by quantity exceeds maximum available items to refund.",
-		"messageRefundQuantityIsZero": "Refund by quantity must be greater than 0."
+		"messageRefundQuantityIsZero": "Refund by quantity must be greater than 0.",
+		"messagePaymentMethodDoesNotSupportRefund": "Payment method does not support online refunds."
 	  }
 	},
 	"transactionHistory": {

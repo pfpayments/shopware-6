@@ -64,7 +64,7 @@ class WebHookRefundStrategy extends WebHookStrategyBase implements WebhookStrate
 	/**
 	 * @inheritDoc
 	 */
-	public function getOrderIdByTransaction($transaction): string
+	public function getOrderIdByTransaction($transaction): string|null
 	{
 		/** @var \PostFinanceCheckout\Sdk\Model\Refund $transaction */
 		return $transaction->getTransaction()

@@ -14,7 +14,8 @@ use Symfony\Component\{
 use PostFinanceCheckoutPayment\Core\{
   Api\Refund\Service\RefundService,
   Api\Transaction\Service\TransactionService,
-  Settings\Service\SettingsService
+  Settings\Service\SettingsService,
+  Util\Exception\RefundNotSupportedException
 };
 
 /**
@@ -105,7 +106,12 @@ class RefundController extends AbstractController
             return new Response('refundExceedsQuantity', Response::HTTP_BAD_REQUEST);
         }
 
-        $refund = $this->refundService->create($transaction, $context, $lineItemId, $quantity);
+        try {
+            $refund = $this->refundService->create($transaction, $context, $lineItemId, $quantity);
+        } catch (RefundNotSupportedException $exception) {
+            $this->logger->info('Payment method does not support online refunds for transaction: ' . $transactionId);
+            return new Response('methodDoesNotSupportRefund', Response::HTTP_BAD_REQUEST);
+        }
 
         if ($refund === null) {
             return new Response('Refund was not created. Please check the refund amound or if the item was not refunded before', Response::HTTP_BAD_REQUEST);
@@ -148,7 +154,12 @@ class RefundController extends AbstractController
             return new Response('refundExceedsAmount', Response::HTTP_BAD_REQUEST);
         }
         
-        $refund = $this->refundService->createRefundByAmount($transaction, $refundableAmount, $context);
+        try {
+            $refund = $this->refundService->createRefundByAmount($transaction, $refundableAmount, $context);
+        } catch (RefundNotSupportedException $exception) {
+            $this->logger->info('Payment method does not support online refunds for transaction: ' . $transactionId);
+            return new Response('methodDoesNotSupportRefund', Response::HTTP_BAD_REQUEST);
+        }
         
         if ($refund === null) {
             return new Response('refundExceedsAmount', Response::HTTP_BAD_REQUEST);
@@ -179,7 +190,13 @@ class RefundController extends AbstractController
         $apiClient = $settings->getApiClient();
         
         $transaction = $apiClient->getTransactionService()->read($settings->getSpaceId(), $transactionId);
-        $this->refundService->createPartialRefund($transaction, $context, $lineItemId, $refundableAmount);
+        
+        try {
+            $refund = $this->refundService->createPartialRefund($transaction, $context, $lineItemId, $refundableAmount);
+        } catch (RefundNotSupportedException $exception) {
+            $this->logger->info('Payment method does not support online refunds for transaction: ' . $transactionId);
+            return new Response('methodDoesNotSupportRefund', Response::HTTP_BAD_REQUEST);
+        }
         
         return new Response(null, Response::HTTP_NO_CONTENT);
     }

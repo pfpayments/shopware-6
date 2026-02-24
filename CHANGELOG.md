@@ -1,3 +1,9 @@
+# 7.3.2
+- Fix for partial refunds using standard refund option
+- Fixed issue with undefined array key
+- Fixed issue with recurring payments
+- Fixed concrete class reference; used interface instead
+
 # 7.3.1
 - Shopware 6.7.7.0 compatibility
 - Fix for missing payment icons

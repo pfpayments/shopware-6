@@ -1,3 +1,8 @@
+# 7.3.2
+- Problem mit Teilrückerstattungen über die Standardrückerstattungsoption behoben
+- Problem mit undefiniertem Array-Schlüssel behoben
+- Problem mit einziehenden Zahlungen behoben
+- Konkrete Klasse durch Verwendung einer Schnittstelle korrigiert
 # 7.3.1
 - Kompatibilität mit Shopware 6.7.7.0
 - Fehlende Zahlungssymbole behoben

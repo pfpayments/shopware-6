@@ -26,7 +26,7 @@ class Analytics {
 			self::SHOP_SYSTEM             => 'shopware',
 			self::SHOP_SYSTEM_VERSION     => '6',
 			self::SHOP_SYSTEM_AND_VERSION => 'shopware-6',
-			self::PLUGIN_SYSTEM_VERSION   => '7.3.1',
+			self::PLUGIN_SYSTEM_VERSION   => '7.3.2',
 		];
 	}
 

@@ -61,7 +61,7 @@ class WebHookTransactionStrategy extends WebHookStrategyBase implements WebhookS
 	/**
 	 * @inheritDoc
 	 */
-	public function getOrderIdByTransaction(Transaction $transaction): string
+	public function getOrderIdByTransaction(Transaction $transaction): string|null
 	{
 		/** @var \PostFinanceCheckout\Sdk\Model\Transaction $transaction */
 		return $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
@@ -116,7 +116,7 @@ class WebHookTransactionStrategy extends WebHookStrategyBase implements WebhookS
 			/** @var \Shopware\Core\Checkout\Order\OrderEntity $order */
 			$transaction = $this->getTransaction($request);
             $token = $transaction->getToken();
-			$orderId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
+			$orderId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID] ?? null;
 			if (!empty($orderId) && !$transaction->getParent()) {
 				$this->executeLocked($orderId, $context, function () use ($orderId, $transaction, $context, $request, $token) {
 					if ($this->allowUpsert($transaction, $orderId, $context)) {

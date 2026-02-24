@@ -98,7 +98,7 @@
                         <template #actions="{ item }">
                             <sw-context-menu-item
                                     :disabled="transaction.state != 'FULFILL' || item.refundableQuantity != item.quantity || item.refundableAmount == 0 || item.itemRefundedAmount > 0 || item.itemRefundedQuantity > 0"
-                                    @click="lineItemRefund(item.uniqueId)">
+                                    @click="lineItemRefund(item.uniqueId, item.quantity)">
                                 {{ $tc('postfinancecheckout-order.buttons.label.refund-whole-line-item') }}
                             </sw-context-menu-item>
 

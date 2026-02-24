@@ -83,7 +83,8 @@
 		"messageRefundAmountExceedsAvailableBalance": "Der Rückerstattungsbetrag übersteigt das verfügbare Guthaben.",
 		"messageRefundAmountIsZero": "Der Rückerstattungsbetrag muss größer als 0 sein.",
 		"messageRefundQuantityExceedsAvailableBalance": "Rückerstattung nach Menge überschreitet die maximal verfügbare Anzahl an Artikeln zur Rückerstattung.",
-		"messageRefundQuantityIsZero": "Rückerstattung nach Menge muss größer als 0 sein."
+		"messageRefundQuantityIsZero": "Rückerstattung nach Menge muss größer als 0 sein.",
+		"messagePaymentMethodDoesNotSupportRefund": "Die Zahlungsmethode unterstützt keine Online-Rückerstattungen."
 	  }
 	},
 	"transactionHistory": {

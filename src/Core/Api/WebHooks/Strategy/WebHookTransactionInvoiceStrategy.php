@@ -63,10 +63,10 @@ class WebHookTransactionInvoiceStrategy extends WebHookStrategyBase implements W
 	/**
 	 * @inheritDoc
 	 */
-	public function getOrderIdByTransaction($transaction): string
+	public function getOrderIdByTransaction($transactionInvoice): string|null
 	{
 		/** @var \PostFinanceCheckout\Sdk\Model\TransactionInvoice $transaction */
-		return $transaction->getCompletion()
+		return $transactionInvoice->getCompletion()
 			->getLineItemVersion()
 			->getTransaction()
 			->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];

@@ -486,7 +486,7 @@ class WebHookController extends AbstractController {
 			$transaction = $this->settings->getApiClient()
 										  ->getTransactionService()
 										  ->read($callBackData->getSpaceId(), $callBackData->getEntityId());
-			$orderId     = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID];
+			$orderId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_ID] ?? null;
 			if(!empty($orderId) && !$transaction->getParent()) {
 				$this->executeLocked($orderId, $context, function () use ($orderId, $transaction, $context, $callBackData) {
 					$this->transactionService->upsert($transaction, $context);
