@@ -1,3 +1,8 @@
+# 7.3.3
+- Shopware 6.7.9.0 compatible
+- Fix for only showing 25 sales channels in selector
+- Fixed bug with discount occasionally blocking payment methods
+
 # 7.3.2
 - Fix for partial refunds using standard refund option
 - Fixed issue with undefined array key

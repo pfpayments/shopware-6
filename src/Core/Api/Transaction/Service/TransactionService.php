@@ -624,11 +624,14 @@ class TransactionService
                 throw new \Exception('Space settings not configured');
             }
 
+            $language = $this->localeCodeProvider->getLocaleCodeFromContext($salesChannelContext->getContext());
+
             $transactionPayload = (new TransactionCreate())
                 ->setBillingAddress($billingAddress)
                 ->setShippingAddress($shippingAddress)
                 ->setLineItems($lineItems)
                 ->setCurrency($currency)
+                ->setLanguage($language)
                 ->setSpaceViewId($settings->getSpaceViewId())
                 ->setAutoConfirmationEnabled(false)
                 ->setChargeRetryEnabled(false)
@@ -668,7 +671,10 @@ class TransactionService
 
         $currency = $salesChannelContext->getCurrency()->getIsoCode();
 
+        $language = $this->localeCodeProvider->getLocaleCodeFromContext($salesChannelContext->getContext());
+
         $pendingTransaction->setCurrency($currency);
+        $pendingTransaction->setLanguage($language);
         $billingAddress = $this->buildAddress($salesChannelContext, $salesChannelContext->getCustomer()->getActiveBillingAddress());
         $shippingAddress = $this->buildAddress($salesChannelContext, $salesChannelContext->getCustomer()->getActiveShippingAddress());
 
@@ -807,20 +813,26 @@ class TransactionService
     {
         $lineItem = new LineItemCreate();
 
-        $roundedPrice = $this->round($productData->getPrice()->getUnitPrice());
+        $price = $productData->getPrice();
+        $unit = $price->getUnitPrice();
+
+        // Expects discounts as separate items, avoid negative prices
+        if ($unit < 0) {
+            return $this->mapDiscountLineItem($productData);
+        }
 
         if ($productData instanceof LineItem) {
             $lineItem->setName($productData->getLabel());
             $lineItem->setUniqueId($productData->getId());
             $lineItem->setSku($productData->getReferencedId() ?? $productData->getId());
             $lineItem->setQuantity($productData->getQuantity());
-            $lineItem->setAmountIncludingTax($roundedPrice);
+            $lineItem->setAmountIncludingTax($this->round($unit));
         } elseif ($productData instanceof OrderLineItemEntity) {
             $lineItem->setName($productData->getLabel());
             $lineItem->setUniqueId($productData->getId());
             $lineItem->setSku($productData->getProductId() ?? $productData->getIdentifier() ?? $productData->getId());
             $lineItem->setQuantity($productData->getQuantity());
-            $lineItem->setAmountIncludingTax($roundedPrice);
+            $lineItem->setAmountIncludingTax($this->round($unit));
         } else {
             throw new \InvalidArgumentException('Unsupported line item type: ' . get_class($productData));
         }
@@ -990,5 +1002,30 @@ class TransactionService
 
         // Store in session for Storefront.
         $_SESSION['transactionId'] = $transactionId;
+    }
+
+    /**
+     * Creates a discount line item for negative-priced cart entries.
+     *
+     * @param $productData
+     * @return LineItemCreate
+     *
+     */
+    private function mapDiscountLineItem($productData): LineItemCreate
+    {
+        $price = $productData->getPrice();
+
+        $lineItem = new LineItemCreate();
+
+        $amount = abs($price->getTotalPrice());
+
+        $lineItem->setName($productData->getLabel() ?: 'Discount');
+        $lineItem->setUniqueId('discount-' . $productData->getId());
+        $lineItem->setSku('discount');
+        $lineItem->setQuantity(1);
+        $lineItem->setAmountIncludingTax($this->round($amount));
+        $lineItem->setType(LineItemType::DISCOUNT);
+
+        return $lineItem;
     }
 }

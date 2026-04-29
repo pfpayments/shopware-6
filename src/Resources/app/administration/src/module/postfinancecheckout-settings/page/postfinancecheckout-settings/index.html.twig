@@ -35,6 +35,7 @@
 
                         {% block postfinancecheckout_settings_content_card_channel_config %}
                             <sw-sales-channel-config v-model:value="config"
+                                                        v-model:selectedSalesChannelId="selectedSalesChannelId"
                                                         ref="configComponent"
                                                         :domain="CONFIG_DOMAIN">
 
@@ -45,14 +46,10 @@
                                             <mt-card title="Sales Channel Switch">
 
                                                 {% block postfinancecheckout_settings_content_card_channel_config_sales_channel_card_title %}
-                                                    <sw-single-select
-                                                            :value="selectedSalesChannelId"
-                                                            :options="salesChannel.map(sc => ({ id: sc.id, name: sc.translated.name }))"
-                                                            labelProperty="name"
-                                                            valueProperty="id"
-                                                            :isLoading="isLoading"
-                                                            @update:value="onInput"
-                                                    />
+                                                <sw-sales-channel-switch
+                                                                ref="channelSwitch"
+                                                                @change-sales-channel-id="onSalesChannelSwitchChange($event, onInput)">
+                                                </sw-sales-channel-switch>
                                                 {% endblock %}
                                                 {% block postfinancecheckout_settings_content_card_channel_config_sales_channel_card_footer %}
                                                     <template #footer>

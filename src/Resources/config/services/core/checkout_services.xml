@@ -17,7 +17,6 @@
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil"/>
-			<argument type="service" id="payment_method.repository"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Checkout\Service\TransactionManagementService"/>
 			<argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>
 			<call method="setLogger">
@@ -30,6 +29,7 @@
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Checkout\Service\TransactionManagementService"/>
 			<argument type="service" id="router"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider"/>
 		</service>
 
 		<service id="PostFinanceCheckoutPayment\Core\Checkout\Service\CartRecoveryService">

@@ -91,6 +91,26 @@ class LocaleCodeProvider {
 		return $language->getLocale() ? $language->getLocale()->getCode() : $defaultLocale;
 	}
 
+	/**
+	 *  Maps a locale code to a PostFinanceCheckout-supported payment page locale by matching the language prefix.
+	 *  E.g. de-CH -> de-DE, fr-CH -> fr-FR, en-US -> en-GB, it-CH -> it-IT.
+	 *
+	 * @param string $localeCode
+	 * @return string
+	 */
+	public function mapToPaymentPageLocale(string $localeCode): string
+	{
+		$supportedLocales = [
+			'de' => self::LOCALE_GERMANY_GERMAN,
+			'fr' => self::LOCALE_FRANCE_FRENCH,
+			'it' => self::LOCALE_ITALY_ITALIAN,
+			'en' => self::LOCALE_GREAT_BRITAIN_ENGLISH,
+		];
+
+		$languagePrefix = substr($localeCode, 0, 2);
+
+		return $supportedLocales[$languagePrefix] ?? self::LOCALE_GREAT_BRITAIN_ENGLISH;
+	}
 
 	/**
 	 * @param \Shopware\Core\Framework\Context $context

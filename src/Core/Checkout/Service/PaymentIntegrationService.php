@@ -12,6 +12,7 @@ use PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService;
 use PostFinanceCheckoutPayment\Core\Settings\Options\Integration;
 use PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService;
 use PostFinanceCheckoutPayment\Core\Checkout\Struct\PaymentConfigStruct;
+use PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider;
 use PostFinanceCheckout\Sdk\Model\TransactionState;
 
 /**
@@ -45,21 +46,29 @@ class PaymentIntegrationService
     private RouterInterface $router;
 
     /**
+     * @var LocaleCodeProvider
+     */
+    private LocaleCodeProvider $localeCodeProvider;
+
+    /**
      * @param TransactionService $transactionService
      * @param SettingsService $settingsService
      * @param TransactionManagementService $transactionManagementService
      * @param RouterInterface $router
+     * @param LocaleCodeProvider $localeCodeProvider
      */
     public function __construct(
         TransactionService $transactionService,
         SettingsService $settingsService,
         TransactionManagementService $transactionManagementService,
-        RouterInterface $router
+        RouterInterface $router,
+        LocaleCodeProvider $localeCodeProvider
     ) {
         $this->transactionService = $transactionService;
         $this->settingsService = $settingsService;
         $this->transactionManagementService = $transactionManagementService;
         $this->router = $router;
+        $this->localeCodeProvider = $localeCodeProvider;
     }
 
     /**
@@ -82,7 +91,9 @@ class PaymentIntegrationService
             $transactionId
         );
 
-        $javascriptUrl = $this->getTransactionJavaScriptUrl($settings, $transactionId);
+        $localeCode = $this->localeCodeProvider->getLocaleCodeFromContext($salesChannelContext->getContext());
+        $paymentPageLocale = $this->localeCodeProvider->mapToPaymentPageLocale($localeCode);
+        $javascriptUrl = $this->getTransactionJavaScriptUrl($settings, $transactionId, $paymentPageLocale);
 
         $possiblePaymentMethods = $settings->getApiClient()
             ->getTransactionService()
@@ -161,9 +172,10 @@ class PaymentIntegrationService
      *
      * @param mixed $settings The plugin settings.
      * @param int $transactionId The transaction ID.
+     * @param string $paymentPageLocale The payment page locale.
      * @return string The absolute URL to the JavaScript component.
      */
-    private function getTransactionJavaScriptUrl($settings, int $transactionId): string
+    private function getTransactionJavaScriptUrl($settings, int $transactionId, string $paymentPageLocale = ''): string
     {
         $javascriptUrl = '';
         switch ($settings->getIntegration()) {
@@ -176,6 +188,12 @@ class PaymentIntegrationService
                     ->javascriptUrl($settings->getSpaceId(), $transactionId);
                 break;
         }
+
+        if ($javascriptUrl && $paymentPageLocale) {
+            $separator = str_contains($javascriptUrl, '?') ? '&' : '?';
+            $javascriptUrl .= $separator . 'language=' . $paymentPageLocale;
+        }
+
         return $javascriptUrl;
     }
 

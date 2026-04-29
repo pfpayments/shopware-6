@@ -1,3 +1,8 @@
+# 7.3.3
+- Kompatibel mit Shopware 6.7.9.0
+- Problem behoben, dass im Selektor nur 25 Vertriebskanäle angezeigt wurden
+- Fehler behoben, der gelegentlich dazu führte, dass Rabatte Zahlungsmethoden blockierten
+
 # 7.3.2
 - Problem mit Teilrückerstattungen über die Standardrückerstattungsoption behoben
 - Problem mit undefiniertem Array-Schlüssel behoben
