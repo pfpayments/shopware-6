@@ -32,6 +32,7 @@ use PostFinanceCheckout\Sdk\Model\{
     LineItemAttributeCreate,
     LineItemCreate,
     LineItemType,
+    TaxCreate,
     TokenizationMode,
     Transaction,
     TransactionCreate,
@@ -606,9 +607,17 @@ class TransactionService
             if ($customer === null) {
                 throw new \Exception('Customer is required to create a transaction');
             }
-            $lineItems = $this->extractLineItems($event);
+            $lineItems = $this->extractLineItems(
+                $event,
+                $salesChannelContext,
+            );
 
-            $customerId = "";
+            /*
+             * For guest checkouts, the customer ID is set to null rather than an empty string.
+             * This ensures consistency with TransactionPayload which also uses null for guests,
+             * preventing the Portal from treating the difference as an update/change in customer details.
+             */
+            $customerId = null;
             if ($customer->getGuest() === false) {
                 $customerId = $customer->getCustomerNumber();
             }
@@ -690,13 +699,16 @@ class TransactionService
     }
 
     /**
-     * Extracts line items from the given source (Event or Cart).
+     * Extracts line items from the given source (Event or Cart) and appends shipping costs.
      *
      * @param mixed $source
+     * @param SalesChannelContext|null $salesChannelContext
      * @return array
      */
-    public function extractLineItems($source): array
-    {
+    public function extractLineItems(
+        $source,
+        ?SalesChannelContext $salesChannelContext = null,
+    ): array {
         $lineItems = [];
         if ($source) {
             if ($source instanceof CheckoutConfirmPageLoadedEvent) {
@@ -719,6 +731,38 @@ class TransactionService
                         continue;
                     }
                     $lineItems[] = $this->createTempLineItem($cartLineItem);
+                }
+            }
+
+            // Extract and append shipping costs as a line item if applicable.
+            $shippingCosts = null;
+            $taxStatus = 'gross';
+
+            if ($source instanceof CheckoutConfirmPageLoadedEvent) {
+                $cart = $source->getPage()->getCart();
+                $shippingCosts = $cart->getDeliveries()->getShippingCosts();
+                if ($salesChannelContext !== null) {
+                    $taxStatus = $salesChannelContext->getTaxState();
+                }
+            } elseif ($source instanceof AccountEditOrderPageLoadedEvent) {
+                $order = $source->getPage()->getOrder();
+                $shippingCosts = $order->getShippingCosts();
+                $taxStatus = $order->getTaxStatus();
+            } elseif ($source instanceof \Shopware\Core\Checkout\Cart\Cart) {
+                $shippingCosts = $source->getDeliveries()->getShippingCosts();
+                if ($salesChannelContext !== null) {
+                    $taxStatus = $salesChannelContext->getTaxState();
+                }
+            }
+
+            if ($shippingCosts !== null) {
+                $shippingLineItem = $this->extractShippingLineItem(
+                    $shippingCosts,
+                    $taxStatus,
+                    $salesChannelContext,
+                );
+                if ($shippingLineItem !== null) {
+                    $lineItems[] = $shippingLineItem;
                 }
             }
         }
@@ -862,6 +906,7 @@ class TransactionService
         $address->setOrganizationName($addressEntity->getCompany());
         $address->setPhoneNumber($addressEntity->getPhoneNumber());
         $address->setCountry($addressEntity->getCountry()->getIso());
+        $address->setCity($addressEntity->getCity() ?: '');
 
         $postalState = $addressEntity?->getCountryState()?->getName()
             ?: $addressEntity?->getCountryState()?->getShortCode()
@@ -967,7 +1012,7 @@ class TransactionService
      *
      * @param SalesChannelContext $salesChannelContext
      */
-    private function clearTransactionIdFromContext(SalesChannelContext $salesChannelContext): void
+    public function clearTransactionIdFromContext(SalesChannelContext $salesChannelContext): void
     {
         // Clear from cache key.
         $cacheKey = $this->getPendingTransactionCacheKey($salesChannelContext);
@@ -1027,5 +1072,77 @@ class TransactionService
         $lineItem->setType(LineItemType::DISCOUNT);
 
         return $lineItem;
+    }
+
+    /**
+     * Extracts shipping line item from cart/order shipping costs.
+     *
+     * @param mixed $shippingCosts
+     * @param string $taxStatus
+     * @param SalesChannelContext|null $salesChannelContext
+     * @return LineItemCreate|null
+     */
+    private function extractShippingLineItem(
+        $shippingCosts,
+        string $taxStatus,
+        ?SalesChannelContext $salesChannelContext = null,
+    ): ?LineItemCreate {
+        // When shipping costs are extracted from a Cart, they are returned as a PriceCollection
+        // containing multiple CalculatedPrice items. We must sum them to get a single aggregated price.
+        if ($shippingCosts instanceof \Shopware\Core\Checkout\Cart\Price\Struct\PriceCollection) {
+            $shippingCosts = $shippingCosts->sum();
+        }
+
+        if (!$shippingCosts instanceof \Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice) {
+            return null;
+        }
+
+        if ($shippingCosts->getTotalPrice() <= 0) {
+            return null;
+        }
+
+        $amount = $shippingCosts->getTotalPrice();
+        if ($taxStatus === 'net') {
+            $amount += $shippingCosts->getCalculatedTaxes()->getAmount();
+        }
+        $roundedAmount = $this->round($amount);
+
+        $shippingMethodName = $salesChannelContext?->getShippingMethod()?->getName();
+        $translator = $this->container->has('translator') ? $this->container->get('translator') : null;
+        $fallbackName = $translator ? $translator->trans('postfinancecheckout.payload.shipping.name') : 'Shipping';
+        $shippingName = $shippingMethodName ?? $fallbackName;
+
+        $shippingLineItem = new LineItemCreate();
+        $shippingLineItem->setAmountIncludingTax($roundedAmount)
+            ->setName($this->fixLength($shippingName . ' ' . ($translator ? $translator->trans('postfinancecheckout.payload.shipping.lineItem') : 'Shipping'), 150))
+            ->setQuantity($shippingCosts->getQuantity() ?? 1)
+            ->setSku($this->fixLength($shippingName . '-Shipping', 200))
+            ->setType(LineItemType::SHIPPING)
+            ->setUniqueId($this->fixLength($shippingName . '-Shipping', 200));
+
+        if ($taxStatus !== 'tax-free') {
+            $taxes = [];
+            foreach ($shippingCosts->getCalculatedTaxes() as $calculatedTax) {
+                $tax = (new TaxCreate())
+                    ->setRate($calculatedTax->getTaxRate())
+                    ->setTitle($this->fixLength($shippingName . ' : ' . $calculatedTax->getTaxRate(), 40));
+                $taxes[] = $tax;
+            }
+            $shippingLineItem->setTaxes($taxes);
+        }
+
+        return $shippingLineItem;
+    }
+
+    /**
+     * Fix string length to specific length.
+     *
+     * @param string $string
+     * @param int $maxLength
+     * @return string
+     */
+    private function fixLength(string $string, int $maxLength): string
+    {
+        return \mb_substr($string, 0, $maxLength, 'UTF-8');
     }
 }

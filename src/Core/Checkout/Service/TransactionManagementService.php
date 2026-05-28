@@ -112,7 +112,10 @@ class TransactionManagementService
         $addressHash = $customer ? md5(json_encode((array) $customer)) : null;
         $currency    = (string)$salesChannelContext->getCurrency()->getIsoCode();
 
-        $lineItems = $this->transactionService->extractLineItems($event);
+        $lineItems = $this->transactionService->extractLineItems(
+            $event,
+            $salesChannelContext,
+        );
         $lineItemHash = !empty($lineItems) ? md5(json_encode($lineItems)) : $oldLineItemHash;
 
         $needsUpdate = ($oldAddressHash !== $addressHash)

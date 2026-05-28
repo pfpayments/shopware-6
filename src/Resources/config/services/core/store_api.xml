@@ -18,6 +18,7 @@
 
 		<service id="PostFinanceCheckoutPayment\Core\Checkout\StoreApi\Route\CartRecoveryRoute">
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Checkout\Service\CartRecoveryService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService"/>
 		</service>
 
 		<service id="PostFinanceCheckoutPayment\Core\Checkout\StoreApi\Route\InvoiceRoute">

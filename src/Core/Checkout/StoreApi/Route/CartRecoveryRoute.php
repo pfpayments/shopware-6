@@ -9,6 +9,7 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService;
 use PostFinanceCheckoutPayment\Core\Checkout\Service\CartRecoveryService;
 
 #[Package('checkout')]
@@ -26,11 +27,21 @@ class CartRecoveryRoute
     private CartRecoveryService $cartRecoveryService;
 
     /**
-     * @param CartRecoveryService $cartRecoveryService
+     * @var TransactionService
+     * Service to clear and manage transactions.
      */
-    public function __construct(CartRecoveryService $cartRecoveryService)
-    {
+    private TransactionService $transactionService;
+
+    /**
+     * @param CartRecoveryService $cartRecoveryService
+     * @param TransactionService $transactionService
+     */
+    public function __construct(
+        CartRecoveryService $cartRecoveryService,
+        TransactionService $transactionService,
+    ) {
         $this->cartRecoveryService = $cartRecoveryService;
+        $this->transactionService = $transactionService;
     }
 
     /**
@@ -56,6 +67,10 @@ class CartRecoveryRoute
             if ($order->getSalesChannelId() !== $context->getSalesChannelId()) {
                 return new JsonResponse(['error' => 'Sales channel mismatch'], 403);
             }
+
+            // Clear the transaction ID from cache and session to prevent the subsequent
+            // checkout attempt from reusing a stale/failed transaction.
+            $this->transactionService->clearTransactionIdFromContext($context);
 
             // Perform the cart reconstruction.
             $cart = $this->cartRecoveryService->recreateCartFromOrder($order, $context);

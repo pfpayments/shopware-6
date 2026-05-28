@@ -167,6 +167,9 @@ class CheckoutController extends StorefrontController
             if ($this->logger) {
                 $this->logger->error($e->getMessage());
             }
+            // Clear the transaction ID from the cache/session context on error to ensure
+            // subsequent payment attempts will create/retrieve a clean transaction.
+            $this->transactionService->clearTransactionIdFromContext($salesChannelContext);
             $this->addFlash('danger', $this->trans('postfinancecheckout.paymentMethod.notAvailable'));
             return $this->redirectToRoute('frontend.home.page');
         }
@@ -219,6 +222,10 @@ class CheckoutController extends StorefrontController
                     $this->addFlash('danger', $transaction->getUserFailureMessage());
                 }
             }
+            // Clear the transaction ID from cache and session to prevent the subsequent
+            // checkout attempt from reusing a stale/failed transaction.
+            $this->transactionService->clearTransactionIdFromContext($salesChannelContext);
+
             $this->cartRecoveryService->recreateCartFromOrder($order, $salesChannelContext);
         } catch (\Exception $exception) {
             $this->addFlash('danger', $this->trans('error.addToCartError'));

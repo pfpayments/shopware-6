@@ -151,10 +151,18 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
             }
             return new RedirectResponse($redirectUrl);
         } catch (\Throwable $e) {
-            $request->getSession()->remove('transactionId');
+            // Clear the transaction ID from the cache or session context depending on whether the SalesChannelContext was initialized
+            // to prevent subsequent checkout attempts from reusing a failed/invalid transaction ID.
+            if (isset($salesChannelContext)) {
+                $this->pluginTransactionService->clearTransactionIdFromContext($salesChannelContext);
+            } else {
+                $request->getSession()->remove('transactionId');
+            }
             $errorMessage = 'An error occurred during the communication with external payment gateway : ' . $e->getMessage();
             $this->logger->critical($errorMessage);
-            if ($orderTransaction->getState()?->getTechnicalName() === OrderTransactionStates::STATE_CANCELLED) {
+            // If the transaction has already been marked as cancelled (e.g. via webhook or concurrent request),
+            // throw an interrupted exception to signal that payment processing cannot be finalized normally.
+            if ($orderTransaction->getStateMachineState()?->getTechnicalName() === OrderTransactionStates::STATE_CANCELLED) {
                 throw PaymentException::asyncFinalizeInterrupted($orderTransaction->getOrder()->getId(), $errorMessage);
             }
             throw PaymentException::customerCanceled($transaction->getOrderTransactionId(), $errorMessage);
@@ -196,12 +204,27 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
                 $transactionEntity->getSalesChannelId()
             );
 
-            if (in_array($postFinanceCheckoutTransaction->getState(), [TransactionState::FAILED])) {
+            if (in_array($postFinanceCheckoutTransaction->getState(), [TransactionState::FAILED, TransactionState::DECLINE, TransactionState::VOIDED,])) {
                 $errorMessage = strtr('Customer canceled payment for :orderId on SalesChannel :salesChannelName', [
                     ':orderId' => $orderTransaction->getOrder()->getId(),
                     ':salesChannelName' => $transactionEntity->getSalesChannelId(),
                 ]);
-                $request->getSession()->remove('transactionId');
+                
+                // Retrieve the sales channel context parameters to clear the transaction ID from cache or session context,
+                // ensuring that a failed transaction is not reused when the customer retries payment.
+                $token = $this->getContextToken($request);
+                if ($token) {
+                    $parameters = new SalesChannelContextServiceParameters(
+                        $transactionEntity->getSalesChannelId(),
+                        $token,
+                        originalContext: $context,
+                    );
+                    $salesChannelContext = $this->salesChannelContextService->get($parameters);
+                    $this->pluginTransactionService->clearTransactionIdFromContext($salesChannelContext);
+                } else {
+                    $request->getSession()->remove('transactionId');
+                }
+                
                 $this->logger->info($errorMessage);
                 throw PaymentException::customerCanceled($orderTransactionId, $errorMessage);
             }

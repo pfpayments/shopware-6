@@ -700,16 +700,6 @@ class WebHookController extends AbstractController {
 	private function unholdAndCancelDelivery(string $orderId, Context $context): void
 	{
 		$order = $this->getOrderEntity($orderId, $context);
-		try {
-			$this->orderService->orderStateTransition(
-				$order->getId(),
-				StateMachineTransitionActions::ACTION_CANCEL,
-				new ParameterBag(),
-				$context
-			);
-		} catch (\Exception $exception) {
-			$this->logger->info($exception->getMessage(), $exception->getTrace());
-		}
 
 		try {
 			/**

@@ -1,3 +1,11 @@
+# 7.3.4
+- Kompatibel mit Shopware 6.7.10.0
+- Problem behoben, bei dem der Warenkorb beim Ändern der Zahlungsmethode verloren ging
+- Fehlerhafte Referenzierung der Funktion getState() behoben
+- Problem behoben, bei dem der Cache nach Zahlungsfehlern nicht geleert wurde
+- Fehlende Versandkosten behoben
+- Kleinere Korrektur eines Fehlers mit der Kunden-ID (null)
+
 # 7.3.3
 - Kompatibel mit Shopware 6.7.9.0
 - Problem behoben, dass im Selektor nur 25 Vertriebskanäle angezeigt wurden

@@ -1,3 +1,11 @@
+# 7.3.4
+- Shopware 6.7.10.0 compatible
+- Fix for cart being lost when changing payment methods
+- Fixed for incorrectly reference function (getState())
+- Fix cache not being cleaned after payment errors
+- Fix missing shipping costs
+- Minor fix for Customer Id null inconsistency
+
 # 7.3.3
 - Shopware 6.7.9.0 compatible
 - Fix for only showing 25 sales channels in selector
