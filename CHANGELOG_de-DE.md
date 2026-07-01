@@ -1,3 +1,6 @@
+# 6.2.4
+- Problem behoben, bei dem die Verfügbarkeitsregeln für Zahlungsmethoden ignoriert wurden
+
 # 6.2.3
 - Problem mit dem Leeren des Warenkorbs bei Änderung der Zahlungsmethode behoben
 - Problem mit fehlenden Zahlungsmethoden behoben

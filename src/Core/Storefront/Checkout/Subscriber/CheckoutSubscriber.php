@@ -8,10 +8,6 @@ use Shopware\Core\{Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCol
   Checkout\Order\OrderEntity,
   Content\MailTemplate\Service\Event\MailBeforeValidateEvent};
 use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\MultiFilter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Page\Account\Order\AccountEditOrderPageLoadedEvent;
 use Shopware\Storefront\Page\Account\PaymentMethod\AccountPaymentMethodPageLoadedEvent;
@@ -39,7 +35,6 @@ use PostFinanceCheckoutPayment\Sdk\{Model\AddressCreate,
   Model\TransactionCreate,
   Model\TransactionPending};
 use Shopware\Core\Framework\Struct\ArrayEntity;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 
 /**
  * Class CheckoutSubscriber
@@ -74,9 +69,6 @@ class CheckoutSubscriber implements EventSubscriberInterface
      */
     private $paymentMethodUtil;
 
-	/** @var EntityRepository  */
-	private EntityRepository $paymentMethodRepository;
-
     /**
      * CheckoutSubscriber constructor.
      *
@@ -85,13 +77,12 @@ class CheckoutSubscriber implements EventSubscriberInterface
      * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService $settingsService
      * @param \PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil $paymentMethodUtil
      */
-    public function __construct(PaymentMethodConfigurationService $paymentMethodConfigurationService, TransactionService $transactionService, SettingsService $settingsService, PaymentMethodUtil $paymentMethodUtil, EntityRepository $paymentMethodRepository)
+    public function __construct(PaymentMethodConfigurationService $paymentMethodConfigurationService, TransactionService $transactionService, SettingsService $settingsService, PaymentMethodUtil $paymentMethodUtil)
     {
 		$this->paymentMethodConfigurationService = $paymentMethodConfigurationService;
 		$this->transactionService = $transactionService;
 		$this->settingsService = $settingsService;
 		$this->paymentMethodUtil = $paymentMethodUtil;
-		$this->paymentMethodRepository = $paymentMethodRepository;
     }
 
     /**
@@ -293,26 +284,25 @@ class CheckoutSubscriber implements EventSubscriberInterface
 	}
 
 	/**
+	 * Filters the original payment method collection (which already has Shopware's availability rules applied)
+	 * to only include WhitelabelMachineName methods that are also allowed by the API.
+	 * Non-WhitelabelMachineName methods are kept as-is.
+	 *
 	 * @param int $spaceId
-	 * @param CheckoutConfirmPageLoadedEvent $event
+	 * @param $event
 	 * @return void
 	 */
 	private function setPossiblePaymentMethods(int $spaceId, $event): void
 	{
-		$paymentIds = [];
 		$paymentMethodCollection = $event->getPage()->getPaymentMethods();
 
-		foreach ($paymentMethodCollection as $paymentMethodCollectionItem) {
-			$isPostFinanceCheckoutPM = PostFinanceCheckoutPaymentHandler::class === $paymentMethodCollectionItem->getHandlerIdentifier();
-			if (!$isPostFinanceCheckoutPM) {
-				$paymentIds[] = $paymentMethodCollectionItem->getId();
-			}
-		}
-
-		$allowedWLMethods = [];
 		$paymentMethodConfigurations = $this->paymentMethodConfigurationService
 		  ->getAllPaymentMethodConfigurations($spaceId, $event->getSalesChannelContext()->getContext());
 
+		$allowedIds = $this->getAllowedPaymentMethodIds($event->getSalesChannelContext());
+
+		// Build a map of Shopware payment method ID => configuration for methods allowed by the API.
+		$allowedWLConfigByPmId = [];
 		foreach ($paymentMethodConfigurations as $paymentMethodConfiguration) {
 			if ($paymentMethodConfiguration->getPaymentMethod() === null) {
 				continue;
@@ -320,32 +310,33 @@ class CheckoutSubscriber implements EventSubscriberInterface
 
 			$pmId = $paymentMethodConfiguration->getPaymentMethod()->getId();
 			$pmConfigId = $paymentMethodConfiguration->getPaymentMethodConfigurationId();
-			$allowedIds = $this->getAllowedPaymentMethodIds($event->getSalesChannelContext());
 
 			if ($paymentMethodConfiguration->getSpaceId() === $spaceId
 			  && \in_array($pmConfigId, $allowedIds, true)) {
-				$allowedWLMethods[] = $pmId;
+				$allowedWLConfigByPmId[$pmId] = $paymentMethodConfiguration;
 			}
 		}
 
-		$allPaymentIds = array_unique(array_merge($paymentIds, $allowedWLMethods));
+		// Filter the original collection to preserve Shopware's availability rule filtering.
+		// Non-WLM methods pass through unchanged; WLM methods are kept only if allowed by the API.
 		$collection = new PaymentMethodCollection();
-		if (!empty($allPaymentIds)) {
-			$criteria = new Criteria($allPaymentIds);
-			$criteria->addFilter(new EqualsFilter('active', true));
-			$criteria->addFilter(
-			  new EqualsFilter('salesChannels.id', $event->getSalesChannelContext()->getSalesChannelId())
-			);
-			$criteria->addSorting(new FieldSorting('position', FieldSorting::ASCENDING));
-			$criteria->addAssociation('media');
+		foreach ($paymentMethodCollection as $method) {
+			$isPostFinanceCheckoutPM = PostFinanceCheckoutPaymentHandler::class === $method->getHandlerIdentifier();
 
-			$result = $this->paymentMethodRepository->search($criteria, $event->getContext());
-			foreach ($result->getEntities() as $method) {
-				if (!$collection->has($method->getId())) {
-					$collection->add($method);
-				}
+			if (!$isPostFinanceCheckoutPM) {
+				$collection->add($method);
+				continue;
+			}
+
+			if (isset($allowedWLConfigByPmId[$method->getId()])) {
+				$method->addExtension('postfinancecheckout_config', $allowedWLConfigByPmId[$method->getId()]);
+				$collection->add($method);
 			}
 		}
+
+		$collection->sort(function ($a, $b) {
+			return ($a->getPosition() ?? 0) <=> ($b->getPosition() ?? 0);
+		});
 
 		$event->getPage()->setPaymentMethods($collection);
 	}

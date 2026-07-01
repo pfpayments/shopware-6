@@ -55,6 +55,7 @@ use PostFinanceCheckoutPayment\Core\{
 	Settings\Options\Integration,
 	Settings\Service\SettingsService,
 	Storefront\Checkout\Struct\CheckoutPageData,
+	Util\LocaleCodeProvider,
 	Util\Payload\CustomProducts\CustomProductsLineItemTypes,
 	Util\Payload\TransactionPayload
 };
@@ -127,6 +128,11 @@ class CheckoutController extends StorefrontController {
 	private CacheItemPoolInterface $cache;
 
 	/**
+	 * @var LocaleCodeProvider
+	 */
+	private LocaleCodeProvider $localeCodeProvider;
+
+	/**
 	 * PaymentController constructor.
 	 *
 	 * @param \Shopware\Core\Checkout\Cart\LineItemFactoryRegistry                          $lineItemFactoryRegistry
@@ -148,7 +154,8 @@ class CheckoutController extends StorefrontController {
 		AbstractOrderRoute $orderRoute,
 		OrderTransactionStateHandler $orderTransactionStateHandler,
 		StateMachineRegistry $stateMachineRegistry,
-		ParameterBagInterface $params
+		ParameterBagInterface $params,
+		LocaleCodeProvider $localeCodeProvider
 	)
 	{
 		$this->cartService             = $cartService;
@@ -160,6 +167,7 @@ class CheckoutController extends StorefrontController {
 		$this->orderTransactionStateHandler = $orderTransactionStateHandler;
 		$this->stateMachineRegistry = $stateMachineRegistry;
 		$this->cache = new FilesystemAdapter('postfinancecheckout', 0, rtrim($params->get('kernel.cache_dir'), '/') . '/postfinancecheckout-cache');
+		$this->localeCodeProvider = $localeCodeProvider;
 	}
 
 	/**
@@ -243,7 +251,9 @@ class CheckoutController extends StorefrontController {
 			return $this->redirect($recreateCartUrl, Response::HTTP_MOVED_PERMANENTLY);
 		}
 
-		$javascriptUrl = $this->getTransactionJavaScriptUrl($transaction->getId());
+		$localeCode = $this->localeCodeProvider->getLocaleCodeFromContext($salesChannelContext->getContext());
+		$paymentPageLocale = $this->localeCodeProvider->mapToPaymentPageLocale($localeCode);
+		$javascriptUrl = $this->getTransactionJavaScriptUrl($transaction->getId(), $paymentPageLocale);
 
 		// Set Checkout Page Data
 		$checkoutPageData = (new CheckoutPageData())
@@ -270,13 +280,14 @@ class CheckoutController extends StorefrontController {
 	 * Get transaction Javascript URL
 	 *
 	 * @param int $transactionId
+	 * @param string $paymentPageLocale The payment page locale.
 	 *
 	 * @return string
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
 	 * @throws \PostFinanceCheckout\Sdk\Http\ConnectionException
 	 * @throws \PostFinanceCheckout\Sdk\VersioningException
 	 */
-	private function getTransactionJavaScriptUrl(int $transactionId): string
+	private function getTransactionJavaScriptUrl(int $transactionId, string $paymentPageLocale = ''): string
 	{
 		$javascriptUrl = '';
 		switch ($this->settings->getIntegration()) {
@@ -292,6 +303,12 @@ class CheckoutController extends StorefrontController {
 				$this->logger->critical(strtr('invalid integration : :integration', [':integration' => $this->settings->getIntegration()]));
 
 		}
+
+		if ($javascriptUrl && $paymentPageLocale) {
+			$separator = str_contains($javascriptUrl, '?') ? '&' : '?';
+			$javascriptUrl .= $separator . 'language=' . $paymentPageLocale;
+		}
+
 		return $javascriptUrl;
 	}
 

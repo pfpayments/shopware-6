@@ -609,10 +609,13 @@ class TransactionService
             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
             $homeUrl = $protocol . $_SERVER['HTTP_HOST'];
             $currency = $salesChannelContext->getCurrency()->getIsoCode();
+            $language = $this->localeCodeProvider->getLocaleCodeFromContext($salesChannelContext->getContext());
+
             $transactionPayload = (new TransactionCreate())
                 ->setBillingAddress($billingAddress)
                 ->setLineItems($lineItems)
                 ->setCurrency($currency)
+                ->setLanguage($language)
                 ->setSpaceViewId($settings->getSpaceViewId())
                 ->setAutoConfirmationEnabled(false)
                 ->setChargeRetryEnabled(false)
@@ -661,7 +664,10 @@ class TransactionService
         $billingAddress->setOrganizationName($customerBillingAddress->getCompany());
 
         $currency = $salesChannelContext->getCurrency()->getIsoCode();
+        $language = $this->localeCodeProvider->getLocaleCodeFromContext($salesChannelContext->getContext());
+
         $pendingTransaction->setCurrency($currency);
+        $pendingTransaction->setLanguage($language);
         $pendingTransaction->setBillingAddress($billingAddress);
 
         $settings->getApiClient()->getTransactionService()

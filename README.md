@@ -13,10 +13,10 @@ The PostFinance Checkout Payment Plugin integrates modern payment processing int
 - **PostFinance Checkout Account:** Obtain `Space ID`, `User ID`, and `API Key` from the [PostFinance Checkout Dashboard](https://checkout.postfinance.ch/).
 
 ## Documentation
-- For English documentation click [here](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.2.3/docs/en/documentation.html)
-- Für die deutsche Dokumentation klicken Sie [hier](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.2.3/docs/de/documentation.html)
-- Pour la documentation Française, cliquez [ici](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.2.3/docs/fr/documentation.html)
-- Per la documentazione in tedesco, clicca [qui](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.2.3/docs/it/documentation.html)
+- For English documentation click [here](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.2.4/docs/en/documentation.html)
+- Für die deutsche Dokumentation klicken Sie [hier](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.2.4/docs/de/documentation.html)
+- Pour la documentation Française, cliquez [ici](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.2.4/docs/fr/documentation.html)
+- Per la documentazione in tedesco, clicca [qui](https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.2.4/docs/it/documentation.html)
 
 ## Installation
 
@@ -82,7 +82,7 @@ Configure supported methods (e.g., credit cards, Apple Pay) via the [PostFinance
 ___________________________________________________________________________________
 | Shopware 6 version            | Plugin major version   | Supported until        |
 |-------------------------------|------------------------|------------------------|
-| Shopware 6.6.x                | 6.x                    | Further notice         |
+| Shopware 6.6.x                | 6.x                    | December 2026          |
 | Shopware 6.5.x                | 5.x                    | October 2024           |
 -----------------------------------------------------------------------------------
 
