@@ -981,9 +981,29 @@ class TransactionService
     }
 
     /**
+     * Generates a session key for the transaction ID.
+     *
+     * @param SalesChannelContext $salesChannelContext
+     * @return string|null
+     */
+    public function getSessionTransactionKey(SalesChannelContext $salesChannelContext): ?string
+    {
+        $customer = $salesChannelContext->getCustomer();
+        if (!$customer) {
+            return null;
+        }
+
+        return sprintf(
+            'pfcn_transaction_id_%s_%s',
+            $salesChannelContext->getSalesChannelId(),
+            $customer->getId()
+        );
+    }
+
+    /**
      * Retrieves the stored pending transaction ID from cache or session.
      * Uses customer ID as cache key for headless (stateless) support.
-     * Falls back to session for Storefront (stateful) compatibility.
+     * Falls back to a customer-scoped session key for Storefront compatibility.
      *
      * @param SalesChannelContext $salesChannelContext
      * @return int|null The transaction ID if found, otherwise null.
@@ -1000,8 +1020,9 @@ class TransactionService
         }
 
         // Fallback to PHP session for traditional Storefront compatibility.
-        if (isset($_SESSION['transactionId'])) {
-            return (int) $_SESSION['transactionId'];
+        $sessionKey = $this->getSessionTransactionKey($salesChannelContext);
+        if ($sessionKey !== null && isset($_SESSION[$sessionKey])) {
+            return (int) $_SESSION[$sessionKey];
         }
 
         return null;
@@ -1021,9 +1042,12 @@ class TransactionService
         }
 
         // Clear from session.
-        if (isset($_SESSION['transactionId'])) {
-            unset($_SESSION['transactionId']);
+        $sessionKey = $this->getSessionTransactionKey($salesChannelContext);
+        if ($sessionKey !== null && isset($_SESSION[$sessionKey])) {
+            unset($_SESSION[$sessionKey]);
         }
+
+        unset($_SESSION['transactionId']);
     }
 
     /**
@@ -1046,7 +1070,12 @@ class TransactionService
         }
 
         // Store in session for Storefront.
-        $_SESSION['transactionId'] = $transactionId;
+        $sessionKey = $this->getSessionTransactionKey($salesChannelContext);
+        if ($sessionKey !== null) {
+            $_SESSION[$sessionKey] = $transactionId;
+        }
+
+        unset($_SESSION['transactionId']);
     }
 
     /**

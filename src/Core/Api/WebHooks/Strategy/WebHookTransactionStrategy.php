@@ -123,7 +123,11 @@ class WebHookTransactionStrategy extends WebHookStrategyBase implements WebhookS
 						$this->transactionService->upsert($transaction, $context);
 					}
 					$orderTransactionId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
-					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
+					$orderTransaction   = $this->getOrderTransactionById($orderTransactionId, $context);
+					if (null === $orderTransaction) {
+						$this->logger->info('Order transaction not found: ' . $orderTransactionId);
+						return;
+					}
 					$this->logger->info("OrderId: {orderId} Current state: {state}", [
 						'orderId' => $orderId,
 						'state' => $orderTransaction->getStateMachineState()?->getTechnicalName(),
@@ -157,8 +161,12 @@ class WebHookTransactionStrategy extends WebHookStrategyBase implements WebhookS
                                     ];
                                     $this->container->get('order_transaction.repository')->update([$data], $context);
                                 }
-								$this->orderTransactionStateHandler->process($orderTransactionId, $context);
-								$this->sendEmail($transaction, $context, $orderId);
+                                if (!in_array($orderTransaction->getStateMachineState()?->getTechnicalName(), $this->transactionFinalStates)) {
+                                    $this->orderTransactionStateHandler->process($orderTransactionId, $context);
+                                    $this->sendEmail($transaction, $context, $orderId);
+                                } else {
+                                    $this->logger->info('Skipping process(): transaction already in final state for orderTransaction: ' . $orderTransactionId);
+                                }
 								break;
 							default:
 								break;

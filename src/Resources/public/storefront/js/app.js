@@ -180,13 +180,30 @@
 
 }(typeof window !== "undefined" ? window : this));
 
+document.addEventListener('click', function (e) {
+    if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) {
+        return;
+    }
+
+    var link = e.target.closest('a[href]');
+    if (!link || link.target === '_blank') {
+        return;
+    }
+
+    if (link.host !== window.location.host) {
+        return;
+    }
+
+    // In case user navigates from iframe page to a different page, such as “account/order“,
+    // a cookie is set for ActivePaymentRedirectSubscriber to detect this
+    document.cookie = 'postfinancecheckout_deliberate=1; path=/; max-age=15; SameSite=Lax';
+}, true);
+
 /**
  * Vanilla JS over JQuery
  */
 window.addEventListener('load', function (e) {
     PostFinanceCheckoutCheckout.init();
-    window.history.pushState({}, document.title, PostFinanceCheckoutCheckout.cart_recreate_url);
-    window.history.pushState({}, document.title, PostFinanceCheckoutCheckout.checkout_url);
 }, false);
 
 /**

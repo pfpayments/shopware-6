@@ -60,8 +60,12 @@
 		  "cardTitle": "Options",
 		  "emailEnabled": {
 			"label": "Envoyer un e-mail de confirmation de commande",
-			"tooltipText": "If this setting is enabled your customers will receive an email from your store when their order payment is authorised"
+			"tooltipText": "Si ce paramètre est activé, vos clients recevront un e-mail de votre magasin lorsque le paiement de leur commande sera autorisé"
 		  },
+		"orderCloseEnabled": {
+		  "label": "Garder la commande ouverte en cas de paiement échoué",
+		  "tooltipText": "Si ce paramètre est activé, la commande sera gardée ouverte en cas d'échec de paiement."
+		},
 		  "integration": {
 			"label": "Integration",
 			"options": {

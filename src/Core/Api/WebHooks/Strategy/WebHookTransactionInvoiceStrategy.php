@@ -132,7 +132,11 @@ class WebHookTransactionInvoiceStrategy extends WebHookStrategyBase implements W
 						->getLineItemVersion()
 						->getTransaction()
 						->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
-					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
+					$orderTransaction   = $this->getOrderTransactionById($orderTransactionId, $context);
+					if (null === $orderTransaction) {
+						$this->logger->info('Order transaction not found: ' . $orderTransactionId);
+						return;
+					}
 					$this->updatePriceIfAdditionalItemsExist($transactionInvoice, $orderTransaction, $context);
 
 					if (!in_array(
@@ -144,10 +148,10 @@ class WebHookTransactionInvoiceStrategy extends WebHookStrategyBase implements W
 								$this->orderTransactionStateHandler->cancel($orderTransactionId, $context);
 								break;
 							case TransactionInvoiceState::NOT_APPLICABLE:
-							case TransactionInvoiceState::PAID:
-								$this->orderTransactionStateHandler->paid($orderTransactionId, $context);
-								$this->unholdDelivery($orderTransactionId, $context);
-								break;
+                            case TransactionInvoiceState::PAID:
+                                $this->orderTransactionStateHandler->paid($orderTransactionId, $context);
+                                $this->unholdDelivery($orderId, $context);
+                                break;
 							default:
 								break;
 						}

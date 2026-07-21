@@ -88,6 +88,26 @@
 								</template>
 							</sw-inherit-wrapper>
 						{% endblock %}
+
+						{% block postfinancecheckout_settings_content_card_channel_config_credentials_card_container_settings_order_close_enabled %}
+							<sw-inherit-wrapper
+									v-model:value="actualConfigData[CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN]"
+									:inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null'][CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN]"
+									:customInheritationCheckFunction="checkBoolFieldInheritance">
+								<template #content="props">
+									<sw-switch-field
+											:name="CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN"
+											bordered
+											:mapInheritance="props"
+											:label="$tc('postfinancecheckout-settings.settingForm.options.orderCloseEnabled.label')"
+											:helpText="$tc('postfinancecheckout-settings.settingForm.options.orderCloseEnabled.tooltipText')"
+											:disabled="props.isInherited"
+											:value="props.currentValue"
+											@update:value="props.updateCurrentValue">
+									</sw-switch-field>
+								</template>
+							</sw-inherit-wrapper>
+						{% endblock %}
 					</div>
 				{% endblock %}
 			</sw-container>

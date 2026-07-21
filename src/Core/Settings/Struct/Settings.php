@@ -82,6 +82,13 @@ class Settings extends Struct {
 	protected $paymentsUpdate = true;
 
 	/**
+	 * Keep failed payments order open
+	 *
+	 * @var bool
+	 */
+	protected $keepFailedPaymentsOrderOpen;
+
+	/**
 	 * User id
 	 *
 	 * @var int
@@ -195,6 +202,22 @@ class Settings extends Struct {
 	public function isWebhooksUpdateEnabled(): bool
 	{
 		return boolval($this->webhooksUpdate);
+	}
+
+	/**
+	 * @param int $spaceViewId
+	 */
+	public function setKeepFailedPaymentsOrderOpen(int $keepFailedPaymentsOrderOpen): void
+	{
+		$this->keepFailedPaymentsOrderOpen = $keepFailedPaymentsOrderOpen;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isKeepFailedPaymentsOrderOpen(): bool
+	{
+		return boolval($this->keepFailedPaymentsOrderOpen);
 	}
 
 	/**

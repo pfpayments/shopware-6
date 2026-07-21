@@ -28,6 +28,7 @@ class SettingsService {
 	public const CONFIG_USER_ID                             = 'userId';
 	public const CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED  = 'storefrontWebhooksUpdateEnabled';
 	public const CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED  = 'storefrontPaymentsUpdateEnabled';
+	public const CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN     = 'keepFailedPaymentsOrderOpen';
 
 	/**
 	 * List of config properties whose values allowed to be empty without triggering a warning in logger.
@@ -51,7 +52,8 @@ class SettingsService {
 
 		// Advanced Options
 		self::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED,
-		self::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED
+		self::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED,
+		self::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN
 	];
 
 	/**

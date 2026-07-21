@@ -276,7 +276,7 @@ class PaymentMethodConfigurationService {
 				];
 
 				$paymentMethodData[] = [
-					'id'     => $paymentMethodConfigurationEntity->getId(),
+					'id'     => $paymentMethodConfigurationEntity->getPaymentMethodId(),
 					'active' => false,
 				];
 			}
@@ -688,11 +688,21 @@ class PaymentMethodConfigurationService {
 		}
 	}
 
+	/**
+	 * Check if the payment method icon is already uploaded.
+	 *
+	 * @param string                                                      $paymentMethodUrl
+	 * @param \Shopware\Core\Framework\Context                            $context
+	 *
+	 * @return string|bool
+	 */
 	private function checkMediaAlreadyExists($paymentMethodUrl, $context) {
 		// detect if collision, return existing id
-		if (preg_match('#/([^/]+)\.[^/.]+$#', $paymentMethodUrl, $matches)) {
-			$filename = $matches[1];
+		if (!preg_match('#/([^/]+)\.[^/.]+$#', $paymentMethodUrl, $matches)) {
+			return false;
 		}
+		$filename = $matches[1];
+
 		$criteria = new Criteria();
 		$criteria->addFilter(new EqualsFilter('fileName', $filename));
 

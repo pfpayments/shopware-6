@@ -15,6 +15,7 @@ use PostFinanceCheckoutPayment\Core\{
 	Util\Traits\PostFinanceCheckoutPaymentPluginTrait
 };
 
+use Shopware\Core\Framework\Plugin\Util\AssetService;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderResolver;
@@ -59,6 +60,21 @@ class PostFinanceCheckoutPayment extends Plugin {
 		$this->removeConfiguration($uninstallContext->getContext());
 		$this->deleteUserData($uninstallContext);
 	}
+
+	/**
+	 * @param \Shopware\Core\Framework\Plugin\Context\UpdateContext $updateContext
+	 * @return void
+	 */
+	public function update(UpdateContext $updateContext): void
+    {
+        parent::update($updateContext);
+
+        // Force-publish assets on every update. This clears the old hashed-filename files
+        // (from bin/build-administration builds) and replaces them with the stable-filename
+        // files produced by shopware-cli, preventing the plugin from disappearing from the
+        // settings menu after an upgrade.
+        $this->publishAssets(force: true);
+    }
 
 	/**
 	 * @param \Shopware\Core\Framework\Plugin\Context\ActivateContext $activateContext
@@ -136,5 +152,16 @@ class PostFinanceCheckoutPayment extends Plugin {
     {
         // The plugin needs the SDK to be installed via composer.
         return true;
+    }
+
+    private function publishAssets(bool $force = false): void
+    {
+        if (!$this->container->has(AssetService::class)) {
+            return;
+        }
+
+        /** @var AssetService $assetService */
+        $assetService = $this->container->get(AssetService::class);
+        $assetService->copyAssets($this, $force);
     }
 }

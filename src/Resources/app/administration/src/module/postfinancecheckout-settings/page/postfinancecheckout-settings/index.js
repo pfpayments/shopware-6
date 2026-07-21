@@ -49,6 +49,7 @@ Component.register('postfinancecheckout-settings', {
             configStorefrontInvoiceDownloadEnabledEnabledDefaultValue: true,
             configStorefrontWebhooksUpdateEnabledDefaultValue: true,
             configStorefrontPaymentsUpdateEnabledDefaultValue: true,
+            configKeepFailedPaymentsOrderOpenDefaultValue: false,
 
             ...constants
         };
@@ -102,6 +103,10 @@ Component.register('postfinancecheckout-settings', {
                         this.config[this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED] = this.configStorefrontPaymentsUpdateEnabledDefaultValue;
                     }
 
+                    if (!(this.CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN in this.config)) {
+                        this.config[this.CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN] = this.configKeepFailedPaymentsOrderOpenDefaultValue;
+                    }
+
                 } else {
 
                     this.applicationKeyFilled = !!this.config[this.CONFIG_APPLICATION_KEY] || !!defaultConfig[this.CONFIG_APPLICATION_KEY];
@@ -131,6 +136,10 @@ Component.register('postfinancecheckout-settings', {
 
                     if (!(this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED in this.config) || !(this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED in defaultConfig)) {
                         this.config[this.CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED] = this.configStorefrontPaymentsUpdateEnabledDefaultValue;
+                    }
+
+                    if (!(this.CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN in this.config) || !(this.CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN in defaultConfig)) {
+                        this.config[this.CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN] = this.configKeepFailedPaymentsOrderOpenDefaultValue;
                     }
                 }
 

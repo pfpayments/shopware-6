@@ -431,6 +431,24 @@ class WebHookController extends AbstractController {
 	}
 
 	/**
+	 * Get a specific order transaction entity by its ID.
+	 *
+	 * @param string $orderTransactionId
+	 * @param Context $context
+	 * @return OrderTransactionEntity|null
+	 */
+	private function getOrderTransactionById(string $orderTransactionId, Context $context): ?OrderTransactionEntity
+	{
+		$criteria = new Criteria([$orderTransactionId]);
+		$criteria->addAssociation('stateMachineState');
+
+		return $this->container
+			->get('order_transaction.repository')
+			->search($criteria, $context)
+			->first();
+	}
+
+	/**
 	 * Get order
 	 *
 	 * @param String                           $orderId
@@ -491,7 +509,11 @@ class WebHookController extends AbstractController {
 				$this->executeLocked($orderId, $context, function () use ($orderId, $transaction, $context, $callBackData) {
 					$this->transactionService->upsert($transaction, $context);
 					$orderTransactionId = $transaction->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
-					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
+					$orderTransaction   = $this->getOrderTransactionById($orderTransactionId, $context);
+					if (null === $orderTransaction) {
+						$this->logger->info('Order transaction not found: ' . $orderTransactionId);
+						return;
+					}
 					$this->logger->info("OrderId: {$orderId} Current state: {$orderTransaction->getStateMachineState()?->getTechnicalName()}");
 
 					if (!in_array(
@@ -511,10 +533,14 @@ class WebHookController extends AbstractController {
 							case TransactionState::FULFILL:
 								$this->unholdDelivery($orderId, $context);
 								break;
-							case TransactionState::AUTHORIZED:
-								$this->orderTransactionStateHandler->process($orderTransactionId, $context);
-								$this->sendEmail($transaction, $context);
-								break;
+								case TransactionState::AUTHORIZED:
+									if (!in_array($orderTransaction->getStateMachineState()?->getTechnicalName(), $this->transactionFinalStates)) {
+										$this->orderTransactionStateHandler->process($orderTransactionId, $context);
+										$this->sendEmail($transaction, $context);
+									} else {
+										$this->logger->info('Skipping process(): transaction already in final state for orderTransaction: ' . $orderTransactionId);
+									}
+									break;
 							default:
 								break;
 						}
@@ -581,7 +607,11 @@ class WebHookController extends AbstractController {
 															 ->getLineItemVersion()
 															 ->getTransaction()
 															 ->getMetaData()[TransactionPayload::POSTFINANCECHECKOUT_METADATA_ORDER_TRANSACTION_ID];
-					$orderTransaction   = $this->getOrderTransaction($orderId, $context);
+					$orderTransaction   = $this->getOrderTransactionById($orderTransactionId, $context);
+					if (null === $orderTransaction) {
+						$this->logger->info('Order transaction not found: ' . $orderTransactionId);
+						return;
+					}
 					$this->updatePriceIfAdditionalItemsExist($transactionInvoice, $orderTransaction, $context);
 
 					if (!in_array(
@@ -595,7 +625,7 @@ class WebHookController extends AbstractController {
 							case TransactionInvoiceState::NOT_APPLICABLE:
 							case TransactionInvoiceState::PAID:
 								$this->orderTransactionStateHandler->paid($orderTransactionId, $context);
-								$this->unholdDelivery($orderTransactionId, $context);
+								$this->unholdDelivery($orderId, $context);
 								break;
 							default:
 								break;
@@ -700,6 +730,20 @@ class WebHookController extends AbstractController {
 	private function unholdAndCancelDelivery(string $orderId, Context $context): void
 	{
 		$order = $this->getOrderEntity($orderId, $context);
+		
+		$settings = $this->settingsService->getSettings();
+		if (!$settings->isKeepFailedPaymentsOrderOpen()) {
+			try {
+				$result = $this->orderService->orderStateTransition(
+					$order->getId(),
+					StateMachineTransitionActions::ACTION_CANCEL,
+					new ParameterBag(),
+					$context
+				);
+			} catch (\Exception $exception) {
+				$this->logger->info($exception->getMessage(), $exception->getTrace());
+			}
+		}
 
 		try {
 			/**

@@ -64,6 +64,10 @@
           "label": "Send order confirmation email",
           "tooltipText": "If this setting is enabled your customers will receive an email from your store when their order payment is authorised"
         },
+        "orderCloseEnabled": {
+          "label": "Keep order open on failed payment",
+          "tooltipText": "If this setting is enabled the order will be kept open for failed payments"
+        },
         "integration": {
           "label": "Integration",
           "options": {

@@ -307,6 +307,24 @@ abstract class WebHookStrategyBase implements WebHookStrategyInterface {
 	}
 
 	/**
+	 * Get a specific order transaction entity by its ID.
+	 *
+	 * @param string $orderTransactionId
+	 * @param Context $context
+	 * @return OrderTransactionEntity|null
+	 */
+	protected function getOrderTransactionById(string $orderTransactionId, Context $context): ?OrderTransactionEntity
+	{
+		$criteria = new Criteria([$orderTransactionId]);
+		$criteria->addAssociation('stateMachineState');
+
+		return $this->container
+			->get('order_transaction.repository')
+			->search($criteria, $context)
+			->first();
+	}
+
+	/**
 	 * Unholds the delivery of an order.
 	 *
 	 * This method changes the state of an order's last delivery from 'held' to 'released', allowing further processing like shipping.
@@ -378,6 +396,20 @@ abstract class WebHookStrategyBase implements WebHookStrategyInterface {
 	protected function unholdAndCancelDelivery(string $orderId, Context $context): void
 	{
 		$order = $this->getOrderEntity($orderId, $context);
+		
+		$settings = $this->settingsService->getSettings();
+		if (!$settings->isKeepFailedPaymentsOrderOpen()) {
+			try {
+				$result = $this->orderService->orderStateTransition(
+					$order->getId(),
+					StateMachineTransitionActions::ACTION_CANCEL,
+					new ParameterBag(),
+					$context
+				);
+			} catch (\Exception $exception) {
+				$this->logger->info($exception->getMessage(), $exception->getTrace());
+			}
+		}
 
 		try {
 

@@ -129,7 +129,6 @@ class CheckoutController extends StorefrontController
     public function pay(SalesChannelContext $salesChannelContext, Request $request): Response
     {
         $orderId = (string)$request->query->get('orderId');
-
         if (empty($orderId)) {
             throw RoutingException::missingRequestParameter('orderId');
         }
@@ -138,6 +137,7 @@ class CheckoutController extends StorefrontController
             // Load the order with necessary associations for the product table and addresses.
             $criteria = new Criteria([$orderId]);
             $criteria->addAssociation('lineItems.product')
+                ->addAssociation('lineItems.cover')
                 ->addAssociation('deliveries.shippingOrderAddress.country')
                 ->addAssociation('orderCustomer.customer')
                 ->addAssociation('transactions.paymentMethod');
@@ -159,10 +159,11 @@ class CheckoutController extends StorefrontController
             $page->assign(['order' => $order]);
 
             // Render the specialized Twig template for WhitelabelMachineName.
-            return $this->renderStorefront(
+            $response = $this->renderStorefront(
                 '@PostFinanceCheckoutPayment/storefront/page/checkout/order/postfinancecheckout.html.twig',
                 ['page' => $page]
             );
+            return $response;
         } catch (\Exception $e) {
             if ($this->logger) {
                 $this->logger->error($e->getMessage());
@@ -197,6 +198,8 @@ class CheckoutController extends StorefrontController
             throw RoutingException::missingRequestParameter('orderId');
         }
 
+        $request->getSession()->remove('postfinancecheckoutActivePaymentOrderId');
+
         try {
             // Find the order that should be recovered.
             $order = $this->cartRecoveryService->getOrderEntity($orderId, $salesChannelContext->getContext());
@@ -212,7 +215,6 @@ class CheckoutController extends StorefrontController
                 $transaction = $this->transactionService->read($transactionEntity->getTransactionId(), $salesChannelContext->getSalesChannelId());
                 if (in_array($transaction->getState(), [
                     SdkTransactionState::AUTHORIZED,
-                    SdkTransactionState::CONFIRMED,
                     SdkTransactionState::FULFILL
                 ])) {
                     return $this->redirectToRoute('frontend.checkout.finish.page', ['orderId' => $orderId]);

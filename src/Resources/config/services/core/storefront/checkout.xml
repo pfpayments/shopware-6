@@ -31,6 +31,10 @@
 			</call>
 			<tag name="kernel.event_subscriber"/>
 		</service>
+		<service id="PostFinanceCheckoutPayment\Core\Storefront\Checkout\Subscriber\ActivePaymentRedirectSubscriber">
+			<argument type="service" id="router"/>
+			<tag name="kernel.event_subscriber"/>
+		</service>
 
 		<!-- Decorators -->
 		<service id="PostFinanceCheckoutPayment\Core\Storefront\Framework\Cookie\PostFinanceCheckoutCookieProvider" decorates="Shopware\Storefront\Framework\Cookie\CookieProviderInterface">

@@ -62,6 +62,10 @@
 		  "label": "Invia email di conferma dell'ordine",
 		  "tooltipText": "Se questa impostazione è abilitata i tuoi clienti riceveranno un'email dal tuo negozio quando il pagamento del loro ordine sarà autorizzato"
 		},
+		"orderCloseEnabled": {
+		  "label": "Mantieni l'ordine aperto in caso di pagamento non riuscito.",
+		  "tooltipText": "Se questa impostazione è abilitata, l'ordine rimarrà aperto in caso di mancato pagamento."
+		},
 		"integration": {
 		  "label": "Integrazione",
 		  "options": {

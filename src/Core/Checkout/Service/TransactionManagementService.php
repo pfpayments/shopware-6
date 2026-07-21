@@ -169,8 +169,9 @@ class TransactionManagementService
         }
 
         // Fallback to PHP session for traditional Storefront compatibility.
-        if (isset($_SESSION['transactionId'])) {
-            return (int) $_SESSION['transactionId'];
+        $sessionKey = $this->transactionService->getSessionTransactionKey($salesChannelContext);
+        if ($sessionKey !== null && isset($_SESSION[$sessionKey])) {
+            return (int) $_SESSION[$sessionKey];
         }
 
         return null;
@@ -205,6 +206,11 @@ class TransactionManagementService
         }
 
         // Sync with PHP session for stateful Storefront support.
-        $_SESSION['transactionId'] = $transactionId;
+        $sessionKey = $this->transactionService->getSessionTransactionKey($salesChannelContext);
+        if ($sessionKey !== null) {
+            $_SESSION[$sessionKey] = $transactionId;
+        }
+
+        unset($_SESSION['transactionId']);
     }
 }

@@ -48,6 +48,7 @@ class SettingsCommand extends Command {
 			SettingsService::CONFIG_EMAIL_ENABLED                       => $input->getOption(SettingsService::CONFIG_EMAIL_ENABLED),
 			SettingsService::CONFIG_INTEGRATION                         => $input->getOption(SettingsService::CONFIG_INTEGRATION),
 			SettingsService::CONFIG_LINE_ITEM_CONSISTENCY_ENABLED       => $input->getOption(SettingsService::CONFIG_LINE_ITEM_CONSISTENCY_ENABLED),
+			SettingsService::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN     => $input->getOption(SettingsService::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN),
 			SettingsService::CONFIG_SPACE_ID                            => $input->getOption(SettingsService::CONFIG_SPACE_ID),
 			SettingsService::CONFIG_SPACE_VIEW_ID                       => $input->getOption(SettingsService::CONFIG_SPACE_VIEW_ID),
 			SettingsService::CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED => $input->getOption(SettingsService::CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED),
@@ -105,6 +106,13 @@ class SettingsCommand extends Command {
 				 true
 			 )
 			 ->addOption(
+				 SettingsService::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN,
+				 SettingsService::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN,
+				 InputOption::VALUE_OPTIONAL,
+				 SettingsService::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN,
+				 true
+			 )
+			 ->addOption(
 				 SettingsService::CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED,
 				 SettingsService::CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED,
 				 InputOption::VALUE_OPTIONAL,
@@ -124,7 +132,8 @@ class SettingsCommand extends Command {
 				InputOption::VALUE_OPTIONAL,
 				SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED,
 				true
-			)			->addOption(
+			)
+			->addOption(
 				SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED,
 				SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED,
 				InputOption::VALUE_OPTIONAL,

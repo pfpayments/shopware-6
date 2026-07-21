@@ -122,6 +122,7 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
         Context           $context,
         ?Struct $validateStruct
     ): RedirectResponse {
+        $sessionKey = null;
         try {
             $orderTransactionId = $transaction->getOrderTransactionId();
             $orderTransaction = $this->orderTransactionRepository->search(
@@ -143,14 +144,20 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
             $redirectUrl = $transaction->getReturnUrl();
 
             if ($orderTransaction->getOrder()->getAmountTotal() > 0) {
-                $transactionId = $request->getSession()->get('transactionId');
+                $sessionKey = $this->pluginTransactionService->getSessionTransactionKey($salesChannelContext);
+                $transactionId = $sessionKey !== null ? $request->getSession()->get($sessionKey) : null;
                 if ($transactionId === null) {
                     $this->pluginTransactionService->createPendingTransaction($salesChannelContext);
                 }
                 $redirectUrl = $this->pluginTransactionService->create($transaction, $salesChannelContext);
+                $orderId = $orderTransaction->getOrder()->getId();
+                $request->getSession()->set('postfinancecheckoutActivePaymentOrderId', $orderId);
             }
             return new RedirectResponse($redirectUrl);
         } catch (\Throwable $e) {
+            if ($sessionKey !== null) {
+                $request->getSession()->remove($sessionKey);
+            }
             // Clear the transaction ID from the cache or session context depending on whether the SalesChannelContext was initialized
             // to prevent subsequent checkout attempts from reusing a failed/invalid transaction ID.
             if (isset($salesChannelContext)) {
@@ -192,6 +199,10 @@ class PostFinanceCheckoutPaymentHandler extends AbstractPaymentHandler
                 ->addAssociation('stateMachineState'),
             $context
         )->getEntities()->first();
+
+        if ($request->hasSession()) {
+            $request->getSession()->remove('postfinancecheckoutActivePaymentOrderId');
+        }
 
         if ($orderTransaction->getOrder()->getAmountTotal() > 0) {
             $transactionEntity = $this->pluginTransactionService->getByOrderId(

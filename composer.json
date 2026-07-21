@@ -56,8 +56,8 @@
     "shopware/core": "~6.7.0",
     "shopware/administration": "~6.7.0",
     "shopware/storefront":"~6.7.0",
-    "postfinancecheckout/sdk": "^4.0.0"
+    "postfinancecheckout/sdk": "^4.8.1"
   },
   "type": "shopware-platform-plugin",
-  "version": "7.3.4"
+  "version": "7.3.5"
 }
