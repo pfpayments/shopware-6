@@ -147,6 +147,7 @@ class TransactionPayload extends AbstractPayload
         $criteria = new Criteria([$orderId]);
         $criteria
             ->addAssociation('lineItems')
+            ->addAssociation('lineItems.product')
             ->addAssociation('orderCustomer')
             ->addAssociation('transactions')
             ->addAssociation('currency')
@@ -567,6 +568,11 @@ class TransactionPayload extends AbstractPayload
         }
 
 
+        $customFieldAttributes = $this->getProductCustomFieldAttributes($shopLineItem);
+        if (!empty($customFieldAttributes)) {
+            $productAttributes = array_merge($productAttributes ?? [], $customFieldAttributes);
+        }
+
         if (!empty($productAttributes)) {
             $lineItem->setAttributes($productAttributes);
         }
@@ -641,6 +647,78 @@ class TransactionPayload extends AbstractPayload
         }
 
         return empty($productAttributes) ? null : $productAttributes;
+    }
+
+    /**
+     * @param \Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity $shopLineItem
+     *
+     * @return array
+     */
+    protected function getProductCustomFieldAttributes(OrderLineItemEntity $shopLineItem): array
+    {
+        $productAttributes = [];
+
+        $customFields = [];
+        $product = $shopLineItem->getProduct();
+        if ($product !== null) {
+            $customFields = $product->getTranslation('customFields') ?? $product->getCustomFields() ?? [];
+        }
+
+        $lineItemPayload = $shopLineItem->getPayload();
+        if (is_array($lineItemPayload) && !empty($lineItemPayload['customFields']) && is_array($lineItemPayload['customFields'])) {
+            $customFields = array_merge($customFields, $lineItemPayload['customFields']);
+        }
+
+        foreach ($customFields as $fieldName => $fieldValue) {
+            $value = $this->stringifyCustomFieldValue($fieldValue);
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $lineItemAttributeCreate = (new LineItemAttributeCreate())
+                ->setLabel($this->fixLength((string)$fieldName, 512))
+                ->setValue($this->fixLength($value, 512));
+
+            if ($lineItemAttributeCreate->valid()) {
+                $key = $this->fixLength('customField_' . md5((string)$fieldName), 40);
+                $productAttributes[$key] = $lineItemAttributeCreate;
+            } else {
+                $this->logger->critical('LineItemAttributeCreate payload invalid:', $lineItemAttributeCreate->listInvalidProperties());
+                throw new InvalidPayloadException('LineItemAttributeCreate payload invalid:' . json_encode($lineItemAttributeCreate->listInvalidProperties()));
+            }
+        }
+
+        return $productAttributes;
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return string|null
+     */
+    protected function stringifyCustomFieldValue($value): ?string
+    {
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+
+        if (is_scalar($value)) {
+            return trim((string)$value);
+        }
+
+        if (is_array($value)) {
+            $parts = [];
+            foreach ($value as $item) {
+                $part = $this->stringifyCustomFieldValue($item);
+                if ($part === null || $part === '') {
+                    return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: null;
+                }
+                $parts[] = $part;
+            }
+            return implode(', ', $parts);
+        }
+
+        return null;
     }
 
     /**
