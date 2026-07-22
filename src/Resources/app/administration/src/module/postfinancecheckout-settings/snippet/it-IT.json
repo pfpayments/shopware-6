@@ -78,6 +78,10 @@
 		  "label": "Coerenza dell'elemento linea",
 		  "tooltipText": "Se questa opzione è abilitata i totali degli articoli in PostFinanceCheckoutPayment corrisponderanno sempre al totale dell'ordine Shopware"
 		},
+		"productCustomFieldsAllowList": {
+		  "label": "Campi personalizzati prodotto (allow list)",
+		  "tooltipText": "Selezionare i campi personalizzati del prodotto che vengono trasmessi come attributi di posizione a PostFinance Checkout. Nessuna selezione = nessun campo personalizzato viene trasmesso."
+		},
 		"spaceViewId": {
 		  "label": "ID della vista spazio",
 		  "tooltipText": "ID della vista spaziale"

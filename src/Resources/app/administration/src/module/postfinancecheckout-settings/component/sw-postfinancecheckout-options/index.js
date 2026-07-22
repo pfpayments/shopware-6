@@ -3,12 +3,17 @@
 import template from './index.html.twig';
 import constants from '../../page/postfinancecheckout-settings/configuration-constants'
 
-const {Component, Mixin} = Shopware;
+const {Component, Mixin, Context} = Shopware;
+const Criteria = Shopware.Data.Criteria;
 
 Component.register('sw-postfinancecheckout-options', {
 	template: template,
 
 	name: 'PostFinanceCheckoutOptions',
+
+	inject: [
+		'repositoryFactory'
+	],
 
 	mixins: [
 		Mixin.getByName('notification')
@@ -34,11 +39,38 @@ Component.register('sw-postfinancecheckout-options', {
 
 	data() {
 		return {
-			...constants
+			...constants,
+			productCustomFields: []
 		};
 	},
 
+	created() {
+		this.loadProductCustomFields();
+	},
+
 	computed: {
+		customFieldRepository() {
+			return this.repositoryFactory.create('custom_field');
+		},
+
+		productCustomFieldOptions() {
+			const session = Shopware.Store && Shopware.Store.get ? Shopware.Store.get('session') : null;
+			const locale = (session && session.currentLocale) || 'en-GB';
+
+			return this.productCustomFields.map((customField) => {
+				const configLabel = customField.config && customField.config.label
+					? (customField.config.label[locale] || customField.config.label['en-GB'])
+					: null;
+
+				return {
+					value: customField.name,
+					label: configLabel && configLabel !== customField.name
+						? `${configLabel} (${customField.name})`
+						: customField.name
+				};
+			});
+		},
+
 		integrationOptions() {
 			return [
 				{
@@ -54,6 +86,20 @@ Component.register('sw-postfinancecheckout-options', {
 	},
 
 	methods: {
+		loadProductCustomFields() {
+			const criteria = new Criteria(1, 500);
+			criteria.addFilter(Criteria.equals('customFieldSet.relations.entityName', 'product'));
+			criteria.addSorting(Criteria.sort('name', 'ASC'));
+
+			this.customFieldRepository.search(criteria, Context.api).then((result) => {
+				this.productCustomFields = result;
+			});
+		},
+
+		checkMultiSelectFieldInheritance(value) {
+			return !Array.isArray(value) || value.length <= 0;
+		},
+
 		checkTextFieldInheritance(value) {
 			if (typeof value !== 'string') {
 				return true;

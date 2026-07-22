@@ -54,6 +54,15 @@ class Settings extends Struct {
 	protected $storefrontInvoiceDownloadEnabled = true;
 
 	/**
+	 * Product custom field names that are transmitted as line item attributes.
+	 * Stored as an array of field names (admin multi select) or a
+	 * comma-separated string. Empty means no custom fields are transmitted.
+	 *
+	 * @var array|string|null
+	 */
+	protected $productCustomFieldsAllowList;
+
+	/**
 	 * Space Id
 	 *
 	 * @var int
@@ -158,6 +167,35 @@ class Settings extends Struct {
 	public function setStorefrontInvoiceDownloadEnabled(bool $storefrontInvoiceDownloadEnabled): void
 	{
 		$this->storefrontInvoiceDownloadEnabled = $storefrontInvoiceDownloadEnabled;
+	}
+
+	/**
+	 * Get the product custom field names that are allowed to be transmitted as line item attributes.
+	 *
+	 * Accepts both an array of field names (admin multi select) and a
+	 * comma-separated string (e.g. set via bin/console system:config:set).
+	 *
+	 * @return array
+	 */
+	public function getProductCustomFieldsAllowList(): array
+	{
+		$value = $this->productCustomFieldsAllowList;
+
+		if (!\is_array($value)) {
+			$value = explode(',', (string) $value);
+		}
+
+		return array_values(array_filter(array_map(static function ($fieldName) {
+			return trim((string) $fieldName);
+		}, $value)));
+	}
+
+	/**
+	 * @param array|string|null $productCustomFieldsAllowList
+	 */
+	public function setProductCustomFieldsAllowList($productCustomFieldsAllowList): void
+	{
+		$this->productCustomFieldsAllowList = $productCustomFieldsAllowList;
 	}
 
 	/**

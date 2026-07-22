@@ -658,6 +658,12 @@ class TransactionPayload extends AbstractPayload
     {
         $productAttributes = [];
 
+        // Opt-in behaviour: custom fields are only transmitted when explicitly allow-listed.
+        $allowList = $this->settings->getProductCustomFieldsAllowList();
+        if (empty($allowList)) {
+            return $productAttributes;
+        }
+
         $customFields = [];
         $product = $shopLineItem->getProduct();
         if ($product !== null) {
@@ -668,6 +674,8 @@ class TransactionPayload extends AbstractPayload
         if (is_array($lineItemPayload) && !empty($lineItemPayload['customFields']) && is_array($lineItemPayload['customFields'])) {
             $customFields = array_merge($customFields, $lineItemPayload['customFields']);
         }
+
+        $customFields = array_intersect_key($customFields, array_flip($allowList));
 
         foreach ($customFields as $fieldName => $fieldValue) {
             $value = $this->stringifyCustomFieldValue($fieldValue);

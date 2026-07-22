@@ -108,6 +108,28 @@
 								</template>
 							</sw-inherit-wrapper>
 						{% endblock %}
+
+						{% block postfinancecheckout_settings_content_card_channel_config_credentials_card_container_settings_product_custom_fields_allow_list %}
+							<sw-inherit-wrapper
+									v-model:value="actualConfigData[CONFIG_PRODUCT_CUSTOM_FIELDS_ALLOW_LIST]"
+									:inheritedValue="selectedSalesChannelId == null ? null : allConfigs['null'][CONFIG_PRODUCT_CUSTOM_FIELDS_ALLOW_LIST]"
+									:customInheritationCheckFunction="checkMultiSelectFieldInheritance">
+								<template #content="props">
+									<sw-multi-select
+											:name="CONFIG_PRODUCT_CUSTOM_FIELDS_ALLOW_LIST"
+											labelProperty="label"
+											valueProperty="value"
+											:options="productCustomFieldOptions"
+											:mapInheritance="props"
+											:label="$tc('postfinancecheckout-settings.settingForm.options.productCustomFieldsAllowList.label')"
+											:helpText="$tc('postfinancecheckout-settings.settingForm.options.productCustomFieldsAllowList.tooltipText')"
+											:disabled="props.isInherited"
+											:value="props.currentValue || []"
+											@update:value="props.updateCurrentValue">
+									</sw-multi-select>
+								</template>
+							</sw-inherit-wrapper>
+						{% endblock %}
 					</div>
 				{% endblock %}
 			</sw-container>

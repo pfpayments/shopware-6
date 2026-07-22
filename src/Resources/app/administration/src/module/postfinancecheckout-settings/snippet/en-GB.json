@@ -80,10 +80,13 @@
           "label": "Line item consistency",
           "tooltipText": "If this option is enabled line item totals in PostFinanceCheckoutPayment will always match Shopware order total"
         },
+        "productCustomFieldsAllowList": {
+          "label": "Product custom fields (allow list)",
+          "tooltipText": "Select the product custom fields that are transmitted as line item attributes to PostFinance Checkout. No selection = no custom fields are transmitted."
+        },
         "spaceViewId": {
           "label": "Space View ID",
-          "tooltipText": "Space View ID"
-        }
+          "tooltipText": "Space View ID"        }
       },
       "save": "Save",
       "storefrontOptions": {
