@@ -5,7 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<meta name="keywords" value="PostFinance Checkout, Shopware, Shopware Plugin, Payment, Payment Integration, Documentation"><meta name="description" value="The documentation for the Shopware 6 plugin that enables processing payments with PostFinance Checkout.">		
-		<link rel="canonical" href="@WalleeCanonicalPath(https://plugin-documentation.wallee.com/wallee-payment, PostFinanceCheckoutPayment/docs/it/documentation.html)" />
+		<link rel="canonical" href="https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.x/master/docs/it/documentation.html" />
 		<title>PostFinance Checkout Shopware 6 Documentation</title>
 		<link href="assets/monokai-sublime.css" rel="stylesheet" />
 		<link href="assets/base.css" rel="stylesheet" />
@@ -23,7 +23,7 @@
 		</a>
 	</li>
 	<li>
-		<a href="@WalleeReleasePath()">
+		<a href="https://github.com/pfpayments/shopware-6/releases/tag/6.2.4">
 			Source
 		</a>
 	</li>
@@ -39,7 +39,7 @@
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p>Il Wallee Payment Plugin integra l&#8217;elaborazione moderna dei pagamenti in Shopware 6, offrendo funzionalità come pagamenti basati su iFrame, rimborsi, acquisizioni e conformità PCI. Supporta l&#8217;integrazione perfetta con il [Portale PostFinance Checkout](<a href="https://checkout.postfinance.ch/" class="bare">https://checkout.postfinance.ch/</a>) per la gestione delle transazioni e dei metodi di pagamento.</p>
+<p>Il PostFinance Checkout Payment Plugin integra l&#8217;elaborazione moderna dei pagamenti in Shopware 6, offrendo funzionalità come pagamenti basati su iFrame, rimborsi, acquisizioni e conformità PCI. Supporta l&#8217;integrazione perfetta con il [Portale PostFinance Checkout](<a href="https://app-PostFinance Checkout.com/" class="bare">https://app-PostFinance Checkout.com/</a>) per la gestione delle transazioni e dei metodi di pagamento.</p>
 </div><div class="paragraph">
 <p>Importante: Si prega di notare che solo gli aggiornamenti Major (ad es. 6.x.0.0) e Minor (ad es. 6.0.x.0) saranno testati per la compatibilità entro 2 settimane dal rilascio.</p>
 </div>					</div>
@@ -54,7 +54,7 @@
 </div><div class="paragraph">
 <p>PHP: Versione minima richiesta dalla vostra installazione di Shopware (ad es. 7.4+).</p>
 </div><div class="paragraph">
-<p>Account Wallee: Ottenere Space ID, User ID e API Key dal <a href="#portal-startup-guide">Pannello di Controllo Wallee.</a>.</p>
+<p>Account PostFinance Checkout: Ottenere Space ID, User ID e API Key dal <a href="#portal-startup-guide">Pannello di Controllo PostFinance Checkout.</a>.</p>
 </div>					</div>
 </div>	<div class="chapter" id="compatibility">
 	<div class="chapter-title">
@@ -119,7 +119,7 @@
 </div>
 </li>
 <li>
-<p>Attivate il plugin Wallee Payment dal Gestore Plugin.</p>
+<p>Attivate il plugin PostFinance Checkout Payment dal Gestore Plugin.</p>
 </li>
 </ol>
 </div>					</div>
@@ -424,7 +424,7 @@ Si prega di notare che i connettori sembrano duplicati, ma è perché uno è per
 <li>
 <p><strong>Metodi di Pagamento</strong></p>
 <div class="paragraph">
-<p>I metodi di pagamento disponibili al checkout sono gestiti dal [Portale PostFinance Checkout](<a href="https://checkout.postfinance.ch/" class="bare">https://checkout.postfinance.ch/</a>). Se desiderate disabilitare un metodo di pagamento, dovrete disabilitarlo dal portale.</p>
+<p>I metodi di pagamento disponibili al checkout sono gestiti dal [Portale PostFinance Checkout](<a href="https://app-PostFinance Checkout.com/" class="bare">https://app-PostFinance Checkout.com/</a>). Se desiderate disabilitare un metodo di pagamento, dovrete disabilitarlo dal portale.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -534,9 +534,9 @@ Si prega di notare che se non utilizzate lo Space View Id, questa opzione dovreb
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
-<p>Il processo di pagamento di Wallee è completamente standardizzato per ogni metodo di pagamento che potete elaborare. Questo vi dà la possibilità di aggiungere semplicemente un metodo di pagamento o un processore senza modifiche all&#8217;interno della vostra configurazione di Shopware. Una panoramica degli stati e dei processi di pagamento di Wallee è disponibile nella <a href="https://checkout.postfinance.ch/en-us/doc/payment/transaction-process" target="_blank">Documentazione sui Pagamenti</a>.</p>
+<p>Il processo di pagamento di PostFinance Checkout è completamente standardizzato per ogni metodo di pagamento che potete elaborare. Questo vi dà la possibilità di aggiungere semplicemente un metodo di pagamento o un processore senza modifiche all&#8217;interno della vostra configurazione di Shopware. Una panoramica degli stati e dei processi di pagamento di PostFinance Checkout è disponibile nella <a href="https://app-PostFinance Checkout.com/en-us/doc/payment/transaction-process" target="_blank">Documentazione sui Pagamenti</a>.</p>
 </div><div class="paragraph">
-<p>Nella sezione seguente, forniamo una panoramica di come gli stati di Wallee sono mappati nel grafico degli stati di Shopware per gli ordini e gli stati di pagamento.</p>
+<p>Nella sezione seguente, forniamo una panoramica di come gli stati di PostFinance Checkout sono mappati nel grafico degli stati di Shopware per gli ordini e gli stati di pagamento.</p>
 </div>							<div class="section" id="_mappatura_degli_stati_degli_ordini_di_shopware">
 	<div class="section-title">
 		<h2>
@@ -633,7 +633,7 @@ Si prega di notare che se non utilizzate lo Space View Id, questa opzione dovreb
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>YAvete la possibilità che per le vostre transazioni il pagamento venga autorizzato solo dopo l&#8217;inserimento dell&#8217;ordine. All&#8217;interno della <a href="https://checkout.postfinance.ch/space/select?target=/payment/connector-configuration/list" target="_blank">configurazione del connettore</a> avete l&#8217;opzione, se il metodo di pagamento lo supporta, di definire se il pagamento debba essere completato immediatamente o differito.</p>
+<p>YAvete la possibilità che per le vostre transazioni il pagamento venga autorizzato solo dopo l&#8217;inserimento dell&#8217;ordine. All&#8217;interno della <a href="https://app-PostFinance Checkout.com/space/select?target=/payment/connector-configuration/list" target="_blank">configurazione del connettore</a> avete l&#8217;opzione, se il metodo di pagamento lo supporta, di definire se il pagamento debba essere completato immediatamente o differito.</p>
 </div><div class="paragraph">
 <p>Per acquisire una transazione, aprite l&#8217;ordine e cliccate sul pulsante <code>Complete</code>.</p>
 </div><div class="admonitionblock note">
@@ -643,7 +643,7 @@ Si prega di notare che se non utilizzate lo Space View Id, questa opzione dovreb
 <div class="title">Note</div>
 </td>
 <td class="content">
-Quando il completamento è in sospeso in Wallee, l&#8217;ordine rimarrà nello stato "in sospeso".
+Quando il completamento è in sospeso in PostFinance Checkout, l&#8217;ordine rimarrà nello stato "in sospeso".
 </td>
 </tr>
 </table>
@@ -715,7 +715,7 @@ Potrebbe volerci un po' di tempo prima che vediate il rimborso in Shopware. I ri
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>La spedizione non dovrebbe essere effettuata mentre lo stato di spedizione è Hold. Questo accade quando la transazione in Wallee non ha raggiunto lo stato di evasione.</p>
+<p>La spedizione non dovrebbe essere effettuata mentre lo stato di spedizione è Hold. Questo accade quando la transazione in PostFinance Checkout non ha raggiunto lo stato di evasione.</p>
 </div><div class="paragraph">
 <p>Ci sono essenzialmente due motivi per cui questo può accadere:</p>
 </div><div class="ulist">
@@ -724,22 +724,22 @@ Potrebbe volerci un po' di tempo prima che vediate il rimborso in Shopware. I ri
 <p>La transazione non è completata. In questo caso, dovete completare la transazione come scritto sopra.</p>
 </li>
 <li>
-<p>Non siamo in grado di dire se dovete evadere l&#8217;ordine. La decisione di spedizione viene presa automaticamente. Se ciò non accade entro il periodo di tempo definito, Wallee genererà un&#8217;attività manuale che dovreste osservare e seguire le istruzioni.</p>
+<p>Non siamo in grado di dire se dovete evadere l&#8217;ordine. La decisione di spedizione viene presa automaticamente. Se ciò non accade entro il periodo di tempo definito, PostFinance Checkout genererà un&#8217;attività manuale che dovreste osservare e seguire le istruzioni.</p>
 </li>
 </ul>
 </div><div class="paragraph">
-<p>Potete trovare maggiori informazioni sulle attività manuali nella nostra <a href="https://checkout.postfinance.ch/en-us/doc/manual-tasks" target="_blank">Documentazione sulle Attività Manuali.</a>.</p>
+<p>Potete trovare maggiori informazioni sulle attività manuali nella nostra <a href="https://app-PostFinance Checkout.com/en-us/doc/manual-tasks" target="_blank">Documentazione sulle Attività Manuali.</a>.</p>
 </div>					</div>
-</div>					<div class="section" id="_limitazioni_della_sincronizzazione_tra_wallee_e_shopware">
+</div>					<div class="section" id="_limitazioni_della_sincronizzazione_tra_whitelabelname_e_shopware">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">9.5</span>Limitazioni della Sincronizzazione tra Wallee e Shopware					</h2>
+			<span class="title-number">9.5</span>Limitazioni della Sincronizzazione tra PostFinance Checkout e Shopware					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>Si prega di notare che le acquisizioni, le annullazioni e i rimborsi effettuati in Wallee vengono sincronizzati. Tuttavia, ci sono alcune limitazioni. All&#8217;interno di Wallee, potete modificare contemporaneamente <strong>il prezzo unitario</strong> e <strong>la quantità</strong>. Questo non può essere fatto nel backend di Shopware. Raccomandiamo pertanto di effettuare sempre i rimborsi all&#8217;interno del backend di Shopware e non all&#8217;interno di Wallee. Se un rimborso non può essere sincronizzato, verrà inviato al processore, ma potrebbe essere che non lo vediate all&#8217;interno del vostro backend di Shopware.</p>
+<p>Si prega di notare che le acquisizioni, le annullazioni e i rimborsi effettuati in PostFinance Checkout vengono sincronizzati. Tuttavia, ci sono alcune limitazioni. All&#8217;interno di PostFinance Checkout, potete modificare contemporaneamente <strong>il prezzo unitario</strong> e <strong>la quantità</strong>. Questo non può essere fatto nel backend di Shopware. Raccomandiamo pertanto di effettuare sempre i rimborsi all&#8217;interno del backend di Shopware e non all&#8217;interno di PostFinance Checkout. Se un rimborso non può essere sincronizzato, verrà inviato al processore, ma potrebbe essere che non lo vediate all&#8217;interno del vostro backend di Shopware.</p>
 </div><div class="paragraph">
-<p>Potete trovare maggiori informazioni sui Rimborsi in Wallee nella nostra <a href="https://checkout.postfinance.ch/en-us/doc/payment/refund" target="_blank">Documentazione sui Rimborsi.</a>.</p>
+<p>Potete trovare maggiori informazioni sui Rimborsi in PostFinance Checkout nella nostra <a href="https://app-PostFinance Checkout.com/en-us/doc/payment/refund" target="_blank">Documentazione sui Rimborsi.</a>.</p>
 </div>					</div>
 </div>					<div class="section" id="_tokenization">
 	<div class="section-title">
@@ -748,7 +748,7 @@ Potrebbe volerci un po' di tempo prima che vediate il rimborso in Shopware. I ri
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
-<p>INel caso in cui il metodo di pagamento supporti la tokenizzazione, potete memorizzare i dettagli di pagamento dei vostri clienti per acquisti futuri. Per utilizzare questa funzionalità, assicuratevi che la Modalità di <strong>One-Click-Payment Mode</strong> inella configurazione del vostro <a href="https://checkout.postfinance.ch/space/select?target=/payment/method-configuration/list">metodo di pagamento</a> sia impostata su <code>allow</code> o <code>force</code>.</p>
+<p>INel caso in cui il metodo di pagamento supporti la tokenizzazione, potete memorizzare i dettagli di pagamento dei vostri clienti per acquisti futuri. Per utilizzare questa funzionalità, assicuratevi che la Modalità di <strong>One-Click-Payment Mode</strong> inella configurazione del vostro <a href="https://app-PostFinance Checkout.com/space/select?target=/payment/method-configuration/list">metodo di pagamento</a> sia impostata su <code>allow</code> o <code>force</code>.</p>
 </div><div class="admonitionblock note">
 <table>
 <tr>
@@ -846,10 +846,45 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 <p>R: Sì, il plugin supporta wallet come Apple Pay.</p>
 </div>					</div>
 </div>			</div>
+</div>	<div class="chapter" id="_gdpr">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">10</span>GDPR					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>Questo plugin utilizza i cookie per le finalità descritte di seguito:</p>
+</div><table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 16%;"/>
+<col style="width: 16%;"/>
+<col style="width: 16%;"/>
+<col style="width: 16%;"/>
+<col style="width: 33%;"/>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Nome</th>
+<th class="tableblock halign-left valign-top">Finalità</th>
+<th class="tableblock halign-left valign-top">Durata</th>
+<th class="tableblock halign-left valign-top">Origine</th>
+<th class="tableblock halign-left valign-top">Descrizione</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>postfinancecheckoutNewUi</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Funzionale</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Persistente (10 anni)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PostFinance Checkout</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Interruttore della versione dell&#8217;interfaccia del portale commerciante PostFinance Checkout (vecchia o nuova UI). Impostato automaticamente a ogni accesso in base alla preferenza salvata dell&#8217;utente e può essere modificato dall&#8217;utente. HttpOnly, Secure con HTTPS.</p></td>
+</tr>
+</tbody>
+</table>					</div>
 </div>	<div class="chapter" id="_changelog">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">10</span>Changelog					</h1>
+			<span class="title-number">11</span>Changelog					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -858,7 +893,7 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 </div>	<div class="chapter" id="_contribuzione">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">11</span>Contribuzione					</h1>
+			<span class="title-number">12</span>Contribuzione					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -869,7 +904,7 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 </div>	<div class="chapter" id="_support">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">12</span>Support					</h1>
+			<span class="title-number">13</span>Support					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -1021,9 +1056,9 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 		<span class="item-title">Ordini in Attesa</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
-	<a href="#_limitazioni_della_sincronizzazione_tra_wallee_e_shopware">
+	<a href="#_limitazioni_della_sincronizzazione_tra_whitelabelname_e_shopware">
 		<span class="item-number">9.5</span>
-		<span class="item-title">Limitazioni della Sincronizzazione tra Wallee e Shopware</span>
+		<span class="item-title">Limitazioni della Sincronizzazione tra PostFinance Checkout e Shopware</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_tokenization">
@@ -1047,18 +1082,23 @@ La tokenizzazione non è disponibile per i checkout degli ospiti.
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
-	<a href="#_changelog">
+	<a href="#_gdpr">
 		<span class="item-number">10</span>
+		<span class="item-title">GDPR</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#_changelog">
+		<span class="item-number">11</span>
 		<span class="item-title">Changelog</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_contribuzione">
-		<span class="item-number">11</span>
+		<span class="item-number">12</span>
 		<span class="item-title">Contribuzione</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_support">
-		<span class="item-number">12</span>
+		<span class="item-number">13</span>
 		<span class="item-title">Support</span>
 			</a>
     </li>			</ul>

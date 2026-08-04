@@ -5,7 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 		<meta name="keywords" value="PostFinance Checkout, Shopware, Shopware Plugin, Payment, Payment Integration, Documentation"><meta name="description" value="The documentation for the Shopware 6 plugin that enables processing payments with PostFinance Checkout.">		
-		<link rel="canonical" href="@WalleeCanonicalPath(https://plugin-documentation.wallee.com/wallee-payment, PostFinanceCheckoutPayment/docs/de/documentation.html)" />
+		<link rel="canonical" href="https://plugin-documentation.postfinance-checkout.ch/pfpayments/shopware-6/6.x/master/docs/de/documentation.html" />
 		<title>PostFinance Checkout Zahlungs-Plugin für Shopware 6</title>
 		<link href="assets/monokai-sublime.css" rel="stylesheet" />
 		<link href="assets/base.css" rel="stylesheet" />
@@ -23,7 +23,7 @@
 		</a>
 	</li>
 	<li>
-		<a href="@WalleeReleasePath()">
+		<a href="https://github.com/pfpayments/shopware-6/releases/tag/6.2.4">
 			Source
 		</a>
 	</li>
@@ -807,7 +807,7 @@ tail -f var/log/whitelabelname_payment*.log</code></pre>
 <div class="ulist">
 <ul>
 <li>
-<p>Stellen Sie sicher, dass <code>composer update wallee/shopware-6</code> nach Updates ausgeführt wird.</p>
+<p>Stellen Sie sicher, dass <code>composer update whitelabelname/shopware-6</code> nach Updates ausgeführt wird.</p>
 </li>
 <li>
 <p>Überprüfen Sie, ob die API-Zugangsdaten mit Ihrem PostFinance Checkout-Konto übereinstimmen.</p>
@@ -846,10 +846,45 @@ A: Das Plugin verwendet die iFrame-Integration, wodurch die PCI-Anforderungen au
 A: Ja, das Plugin unterstützt Wallets wie Apple Pay.</p>
 </div>					</div>
 </div>			</div>
+</div>	<div class="chapter" id="_gdpr">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">10</span>GDPR					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>Dieses Plugin verwendet Cookies für die nachfolgend beschriebenen Zwecke:</p>
+</div><table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 16%;"/>
+<col style="width: 16%;"/>
+<col style="width: 16%;"/>
+<col style="width: 16%;"/>
+<col style="width: 33%;"/>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Zweck</th>
+<th class="tableblock halign-left valign-top">Dauer</th>
+<th class="tableblock halign-left valign-top">Herkunft</th>
+<th class="tableblock halign-left valign-top">Beschreibung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>postfinancecheckoutNewUi</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Funktional</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Dauerhaft (10 Jahre)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PostFinance Checkout</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Umschalter für die UI-Version des PostFinance Checkout-Händlerportals (alte vs. neue Oberfläche). Wird bei jeder Anmeldung automatisch anhand der gespeicherten Präferenz des Benutzers gesetzt und kann vom Benutzer umgeschaltet werden. HttpOnly, Secure bei HTTPS.</p></td>
+</tr>
+</tbody>
+</table>					</div>
 </div>	<div class="chapter" id="_änderungsprotokoll">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">10</span>Änderungsprotokoll					</h1>
+			<span class="title-number">11</span>Änderungsprotokoll					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -858,7 +893,7 @@ A: Ja, das Plugin unterstützt Wallets wie Apple Pay.</p>
 </div>	<div class="chapter" id="_mitwirken">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">11</span>Mitwirken					</h1>
+			<span class="title-number">12</span>Mitwirken					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -869,7 +904,7 @@ A: Ja, das Plugin unterstützt Wallets wie Apple Pay.</p>
 </div>	<div class="chapter" id="_support">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">12</span>Support					</h1>
+			<span class="title-number">13</span>Support					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -1047,18 +1082,23 @@ A: Ja, das Plugin unterstützt Wallets wie Apple Pay.</p>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
-	<a href="#_änderungsprotokoll">
+	<a href="#_gdpr">
 		<span class="item-number">10</span>
+		<span class="item-title">GDPR</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#_änderungsprotokoll">
+		<span class="item-number">11</span>
 		<span class="item-title">Änderungsprotokoll</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_mitwirken">
-		<span class="item-number">11</span>
+		<span class="item-number">12</span>
 		<span class="item-title">Mitwirken</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_support">
-		<span class="item-number">12</span>
+		<span class="item-number">13</span>
 		<span class="item-title">Support</span>
 			</a>
     </li>			</ul>
