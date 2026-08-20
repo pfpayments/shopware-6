@@ -18,6 +18,7 @@ use Shopware\Core\{
 };
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
 
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -105,6 +106,14 @@ class TransactionPayload extends AbstractPayload
     protected OrderEntity $order;
 
     /**
+     * Technical custom field name => resolved label. Lazily loaded and cached
+     * for the lifetime of this payload instance.
+     *
+     * @var array<string, string>|null
+     */
+    protected ?array $productCustomFieldLabels = null;
+
+    /**
      * @var int
      */
     protected $transactionId;
@@ -147,6 +156,7 @@ class TransactionPayload extends AbstractPayload
         $criteria = new Criteria([$orderId]);
         $criteria
             ->addAssociation('lineItems')
+            ->addAssociation('lineItems.product')
             ->addAssociation('orderCustomer')
             ->addAssociation('transactions')
             ->addAssociation('currency')
@@ -567,6 +577,11 @@ class TransactionPayload extends AbstractPayload
         }
 
 
+        $customFieldAttributes = $this->getProductCustomFieldAttributes($shopLineItem);
+        if (!empty($customFieldAttributes)) {
+            $productAttributes = array_merge($productAttributes ?? [], $customFieldAttributes);
+        }
+
         if (!empty($productAttributes)) {
             $lineItem->setAttributes($productAttributes);
         }
@@ -641,6 +656,138 @@ class TransactionPayload extends AbstractPayload
         }
 
         return empty($productAttributes) ? null : $productAttributes;
+    }
+
+    /**
+     * @param \Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity $shopLineItem
+     *
+     * @return array
+     */
+    protected function getProductCustomFieldAttributes(OrderLineItemEntity $shopLineItem): array
+    {
+        $productAttributes = [];
+
+        // Opt-in behaviour: custom fields are only transmitted when explicitly allow-listed.
+        $allowList = $this->settings->getProductCustomFieldsAllowList();
+        if (empty($allowList)) {
+            return $productAttributes;
+        }
+
+        $customFields = [];
+        $product = $shopLineItem->getProduct();
+        if ($product !== null) {
+            $customFields = $product->getTranslation('customFields') ?? $product->getCustomFields() ?? [];
+        }
+
+        $lineItemPayload = $shopLineItem->getPayload();
+        if (is_array($lineItemPayload) && !empty($lineItemPayload['customFields']) && is_array($lineItemPayload['customFields'])) {
+            $customFields = array_merge($customFields, $lineItemPayload['customFields']);
+        }
+
+        $customFields = array_intersect_key($customFields, array_flip($allowList));
+
+        foreach ($customFields as $fieldName => $fieldValue) {
+            $value = $this->stringifyCustomFieldValue($fieldValue);
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $label = $this->getProductCustomFieldLabel((string) $fieldName);
+
+            $lineItemAttributeCreate = (new LineItemAttributeCreate())
+                ->setLabel($this->fixLength($label, 512))
+                ->setValue($this->fixLength($value, 512));
+
+            if ($lineItemAttributeCreate->valid()) {
+                $key = $this->fixLength('customField_' . md5((string)$fieldName), 40);
+                $productAttributes[$key] = $lineItemAttributeCreate;
+            } else {
+                $this->logger->critical('LineItemAttributeCreate payload invalid:', $lineItemAttributeCreate->listInvalidProperties());
+                throw new InvalidPayloadException('LineItemAttributeCreate payload invalid:' . json_encode($lineItemAttributeCreate->listInvalidProperties()));
+            }
+        }
+
+        return $productAttributes;
+    }
+
+    /**
+     * Resolves the human-readable label of a product custom field for the current
+     * sales channel language. Falls back to en-GB and finally to the technical
+     * field name itself if no label is configured.
+     *
+     * @param string $fieldName
+     *
+     * @return string
+     */
+    protected function getProductCustomFieldLabel(string $fieldName): string
+    {
+        if ($this->productCustomFieldLabels === null) {
+            $this->productCustomFieldLabels = $this->loadProductCustomFieldLabels();
+        }
+
+        return $this->productCustomFieldLabels[$fieldName] ?? $fieldName;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function loadProductCustomFieldLabels(): array
+    {
+        $allowList = $this->settings->getProductCustomFieldsAllowList();
+        if (empty($allowList)) {
+            return [];
+        }
+
+        $locale = $this->localeCodeProvider->getLocaleCodeFromContext($this->salesChannelContext->getContext());
+
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsAnyFilter('name', $allowList));
+
+        $customFields = $this->container->get('custom_field.repository')
+            ->search($criteria, $this->salesChannelContext->getContext())
+            ->getEntities();
+
+        $labels = [];
+        foreach ($customFields as $customField) {
+            $config = $customField->getConfig() ?? [];
+            $labelConfig = $config['label'] ?? [];
+
+            $labels[$customField->getName()] = $labelConfig[$locale]
+                ?? $labelConfig['en-GB']
+                ?? $customField->getName();
+        }
+
+        return $labels;
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return string|null
+     */
+    protected function stringifyCustomFieldValue($value): ?string
+    {
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+
+        if (is_scalar($value)) {
+            return trim((string)$value);
+        }
+
+        if (is_array($value)) {
+            $parts = [];
+            foreach ($value as $item) {
+                $part = $this->stringifyCustomFieldValue($item);
+                if ($part === null || $part === '') {
+                    return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: null;
+                }
+                $parts[] = $part;
+            }
+            return implode(', ', $parts);
+        }
+
+        return null;
     }
 
     /**
@@ -878,6 +1025,31 @@ class TransactionPayload extends AbstractPayload
             $postalState = $customerAddressEntity?->getCountryState()?->getShortCode() ?? '';
         }
 
+        // Street incl. additional address lines - the SDK AddressCreate has no dedicated
+        // field for them, so they are appended to the (multi-line capable) street field.
+        $streetLines = array_filter(
+            [
+                $customerAddressEntity->getStreet(),
+                $customerAddressEntity->getAdditionalAddressLine1(),
+                $customerAddressEntity->getAdditionalAddressLine2(),
+            ],
+            static fn ($line) => $line !== null && trim((string) $line) !== ''
+        );
+        $combinedStreet = implode("\n", $streetLines);
+
+        // AddressCreate::setStreet() rejects values over 300 characters, so the
+        // combined value is always cut to fit. Log it so a truncation (e.g. a very
+        // long additional address line) doesn't silently drop data unnoticed.
+        if (mb_strlen($combinedStreet, 'UTF-8') > 300) {
+            $this->logger->warning(sprintf(
+                'Street plus additional address lines exceed 300 characters (%d) and will be truncated for customer address %s.',
+                mb_strlen($combinedStreet, 'UTF-8'),
+                $customerAddressEntity->getId()
+            ));
+        }
+
+        $street = !empty($streetLines) ? $this->fixLength($combinedStreet, 300) : null;
+
         $addressData = [
             'city' => $customerAddressEntity->getCity() ? $this->fixLength($customerAddressEntity->getCity(), 100) : null,
             'country' => $customerAddressEntity->getCountry() ? $customerAddressEntity->getCountry()->getIso() : null,
@@ -889,7 +1061,7 @@ class TransactionPayload extends AbstractPayload
             'postcode' => $customerAddressEntity->getZipcode() ? $this->fixLength($customerAddressEntity->getZipcode(), 40) : null,
             'postal_state' => $postalState,
             'salutation' => $salutation,
-            'street' => $customerAddressEntity->getStreet() ? $this->fixLength($customerAddressEntity->getStreet(), 300) : null,
+            'street' => $street,
             'birthday' => $birthday
         ];
 

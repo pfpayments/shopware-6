@@ -78,10 +78,13 @@
 			"label": "Cohérence des postes de ligne",
 			"tooltipText": "Si cette option est activée, les totaux des articles dans PostFinanceCheckoutPayment correspondront toujours au total de la commande Shopware."
 		  },
+		  "productCustomFieldsAllowList": {
+			"label": "Champs personnalisés produit (liste blanche)",
+			"tooltipText": "Sélectionnez les champs personnalisés produit qui sont transmis comme attributs de ligne à PostFinance Checkout. Aucune sélection = aucun champ personnalisé n'est transmis."
+		  },
 		  "spaceViewId": {
 			"label": "Space View ID",
-			"tooltipText": "Space View ID"
-		  }
+			"tooltipText": "Space View ID"		  }
 		},
 		"save": "Enregistrer",
 		"storefrontOptions": {

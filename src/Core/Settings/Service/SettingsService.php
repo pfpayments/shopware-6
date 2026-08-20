@@ -29,10 +29,10 @@ class SettingsService {
 	public const CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED  = 'storefrontWebhooksUpdateEnabled';
 	public const CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED  = 'storefrontPaymentsUpdateEnabled';
 	public const CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN     = 'keepFailedPaymentsOrderOpen';
+	public const CONFIG_PRODUCT_CUSTOM_FIELDS_ALLOW_LIST    = 'productCustomFieldsAllowList';
 
 	/**
-	 * List of config properties whose values allowed to be empty without triggering a warning in logger.
-	 * 
+	 * List of config properties whose values allowed to be empty without triggering a warning in logger.	 * 
 	 * This list is derived from testing of all config properties. The plugin fails only when either spaceId, userId, applicationKey and/or integration is empty.
 	 * On top of that, spaceId, userId, applicationKey are marked as "required" input fields in admin interface.
 	 * 
@@ -53,11 +53,13 @@ class SettingsService {
 		// Advanced Options
 		self::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED,
 		self::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED,
-		self::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN
+		self::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN,
+
+		// Line Items
+		self::CONFIG_PRODUCT_CUSTOM_FIELDS_ALLOW_LIST
 	];
 
-	/**
-	 * @var \Shopware\Core\System\SystemConfig\SystemConfigService
+	/**	 * @var \Shopware\Core\System\SystemConfig\SystemConfigService
 	 */
 	private $systemConfigService;
 
