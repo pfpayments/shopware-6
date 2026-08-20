@@ -2,6 +2,7 @@
 
 namespace PostFinanceCheckoutPayment\Core\Storefront\Checkout\Subscriber;
 
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection,
   Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates,
@@ -10,7 +11,6 @@ use Shopware\Core\{Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCol
 use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Page\Account\Order\AccountEditOrderPageLoadedEvent;
-use Shopware\Storefront\Page\Account\PaymentMethod\AccountPaymentMethodPageLoadedEvent;
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Shopware\Storefront\Page\Checkout\Finish\CheckoutFinishPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -20,20 +20,9 @@ use PostFinanceCheckoutPayment\Core\{Api\Transaction\Service\TransactionService,
   Settings\Struct\Settings,
   Util\PaymentMethodUtil};
 use PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService;
-use PostFinanceCheckoutPayment\Sdk\{Model\AddressCreate,
-  Model\ChargeAttempt,
-  Model\CreationEntityState,
-  Model\CriteriaOperator,
-  Model\EntityQuery,
-  Model\EntityQueryFilter,
-  Model\EntityQueryFilterType,
-  Model\LineItemAttributeCreate,
-  Model\LineItemCreate,
-  Model\LineItemType,
-  Model\TaxCreate,
-  Model\Transaction,
-  Model\TransactionCreate,
-  Model\TransactionPending};
+// The previous import block here listed SDK models under PostFinanceCheckoutPayment\Sdk, which is
+// not where the SDK lives - none of them were referenced, so the broken namespace never surfaced.
+use PostFinanceCheckout\Sdk\Model\Transaction;
 use Shopware\Core\Framework\Struct\ArrayEntity;
 
 /**
@@ -70,19 +59,40 @@ class CheckoutSubscriber implements EventSubscriberInterface
     private $paymentMethodUtil;
 
     /**
+     * @var \Psr\Cache\CacheItemPoolInterface
+     * Cache for the API's answer to "which payment methods are possible for this transaction".
+     */
+    private CacheItemPoolInterface $cache;
+
+    /**
+     * @var int
+     * Lifetime of a cached payment method list, in seconds. Zero disables the cache entirely.
+     */
+    private int $possibleMethodsCacheTtl;
+
+    /**
+     * Cache key prefix for the possible payment methods of a transaction.
+     */
+    private const POSSIBLE_METHODS_CACHE_PREFIX = 'pfcn_possible_methods_';
+
+    /**
      * CheckoutSubscriber constructor.
      *
      * @param \PostFinanceCheckoutPayment\Core\Api\PaymentMethodConfiguration\Service\PaymentMethodConfigurationService $paymentMethodConfigurationService
      * @param \PostFinanceCheckoutPayment\Core\Api\Transaction\Service\TransactionService $transactionService
      * @param \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService $settingsService
      * @param \PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil $paymentMethodUtil
+     * @param \Psr\Cache\CacheItemPoolInterface $cache
+     * @param int $possibleMethodsCacheTtl
      */
-    public function __construct(PaymentMethodConfigurationService $paymentMethodConfigurationService, TransactionService $transactionService, SettingsService $settingsService, PaymentMethodUtil $paymentMethodUtil)
+    public function __construct(PaymentMethodConfigurationService $paymentMethodConfigurationService, TransactionService $transactionService, SettingsService $settingsService, PaymentMethodUtil $paymentMethodUtil, CacheItemPoolInterface $cache, int $possibleMethodsCacheTtl)
     {
 		$this->paymentMethodConfigurationService = $paymentMethodConfigurationService;
 		$this->transactionService = $transactionService;
 		$this->settingsService = $settingsService;
 		$this->paymentMethodUtil = $paymentMethodUtil;
+		$this->cache = $cache;
+		$this->possibleMethodsCacheTtl = $possibleMethodsCacheTtl;
     }
 
     /**
@@ -103,9 +113,8 @@ class CheckoutSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-			CheckoutConfirmPageLoadedEvent::class      => 'onCheckoutConfirmLoaded',
-			AccountEditOrderPageLoadedEvent::class     => 'onAccountOrderEditLoaded',
-			AccountPaymentMethodPageLoadedEvent::class => 'onAccountPaymentMethodLoaded',
+			CheckoutConfirmPageLoadedEvent::class  => 'onCheckoutConfirmLoaded',
+			AccountEditOrderPageLoadedEvent::class => 'onAccountOrderEditLoaded',
 			MailBeforeValidateEvent::class => ['onMailBeforeValidate', 1],
         ];
     }
@@ -165,19 +174,8 @@ class CheckoutSubscriber implements EventSubscriberInterface
 	public function onCheckoutConfirmLoaded(CheckoutConfirmPageLoadedEvent $event): void
 	{
 		try {
-			$salesChannelContext = $event->getSalesChannelContext();
-			$settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
-			if (is_null($settings)) {
-				$this->logger->notice('Removing payment methods because settings are invalid');
-				$this->removePostFinanceCheckoutPaymentMethodFromConfirmPage($event);
-			}
-
-			$createdTransactionId = $this->transactionService->createPendingTransaction($salesChannelContext, $event);
-			$this->updateTempTransactionIfNeeded($salesChannelContext, $createdTransactionId);
-
-			$this->getAvailablePaymentMethods($settings, $createdTransactionId, $salesChannelContext);
-			$this->setPossiblePaymentMethods($settings->getSpaceId(), $event);
-		} catch (\Exception $e) {
+			$this->handlePaymentMethodFiltering($event);
+		} catch (\Throwable $e) {
 			$this->logger->error($e->getMessage());
 			$this->removePostFinanceCheckoutPaymentMethodFromConfirmPage($event);
 		}
@@ -188,33 +186,6 @@ class CheckoutSubscriber implements EventSubscriberInterface
 	 * @return void
 	 */
 	public function onAccountOrderEditLoaded(AccountEditOrderPageLoadedEvent $event): void
-	{
-		try {
-			$this->handlePaymentMethodFiltering($event);
-		} catch (\Throwable $e) {
-			$this->logger->error($e->getMessage());
-			$this->removePostFinanceCheckoutPaymentMethodFromConfirmPage($event);
-		}
-	}
-
-	/**
-	 * @param AccountPaymentMethodPageLoadedEvent $event
-	 * @return void
-	 */
-	public function onAccountPaymentMethodLoaded(AccountPaymentMethodPageLoadedEvent $event): void
-	{
-		try {
-			$this->handlePaymentMethodFiltering($event);
-		} catch (\Throwable $e) {
-			$this->logger->error($e->getMessage());
-			$this->removePostFinanceCheckoutPaymentMethodFromConfirmPage($event);
-		}
-	}
-
-	/**
-	 * @param \Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent $event
-	 */
-	public function onConfirmPageLoaded(CheckoutConfirmPageLoadedEvent $event): void
 	{
 		try {
 			$this->handlePaymentMethodFiltering($event);
@@ -239,10 +210,19 @@ class CheckoutSubscriber implements EventSubscriberInterface
 			return;
 		}
 
-		$createdTransactionId = $this->transactionService->createPendingTransaction($salesChannelContext, $event);
-		$this->updateTempTransactionIfNeeded($salesChannelContext, $createdTransactionId);
+		// Resolve the pending transaction once. The returned transaction carries the version, so
+		// neither the update below nor anything else has to read it a second time. It is null when a
+		// transaction was just created, which already carries the current payload.
+		[$createdTransactionId, $pendingTransaction] = $this->transactionService
+		  ->resolvePendingTransaction($salesChannelContext, $event);
 
-		$this->getAvailablePaymentMethods($settings, $createdTransactionId, $salesChannelContext);
+		$fingerprint = $this->updateTempTransactionIfNeeded(
+		  $salesChannelContext,
+		  $createdTransactionId,
+		  $pendingTransaction
+		);
+
+		$this->getAvailablePaymentMethods($settings, $createdTransactionId, $salesChannelContext, $fingerprint);
 		$this->setPossiblePaymentMethods($settings->getSpaceId(), $event);
 	}
 
@@ -260,12 +240,51 @@ class CheckoutSubscriber implements EventSubscriberInterface
 	}
 
 	/**
+	 * Fetches the list of payment methods the portal allows for the pending transaction.
+	 *
+	 * The answer is cached under a key that already covers the space, the integration, the
+	 * transaction and the exact payload the transaction carries. Any change to the address, currency
+	 * or language produces a different key, so the only staleness window is a payment method being
+	 * reconfigured in the portal - which the short TTL bounds.
+	 *
 	 * @param Settings $settings
 	 * @param int $createdTransactionId
+	 * @param SalesChannelContext $salesChannelContext
+	 * @param string $stateFingerprint Fingerprint identifying the payload the transaction carries.
 	 * @return void
 	 */
-	private function getAvailablePaymentMethods(Settings $settings, int $createdTransactionId, SalesChannelContext $salesChannelContext): void
+	private function getAvailablePaymentMethods(
+	  Settings $settings,
+	  int $createdTransactionId,
+	  SalesChannelContext $salesChannelContext,
+	  string $stateFingerprint
+	): void
 	{
+		$cacheItem = null;
+
+		if ($this->possibleMethodsCacheTtl > 0) {
+			$cacheKey = self::POSSIBLE_METHODS_CACHE_PREFIX . hash('sha256', implode('|', [
+				(string) $settings->getSpaceId(),
+				(string) $settings->getIntegration(),
+				(string) $createdTransactionId,
+				$stateFingerprint,
+			]));
+
+			$cacheItem = $this->cache->getItem($cacheKey);
+			if ($cacheItem->isHit()) {
+				$cached = $cacheItem->get();
+				// An empty list is a valid answer, so only the type is checked here.
+				if (is_array($cached)) {
+					$salesChannelContext->getContext()->addExtension(
+					  TransactionService::POSSIBLE_METHODS_EXTENSION,
+					  new ArrayEntity(['ids' => $cached])
+					);
+
+					return;
+				}
+			}
+		}
+
 		$transactionService = $settings->getApiClient()->getTransactionService();
 		$possiblePaymentMethods = $transactionService->fetchPaymentMethods(
 		  $settings->getSpaceId(),
@@ -277,8 +296,14 @@ class CheckoutSubscriber implements EventSubscriberInterface
 			$arrayOfPossibleMethods[] = $possiblePaymentMethod->getId();
 		}
 
+		if ($cacheItem !== null) {
+			$cacheItem->set($arrayOfPossibleMethods);
+			$cacheItem->expiresAfter($this->possibleMethodsCacheTtl);
+			$this->cache->save($cacheItem);
+		}
+
 		$salesChannelContext->getContext()->addExtension(
-		  'possibleMethods',
+		  TransactionService::POSSIBLE_METHODS_EXTENSION,
 		  new ArrayEntity(['ids' => $arrayOfPossibleMethods])
 		);
 	}
@@ -342,39 +367,110 @@ class CheckoutSubscriber implements EventSubscriberInterface
 	}
 
 	/**
+	 * Updates the PostFinanceCheckout transaction when the payload that would be sent differs from
+	 * the one that was last sent for this transaction.
+	 *
+	 * The comparison is a fingerprint over exactly the transmitted fields (currency, language and
+	 * billing address). It is persisted next to the transaction ID, so an unchanged checkout does not
+	 * trigger an update API call on every single page view. The previous implementation hashed the
+	 * whole customer entity, which changes whenever an unrelated association is lazily loaded and
+	 * therefore forced an update on nearly every request.
+	 *
 	 * @param SalesChannelContext $salesChannelContext
 	 * @param int $createdTransactionId
-	 * @return void
+	 * @param Transaction|null $pendingTransaction The transaction as read from the API, providing its
+	 *                                            version. Null when it was just created.
+	 * @return string The fingerprint the transaction now carries.
 	 */
-	private function updateTempTransactionIfNeeded(SalesChannelContext $salesChannelContext, int $createdTransactionId): void
+	private function updateTempTransactionIfNeeded(
+	  SalesChannelContext $salesChannelContext,
+	  int $createdTransactionId,
+	  ?Transaction $pendingTransaction
+	): string
 	{
-		$ctx = $salesChannelContext->getContext();
+		$fingerprint = $this->transactionService->buildTempTransactionFingerprint($salesChannelContext);
 
-		/** @var ArrayEntity|null $ext */
-		$ext = $ctx->getExtension('checkoutState');
+		// A transaction that was just created already carries the current payload, so no update is
+		// due. Record its fingerprint so the next page view does not send a pointless update either.
+		if ($pendingTransaction === null || !$createdTransactionId) {
+			$this->storeCheckoutState($salesChannelContext, $createdTransactionId, $fingerprint);
 
-		$oldAddressHash = $ext instanceof ArrayEntity ? $ext->get('addressHash') : null;
-		$oldCurrency    = $ext instanceof ArrayEntity ? $ext->get('currency') : null;
+			return $fingerprint;
+		}
 
-		$customer    = $salesChannelContext->getCustomer();
-		$addressHash = md5(json_encode((array) $customer));
-		$currency    = $salesChannelContext->getCurrency()->getIsoCode();
+		$previousFingerprint = $this->getFingerprintFromContext($salesChannelContext, $createdTransactionId);
 
-		$needsUpdate = ($oldAddressHash !== $addressHash) || ($oldCurrency !== $currency);
+		if ($previousFingerprint === $fingerprint) {
+			// Nothing the portal knows about has changed - keep the per-request state in sync and skip the call.
+			$this->storeCheckoutState($salesChannelContext, $createdTransactionId, $fingerprint);
 
-		if ($needsUpdate) {
-			if ($createdTransactionId) {
-				$this->transactionService->updateTempTransaction($salesChannelContext, $createdTransactionId);
-			}
+			return $fingerprint;
+		}
 
-			$ctx->addExtension('possibleMethods', new ArrayEntity(['ids' => []]));
-			$ctx->addExtension(
-			  'checkoutState',
-			  new ArrayEntity([
-				'addressHash' => $addressHash,
-				'currency'    => $currency,
-			  ])
+		// Pass the version we already know, so updateTempTransaction() does not read the transaction
+		// again. A missing version falls back to the read, keeping the previous behaviour.
+		$version = $pendingTransaction->getVersion();
+
+		try {
+			$this->transactionService->updateTempTransaction(
+			  $salesChannelContext,
+			  $createdTransactionId,
+			  $version === null ? null : (int) $version
 			);
+		} catch (\Exception $e) {
+			// Reusing the version read earlier widens the window for a concurrent request to bump it
+			// in between, which the portal rejects. Retry once without a version so the SDK re-reads
+			// the current one.
+			$this->transactionService->updateTempTransaction($salesChannelContext, $createdTransactionId);
+		}
+
+		$this->storeCheckoutState($salesChannelContext, $createdTransactionId, $fingerprint);
+
+		return $fingerprint;
+	}
+
+	/**
+	 * Retrieves the fingerprint of the payload last sent for the given transaction, preferring the
+	 * per-request context state over the persisted record.
+	 *
+	 * @param SalesChannelContext $salesChannelContext
+	 * @param int $transactionId
+	 * @return string|null
+	 */
+	private function getFingerprintFromContext(SalesChannelContext $salesChannelContext, int $transactionId): ?string
+	{
+		/** @var ArrayEntity|null $ext */
+		$ext = $salesChannelContext->getContext()->getExtension(TransactionService::CHECKOUT_STATE_EXTENSION);
+		if (
+		  $ext instanceof ArrayEntity
+		  && (int) $ext->get('transactionId') === $transactionId
+		  && $ext->get('fingerprint') !== null
+		) {
+			return (string) $ext->get('fingerprint');
+		}
+
+		return $this->transactionService->getPendingTransactionFingerprint($transactionId);
+	}
+
+	/**
+	 * Stores the checkout state for the remainder of the request and persists the fingerprint.
+	 *
+	 * @param SalesChannelContext $salesChannelContext
+	 * @param int $transactionId
+	 * @param string $fingerprint
+	 */
+	private function storeCheckoutState(SalesChannelContext $salesChannelContext, int $transactionId, string $fingerprint): void
+	{
+		$salesChannelContext->getContext()->addExtension(
+		  TransactionService::CHECKOUT_STATE_EXTENSION,
+		  new ArrayEntity([
+			'transactionId' => $transactionId,
+			'fingerprint'   => $fingerprint,
+		  ])
+		);
+
+		if ($transactionId) {
+			$this->transactionService->storePendingTransactionFingerprint($transactionId, $fingerprint);
 		}
 	}
 
@@ -384,7 +480,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
 	 */
 	private function getAllowedPaymentMethodIds(SalesChannelContext $salesChannelContext): array
 	{
-		$ext = $salesChannelContext->getContext()->getExtension('possibleMethods');
+		$ext = $salesChannelContext->getContext()->getExtension(TransactionService::POSSIBLE_METHODS_EXTENSION);
 		return $ext instanceof ArrayEntity ? ($ext->get('ids') ?? []) : [];
 	}
 }

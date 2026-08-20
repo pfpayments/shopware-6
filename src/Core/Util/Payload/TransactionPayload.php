@@ -339,13 +339,22 @@ class TransactionPayload extends AbstractPayload
             $amount = $this->calculateDiscountAmount($calculatedTax);
 
             $discountName = $discount->getLabel();
+
+            // Truncate the name part only, so the discount id keeps the unique id unique.
+            $uniqueIdPrefix = 'coupon-sku-discount-' . $rate . '-' . $rate . '-';
+            $uniqueIdSuffix = '-' . $discount->getId();
+            $uniqueId = $uniqueIdPrefix . $this->fixLength(
+                    $discountName,
+                    max(1, PayloadLimits::LINE_ITEM_UNIQUE_ID - mb_strlen($uniqueIdPrefix . $uniqueIdSuffix, 'UTF-8'))
+                ) . $uniqueIdSuffix;
+
             $lineItem->setAmountIncludingTax($amount)
-              ->setName(sprintf('DISCOUNT: %s (%s%% tax)', $discount->getLabel(), $rate))
+              ->setName($this->fixLength(sprintf('DISCOUNT: %s (%s%% tax)', $discountName, $rate), PayloadLimits::LINE_ITEM_NAME))
               ->setQuantity(1)
               ->setShippingRequired(false)
-              ->setSku('sku-discount-' . $rate . '-' . $discountName, 200)
+              ->setSku($this->fixLength('sku-discount-' . $rate . '-' . $discountName, PayloadLimits::LINE_ITEM_SKU))
               ->setType(LineItemType::DISCOUNT)
-              ->setUniqueId('coupon-sku-discount-' . $rate . '-' . $rate . '-' . $discountName . '-' . $discount->getId());
+              ->setUniqueId($uniqueId);
 
             $taxRate = new TaxCreate(['title' => 'Discount Tax: ' . $rate, 'rate' => $rate]);
             $lineItem->setTaxes([$taxRate]);
@@ -429,7 +438,7 @@ class TransactionPayload extends AbstractPayload
         if (!empty($payLoad) && !empty($payLoad['productNumber'])) {
             $sku = $payLoad['productNumber'];
         }
-        $sku = $this->fixLength($sku, 200);
+        $sku = $this->fixLength($sku, PayloadLimits::LINE_ITEM_SKU);
         $amount = $shopLineItem->getTotalPrice() ? self::round($shopLineItem->getTotalPrice()) : 0;
 
         //include Tax Excluded for Net Tax display customer group
@@ -438,8 +447,8 @@ class TransactionPayload extends AbstractPayload
         }
 
         $lineItem = (new LineItemCreate())
-            ->setName($this->fixLength($shopLineItem->getLabel(), 150))
-            ->setUniqueId($uniqueId)
+            ->setName($this->fixLength($shopLineItem->getLabel(), PayloadLimits::LINE_ITEM_NAME))
+            ->setUniqueId($this->fixLength($uniqueId, PayloadLimits::LINE_ITEM_UNIQUE_ID))
             ->setSku($sku)
             ->setQuantity($shopLineItem->getQuantity() ?? 1)
             ->setAmountIncludingTax($amount);
@@ -494,7 +503,7 @@ class TransactionPayload extends AbstractPayload
 
             $tax = (new TaxCreate())
                 ->setRate($calculatedTax->getTaxRate())
-                ->setTitle($this->fixLength($title . ' : ' . $calculatedTax->getTaxRate(), 40));
+                ->setTitle($this->fixLength($title . ' : ' . $calculatedTax->getTaxRate(), PayloadLimits::TAX_TITLE));
 
             if (!$tax->valid()) {
                 $this->logger->critical('Tax payload invalid:', $tax->listInvalidProperties());
@@ -522,8 +531,8 @@ class TransactionPayload extends AbstractPayload
 
                 $label = $option['group'];
                 $lineItemAttributeCreate = (new LineItemAttributeCreate())
-                    ->setLabel($this->fixLength($label, 512))
-                    ->setValue($this->fixLength((string)$option['option'], 512));
+                    ->setLabel($this->fixLength($label, PayloadLimits::LINE_ITEM_ATTRIBUTE_LABEL))
+                    ->setValue($this->fixLength((string)$option['option'], PayloadLimits::LINE_ITEM_ATTRIBUTE_VALUE));
 
                 if ($lineItemAttributeCreate->valid()) {
                     $key = $this->fixLength('option_' . md5($label), 40);
@@ -562,13 +571,13 @@ class TransactionPayload extends AbstractPayload
 
                 $lineItem = (new LineItemCreate())
                     ->setAmountIncludingTax($amount)
-                    ->setName($this->fixLength($shippingName . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
+                    ->setName($this->fixLength($shippingName . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), PayloadLimits::LINE_ITEM_NAME))
                     ->setQuantity($this->transaction->getOrder()->getShippingCosts()->getQuantity() ?? 1)
                     ->setTaxes($taxes)
-                    ->setSku($this->fixLength($shippingName . '-Shipping', 200))
+                    ->setSku($this->fixLength($shippingName . '-Shipping', PayloadLimits::LINE_ITEM_SKU))
                     /** @noinspection PhpParamsInspection */
                     ->setType(LineItemType::SHIPPING)
-                    ->setUniqueId($this->fixLength($shippingName . '-Shipping', 200));
+                    ->setUniqueId($this->fixLength($shippingName . '-Shipping', PayloadLimits::LINE_ITEM_UNIQUE_ID));
 
                 if (!$lineItem->valid()) {
                     $this->logger->critical('Shipping LineItem payload invalid:', $lineItem->listInvalidProperties());
@@ -609,12 +618,12 @@ class TransactionPayload extends AbstractPayload
                     $name = $taxRate . '%-' . $shippingName;
                     $lineItem = (new LineItemCreate())
                       ->setAmountIncludingTax($amount)
-                      ->setName($this->fixLength($name . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
+                      ->setName($this->fixLength($name . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), PayloadLimits::LINE_ITEM_NAME))
                       ->setQuantity($this->transaction->getOrder()->getShippingCosts()->getQuantity() ?? 1)
                       ->setTaxes([$tax])
-                      ->setSku($this->fixLength($name . '-Shipping', 200))
+                      ->setSku($this->fixLength($name . '-Shipping', PayloadLimits::LINE_ITEM_SKU))
                       ->setType($isFirst ? LineItemType::SHIPPING : LineItemType::FEE) // First item as SHIPPING, rest as FEE
-                      ->setUniqueId($this->fixLength($name . '-Shipping', 200));
+                      ->setUniqueId($this->fixLength($name . '-Shipping', PayloadLimits::LINE_ITEM_UNIQUE_ID));
 
                     if (!$lineItem->valid()) {
                         $this->logger->critical('Shipping LineItem payload invalid:', $lineItem->listInvalidProperties());
@@ -673,7 +682,7 @@ class TransactionPayload extends AbstractPayload
 
             } else {
                 $lineItem = (new LineItemCreate())
-                    ->setName($this->translator->trans('postfinancecheckout.payload.adjustmentLineItem'))
+                    ->setName($this->fixLength($this->translator->trans('postfinancecheckout.payload.adjustmentLineItem'), PayloadLimits::LINE_ITEM_NAME))
                     ->setUniqueId('Adjustment-Line-Item')
                     ->setSku('Adjustment-Line-Item')
                     ->setQuantity(1);

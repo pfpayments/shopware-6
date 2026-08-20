@@ -1,3 +1,6 @@
+# 6.2.5
+-  Trim line item names that exceed 150 chars to prevent API rejection
+
 # 6.2.4
 - Fixed issue with payment method availability rules being ignored
 

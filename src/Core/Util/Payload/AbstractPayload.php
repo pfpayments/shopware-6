@@ -36,7 +36,7 @@ abstract class AbstractPayload {
 	 */
 	protected function fixLength(string $string, int $maxLength): string
 	{
-		return mb_substr($string, 0, $maxLength, 'UTF-8');
+		return PayloadLimits::fixLength($string, $maxLength);
 	}
 
 	/**

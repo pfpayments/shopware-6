@@ -11,6 +11,8 @@
 			<call method="setLogger">
 				<argument type="service" id="monolog.logger.postfinancecheckout_payment"/>
 			</call>
+			<!-- Clears the per-request locale cache between requests in long running workers. -->
+			<tag name="kernel.reset" method="reset"/>
 		</service>
 
 		<service id="PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil">

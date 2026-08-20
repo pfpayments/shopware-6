@@ -87,10 +87,8 @@ class PostFinanceCheckoutPaymentHandler implements AsynchronousPaymentHandlerInt
         try {
             $redirectUrl = $transaction->getReturnUrl();
             if ($transaction->getOrder()->getAmountTotal() > 0) {
-                $transactionId = $_SESSION['transactionId'] ?? null;
-                if ($transactionId === null) {
-                    $this->transactionService->createPendingTransaction($salesChannelContext);
-                }
+                // create() resolves the pending transaction itself and creates one when it is
+                // missing or no longer usable, so no separate pre-flight call is needed here.
                 $redirectUrl = $this->transactionService->create($transaction, $salesChannelContext);
             }
             return new RedirectResponse($redirectUrl);

@@ -67,6 +67,11 @@ class SettingsService {
 	/**
 	 * SettingsService constructor.
 	 *
+	 * NOTE: settings are deliberately NOT memoized here. Settings::getApiClient() lazily builds and
+	 * holds an SDK ApiClient, and callers mutate that client persistently. Sharing one struct across
+	 * a request would leak such mutations into every later API call. Building a fresh struct is
+	 * cheap; the SDK opens a new connection per call regardless, so there is nothing to reuse.
+	 *
 	 * @param \Shopware\Core\System\SystemConfig\SystemConfigService $systemConfigService
 	 */
 	public function __construct(SystemConfigService $systemConfigService)

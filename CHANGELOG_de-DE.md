@@ -1,3 +1,6 @@
+# 6.2.5
+- Positionsnamen mit mehr als 150 Zeichen werden gekürzt, um API-Ablehnungen zu vermeiden
+
 # 6.2.4
 - Problem behoben, bei dem die Verfügbarkeitsregeln für Zahlungsmethoden ignoriert wurden
 
