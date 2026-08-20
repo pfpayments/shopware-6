@@ -82,11 +82,12 @@
         },
         "productCustomFieldsAllowList": {
           "label": "Product custom fields (allow list)",
-          "tooltipText": "Select the product custom fields that are transmitted as line item attributes to PostFinance Checkout. No selection = no custom fields are transmitted."
+          "tooltipText": "Select the product custom fields that are transmitted as line item attributes to PostFinanceCheckoutPayment. No selection = no custom fields are transmitted."
         },
         "spaceViewId": {
           "label": "Space View ID",
-          "tooltipText": "Space View ID"        }
+          "tooltipText": "Space View ID"
+        }
       },
       "save": "Save",
       "storefrontOptions": {

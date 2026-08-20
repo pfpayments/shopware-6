@@ -44,6 +44,17 @@ class LocaleCodeProvider {
 	private $languageRepository;
 
 	/**
+	 * Per-request cache of resolved locale codes, keyed by language ID.
+	 *
+	 * Resolving a locale is a DAL query. A single checkout request asks for it repeatedly (payload
+	 * fingerprinting, transaction create/update, payment page locale), and the answer cannot change
+	 * within a request. Cleared between requests through the kernel.reset tag.
+	 *
+	 * @var array<string, string>
+	 */
+	private array $localeCodeCache = [];
+
+	/**
 	 * LocaleCodeProvider constructor.
 	 *
 	 * @param \Psr\Container\ContainerInterface                       $container
@@ -77,6 +88,11 @@ class LocaleCodeProvider {
 	{
 		$defaultLocale = self::LOCALE_GREAT_BRITAIN_ENGLISH;
 		$languageId    = $context->getLanguageId();
+
+		if (isset($this->localeCodeCache[$languageId])) {
+			return $this->localeCodeCache[$languageId];
+		}
+
 		/** @var \Shopware\Core\System\Language\LanguageCollection $languageCollection */
 		$languageCollection = $this->languageRepository->search(
 			(new Criteria([$languageId]))->addAssociation('locale'),
@@ -85,10 +101,20 @@ class LocaleCodeProvider {
 
 		$language = $languageCollection->get($languageId);
 		if (is_null($language)) {
-			return $defaultLocale;
+			return $this->localeCodeCache[$languageId] = $defaultLocale;
 		}
 
-		return $language->getLocale() ? $language->getLocale()->getCode() : $defaultLocale;
+		return $this->localeCodeCache[$languageId] = ($language->getLocale() ? $language->getLocale()->getCode() : $defaultLocale);
+	}
+
+	/**
+	 * Drops the per-request locale cache.
+	 *
+	 * Invoked by Symfony between requests via the kernel.reset tag.
+	 */
+	public function reset(): void
+	{
+		$this->localeCodeCache = [];
 	}
 
 	/**

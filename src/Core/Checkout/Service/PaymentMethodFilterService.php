@@ -13,6 +13,7 @@ use PostFinanceCheckoutPayment\Core\Checkout\PaymentHandler\PostFinanceCheckoutP
 use PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService;
 use PostFinanceCheckoutPayment\Core\Util\PaymentMethodUtil;
 use Shopware\Core\Framework\Struct\ArrayEntity;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -63,12 +64,41 @@ class PaymentMethodFilterService
     private CartService $cartService;
 
     /**
+     * @var CacheItemPoolInterface
+     * Cache for the API's answer to "which payment methods are possible for this transaction".
+     */
+    private CacheItemPoolInterface $cache;
+
+    /**
+     * @var int
+     * Lifetime of a cached payment method list, in seconds. Zero disables the cache entirely.
+     */
+    private int $possibleMethodsCacheTtl;
+
+    /**
+     * Per-request cache of the payment method configurations, keyed by space ID.
+     *
+     * The confirm page builds the filtered collection on both of its filter passes; without this the
+     * same DAL query ran twice. Cleared between requests through the kernel.reset tag.
+     *
+     * @var array<string, array>
+     */
+    private array $paymentMethodConfigurationCache = [];
+
+    /**
+     * Cache key prefix for the possible payment methods of a transaction.
+     */
+    private const POSSIBLE_METHODS_CACHE_PREFIX = 'pfcn_possible_methods_';
+
+    /**
      * @param SettingsService $settingsService
      * @param TransactionService $transactionService
      * @param PaymentMethodConfigurationService $paymentMethodConfigurationService
      * @param PaymentMethodUtil $paymentMethodUtil
      * @param TransactionManagementService $transactionManagementService
      * @param CartService $cartService
+     * @param CacheItemPoolInterface $cache
+     * @param int $possibleMethodsCacheTtl
      */
     public function __construct(
         SettingsService $settingsService,
@@ -76,7 +106,9 @@ class PaymentMethodFilterService
         PaymentMethodConfigurationService $paymentMethodConfigurationService,
         PaymentMethodUtil $paymentMethodUtil,
         TransactionManagementService $transactionManagementService,
-        CartService $cartService
+        CartService $cartService,
+        CacheItemPoolInterface $cache,
+        int $possibleMethodsCacheTtl
     ) {
         $this->settingsService = $settingsService;
         $this->transactionService = $transactionService;
@@ -84,6 +116,18 @@ class PaymentMethodFilterService
         $this->paymentMethodUtil = $paymentMethodUtil;
         $this->transactionManagementService = $transactionManagementService;
         $this->cartService = $cartService;
+        $this->cache = $cache;
+        $this->possibleMethodsCacheTtl = $possibleMethodsCacheTtl;
+    }
+
+    /**
+     * Drops the per-request caches.
+     *
+     * Invoked by Symfony between requests via the kernel.reset tag.
+     */
+    public function reset(): void
+    {
+        $this->paymentMethodConfigurationCache = [];
     }
 
     /**
@@ -127,18 +171,100 @@ class PaymentMethodFilterService
             $source = $this->cartService->getCart($salesChannelContext->getToken(), $salesChannelContext);
         }
 
-        // Ensure a pending transaction exists in WhitelabelMachineName for correct filtering,
-        // using the transaction management service for state consistency.
-        $createdTransactionId = $this->transactionManagementService->getOrCreatePendingTransaction($salesChannelContext, $source);
+        $lineItems = $this->transactionService->extractLineItems($source, $salesChannelContext);
 
-        // Update the temporary transaction if customer data has changed.
-        $this->transactionManagementService->updateTempTransactionIfNeeded($salesChannelContext, $createdTransactionId, $source);
+        // The storefront confirm page filters twice per request: once through the store-api payment
+        // method route (via CheckoutGatewayRoute, onlyAvailable=1) and once again from the
+        // CheckoutConfirmPageLoadedEvent subscriber. Both passes see the same Context instance, so a
+        // memo on it lets the second pass reuse the first pass' API results.
+        //
+        // On the "edit order" page the two passes run on different Context instances - the route
+        // pass gets the order context assembled by OrderConverter - so the memo intentionally does
+        // not apply there and both passes keep running against their own source data.
+        $memoKey = $this->buildMemoKey($settings, $salesChannelContext, $lineItems);
+        $allowedIds = $this->readMemoizedAllowedIds($salesChannelContext, $memoKey);
 
-        // Fetch available payment method IDs from WhitelabelMachineName API for this transaction.
-        $allowedIds = $this->fetchAvailablePaymentMethodIds($settings, $createdTransactionId, $salesChannelContext);
+        if ($allowedIds === null) {
+            // Ensure a pending transaction exists and is up to date, then ask the API which methods
+            // it allows. The transaction management service keeps this to one read plus, only when
+            // something actually changed, one update.
+            $transactionId = $this->transactionManagementService->prepareTransaction($salesChannelContext, $source, $lineItems);
 
-        // Return a new collection containing only allowed methods.
+            $allowedIds = $this->fetchAvailablePaymentMethodIds($settings, $transactionId, $memoKey);
+
+            $this->writeMemo($salesChannelContext, $memoKey, $transactionId, $allowedIds);
+        }
+
+        // Return a new collection containing only allowed methods. This always runs, also on a memo
+        // hit: it is what attaches the payment method configuration extension the templates read.
         return $this->buildFilteredCollection($paymentMethodCollection, $allowedIds, $settings->getSpaceId(), $salesChannelContext);
+    }
+
+    /**
+     * Builds the key identifying a filter result within the current request.
+     *
+     * It covers everything that can change the API's answer: the space and integration the question
+     * is asked against, and the checkout payload (currency, language, addresses, line items) the
+     * transaction would be updated with.
+     *
+     * @param mixed $settings The plugin settings.
+     * @param SalesChannelContext $salesChannelContext The context.
+     * @param array $lineItems The line items as they would be sent to the API.
+     * @return string
+     */
+    private function buildMemoKey($settings, SalesChannelContext $salesChannelContext, array $lineItems): string
+    {
+        return hash('sha256', implode('|', [
+            (string) $settings->getSpaceId(),
+            (string) $settings->getIntegration(),
+            $this->transactionService->buildTempTransactionFingerprint($salesChannelContext, $lineItems),
+        ]));
+    }
+
+    /**
+     * Reads the memoized allowed payment method IDs for the current request.
+     *
+     * @param SalesChannelContext $salesChannelContext The context.
+     * @param string $memoKey The key the memo must match.
+     * @return string[]|null The allowed IDs, or null when there is no usable memo. An empty array is
+     *                       a valid result meaning "the API allows nothing" and is not a miss.
+     */
+    private function readMemoizedAllowedIds(SalesChannelContext $salesChannelContext, string $memoKey): ?array
+    {
+        /** @var ArrayEntity|null $memo */
+        $memo = $salesChannelContext->getContext()->getExtension(TransactionService::FILTER_MEMO_EXTENSION);
+
+        if (!$memo instanceof ArrayEntity || $memo->get('key') !== $memoKey) {
+            return null;
+        }
+
+        $allowedIds = $memo->get('allowedIds');
+
+        return is_array($allowedIds) ? $allowedIds : null;
+    }
+
+    /**
+     * Memoizes a filter result for the remainder of the request.
+     *
+     * @param SalesChannelContext $salesChannelContext The context.
+     * @param string $memoKey The key this result is valid for.
+     * @param int $transactionId The transaction the result was fetched for.
+     * @param string[] $allowedIds The allowed payment method configuration IDs.
+     */
+    private function writeMemo(
+        SalesChannelContext $salesChannelContext,
+        string $memoKey,
+        int $transactionId,
+        array $allowedIds
+    ): void {
+        $salesChannelContext->getContext()->addExtension(
+            TransactionService::FILTER_MEMO_EXTENSION,
+            new ArrayEntity([
+                'key'           => $memoKey,
+                'transactionId' => $transactionId,
+                'allowedIds'    => $allowedIds,
+            ])
+        );
     }
 
     /**
@@ -162,16 +288,37 @@ class PaymentMethodFilterService
     /**
      * Fetches the list of allowed payment method IDs from the WhitelabelMachineName API.
      *
+     * The answer is cached across requests under a key that already covers the space, the
+     * integration, the transaction and the exact payload the transaction carries. Any change to the
+     * cart, address, currency or language produces a different key, so the only staleness window is
+     * a payment method being reconfigured in the portal - which the short TTL bounds.
+     *
      * @param mixed $settings The plugin settings.
      * @param int $createdTransactionId The WhitelabelMachineName transaction ID.
-     * @param SalesChannelContext $salesChannelContext The context.
+     * @param string $stateKey Key identifying the checkout state the transaction carries.
      * @return string[] Array of allowed payment method configuration IDs.
      */
     private function fetchAvailablePaymentMethodIds(
         $settings,
         int $createdTransactionId,
-        SalesChannelContext $salesChannelContext
+        string $stateKey
     ): array {
+        $cacheItem = null;
+
+        if ($this->possibleMethodsCacheTtl > 0) {
+            $cacheItem = $this->cache->getItem(
+                self::POSSIBLE_METHODS_CACHE_PREFIX . $stateKey . '_' . $createdTransactionId
+            );
+
+            if ($cacheItem->isHit()) {
+                $cached = $cacheItem->get();
+                // An empty list is a valid answer, so only the type is checked here.
+                if (is_array($cached)) {
+                    return $cached;
+                }
+            }
+        }
+
         $transactionService = $settings->getApiClient()->getTransactionService();
         $possiblePaymentMethods = $transactionService->fetchPaymentMethods(
             $settings->getSpaceId(),
@@ -184,11 +331,11 @@ class PaymentMethodFilterService
             $arrayOfPossibleMethods[] = (string) $possiblePaymentMethod->getId();
         }
 
-        // Store the allowed IDs in context extension for later use.
-        $salesChannelContext->getContext()->addExtension(
-            'possibleMethods',
-            new ArrayEntity(['ids' => $arrayOfPossibleMethods])
-        );
+        if ($cacheItem !== null) {
+            $cacheItem->set($arrayOfPossibleMethods);
+            $cacheItem->expiresAfter($this->possibleMethodsCacheTtl);
+            $this->cache->save($cacheItem);
+        }
 
         return $arrayOfPossibleMethods;
     }
@@ -212,9 +359,22 @@ class PaymentMethodFilterService
         int $spaceId,
         SalesChannelContext $salesChannelContext
     ): PaymentMethodCollection {
-        // Fetch all WhitelabelMachineName payment method configurations for the space.
-        $paymentMethodConfigurations = $this->paymentMethodConfigurationService
-            ->getAllPaymentMethodConfigurations($spaceId, $salesChannelContext->getContext());
+        // Fetch all WhitelabelMachineName payment method configurations for the space. Memoized for
+        // the request, since the confirm page builds the collection on both filter passes.
+        //
+        // The key includes the language and version, because the result is a DAL search whose
+        // translations and entity version depend on them: the edit order page runs its two passes
+        // with different Contexts (the route pass gets the order context assembled by
+        // OrderConverter), so keying on the space alone would hand pass 2 entities resolved in the
+        // wrong language.
+        $context = $salesChannelContext->getContext();
+        $configurationCacheKey = $spaceId . '_' . $context->getLanguageId() . '_' . $context->getVersionId();
+
+        if (!isset($this->paymentMethodConfigurationCache[$configurationCacheKey])) {
+            $this->paymentMethodConfigurationCache[$configurationCacheKey] = $this->paymentMethodConfigurationService
+                ->getAllPaymentMethodConfigurations($spaceId, $context);
+        }
+        $paymentMethodConfigurations = $this->paymentMethodConfigurationCache[$configurationCacheKey];
 
         // Build a map of Shopware payment method ID => configuration for methods allowed by the API.
         $allowedWLConfigByPmId = [];

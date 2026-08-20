@@ -17,8 +17,8 @@ use Shopware\Core\{
     System\SalesChannel\SalesChannelContext
 };
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
 
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -43,8 +43,9 @@ use PostFinanceCheckoutPayment\Core\{
     Settings\Struct\Settings,
     Util\Exception\InvalidPayloadException,
     Util\LocaleCodeProvider,
+    Util\Payload\CustomFields\ProductCustomFieldAttributeService,
     Util\Payload\CustomProducts\CustomProductsLineItems,
-    Util\Payload\CustomProducts\CustomProductsLineItemTypes
+    Util\Payload\CustomProducts\CustomProductsLineItemTypes,
 };
 
 use Shopware\Core\System\SystemConfig\SystemConfigService;
@@ -106,17 +107,19 @@ class TransactionPayload extends AbstractPayload
     protected OrderEntity $order;
 
     /**
+     * @var int
+     */
+    protected $transactionId;
+
+    protected $productCustomFieldAttributes = null;
+
+    /**
      * Technical custom field name => resolved label. Lazily loaded and cached
      * for the lifetime of this payload instance.
      *
      * @var array<string, string>|null
      */
     protected ?array $productCustomFieldLabels = null;
-
-    /**
-     * @var int
-     */
-    protected $transactionId;
 
     public function setTransactionId(int $transactionId): void
     {
@@ -163,6 +166,17 @@ class TransactionPayload extends AbstractPayload
         ;
 
         $this->order = $this->container->get('order.repository')->search($criteria, $this->salesChannelContext->getContext())->getEntities()->first();
+
+        if (!empty($this->settings->getProductCustomFieldsAllowList())) {
+            $this->productCustomFieldAttributes = new ProductCustomFieldAttributeService(
+                $this->container,
+                $this->logger,
+                $this->salesChannelContext,
+                $this->localeCodeProvider,
+                $this->order,
+                $this->settings->getProductCustomFieldsAllowList()
+            );
+        }
     }
 
     /**
@@ -426,13 +440,21 @@ class TransactionPayload extends AbstractPayload
 
         $roundedAmount = self::round($amount);
 
+        // Truncate the name part only, so the discount id keeps the unique id unique.
+        $uniqueIdPrefix = 'coupon-';
+        $uniqueIdSuffix = '-' . $discountId;
+        $uniqueId = $uniqueIdPrefix . $this->fixLength(
+                $discountSkuName,
+                max(1, PayloadLimits::LINE_ITEM_UNIQUE_ID - mb_strlen($uniqueIdPrefix . $uniqueIdSuffix, 'UTF-8'))
+            ) . $uniqueIdSuffix;
+
         $lineItem->setAmountIncludingTax($roundedAmount)
-            ->setName($discountTitle)
+            ->setName($this->fixLength($discountTitle, PayloadLimits::LINE_ITEM_NAME))
             ->setQuantity(1)
             ->setShippingRequired(false)
-            ->setSku($discountSkuName, 200)
+            ->setSku($this->fixLength($discountSkuName, PayloadLimits::LINE_ITEM_SKU))
             ->setType(LineItemType::DISCOUNT)
-            ->setUniqueId('coupon-' . $discountSkuName . '-' . $discountId);
+            ->setUniqueId($uniqueId);
 
         $taxRate = new TaxCreate([
             'title' => 'Discount Tax: ' . $rate,
@@ -540,7 +562,7 @@ class TransactionPayload extends AbstractPayload
         if (!empty($payLoad) && !empty($payLoad['productNumber'])) {
             $sku = $payLoad['productNumber'];
         }
-        $sku = $this->fixLength($sku, 200);
+        $sku = $this->fixLength($sku, PayloadLimits::LINE_ITEM_SKU);
 
         $amount = $shopLineItem->getTotalPrice() ? self::round($shopLineItem->getTotalPrice()) : 0;
 
@@ -552,8 +574,8 @@ class TransactionPayload extends AbstractPayload
         $roundedAmount = self::round($amount);
 
         $lineItem = (new LineItemCreate())
-            ->setName($this->fixLength($shopLineItem->getLabel(), 150))
-            ->setUniqueId($uniqueId)
+            ->setName($this->fixLength($shopLineItem->getLabel(), PayloadLimits::LINE_ITEM_NAME))
+            ->setUniqueId($this->fixLength($uniqueId, PayloadLimits::LINE_ITEM_UNIQUE_ID))
             ->setSku($sku)
             ->setQuantity($shopLineItem->getQuantity() ?? 1)
             ->setAmountIncludingTax($roundedAmount);
@@ -576,10 +598,13 @@ class TransactionPayload extends AbstractPayload
             );
         }
 
-
-        $customFieldAttributes = $this->getProductCustomFieldAttributes($shopLineItem);
-        if (!empty($customFieldAttributes)) {
-            $productAttributes = array_merge($productAttributes ?? [], $customFieldAttributes);
+        if (!empty($this->settings->getProductCustomFieldsAllowList()) && $this->productCustomFieldAttributes !== null) {
+            $customFieldAttributes = [];
+            $this->productCustomFieldAttributes->setLogger($this->logger);
+            $customFieldAttributes = $this->productCustomFieldAttributes->buildProductCustomFieldAttributes()[$shopLineItem->getId()] ?? [];
+            if (!empty($customFieldAttributes)) {
+                $productAttributes = array_merge($productAttributes ?? [], $customFieldAttributes);
+            }
         }
 
         if (!empty($productAttributes)) {
@@ -614,7 +639,7 @@ class TransactionPayload extends AbstractPayload
 
             $tax = (new TaxCreate())
                 ->setRate($calculatedTax->getTaxRate())
-                ->setTitle($this->fixLength($title . ' : ' . $calculatedTax->getTaxRate(), 40));
+                ->setTitle($this->fixLength($title . ' : ' . $calculatedTax->getTaxRate(), PayloadLimits::TAX_TITLE));
 
             if (!$tax->valid()) {
                 $this->logger->critical('Tax payload invalid:', $tax->listInvalidProperties());
@@ -642,8 +667,8 @@ class TransactionPayload extends AbstractPayload
 
                 $label = $option['group'];
                 $lineItemAttributeCreate = (new LineItemAttributeCreate())
-                    ->setLabel($this->fixLength($label, 512))
-                    ->setValue($this->fixLength((string)$option['option'], 512));
+                    ->setLabel($this->fixLength($label, PayloadLimits::LINE_ITEM_ATTRIBUTE_LABEL))
+                    ->setValue($this->fixLength((string)$option['option'], PayloadLimits::LINE_ITEM_ATTRIBUTE_VALUE));
 
                 if ($lineItemAttributeCreate->valid()) {
                     $key = $this->fixLength('option_' . md5($label), 40);
@@ -656,138 +681,6 @@ class TransactionPayload extends AbstractPayload
         }
 
         return empty($productAttributes) ? null : $productAttributes;
-    }
-
-    /**
-     * @param \Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity $shopLineItem
-     *
-     * @return array
-     */
-    protected function getProductCustomFieldAttributes(OrderLineItemEntity $shopLineItem): array
-    {
-        $productAttributes = [];
-
-        // Opt-in behaviour: custom fields are only transmitted when explicitly allow-listed.
-        $allowList = $this->settings->getProductCustomFieldsAllowList();
-        if (empty($allowList)) {
-            return $productAttributes;
-        }
-
-        $customFields = [];
-        $product = $shopLineItem->getProduct();
-        if ($product !== null) {
-            $customFields = $product->getTranslation('customFields') ?? $product->getCustomFields() ?? [];
-        }
-
-        $lineItemPayload = $shopLineItem->getPayload();
-        if (is_array($lineItemPayload) && !empty($lineItemPayload['customFields']) && is_array($lineItemPayload['customFields'])) {
-            $customFields = array_merge($customFields, $lineItemPayload['customFields']);
-        }
-
-        $customFields = array_intersect_key($customFields, array_flip($allowList));
-
-        foreach ($customFields as $fieldName => $fieldValue) {
-            $value = $this->stringifyCustomFieldValue($fieldValue);
-            if ($value === null || $value === '') {
-                continue;
-            }
-
-            $label = $this->getProductCustomFieldLabel((string) $fieldName);
-
-            $lineItemAttributeCreate = (new LineItemAttributeCreate())
-                ->setLabel($this->fixLength($label, 512))
-                ->setValue($this->fixLength($value, 512));
-
-            if ($lineItemAttributeCreate->valid()) {
-                $key = $this->fixLength('customField_' . md5((string)$fieldName), 40);
-                $productAttributes[$key] = $lineItemAttributeCreate;
-            } else {
-                $this->logger->critical('LineItemAttributeCreate payload invalid:', $lineItemAttributeCreate->listInvalidProperties());
-                throw new InvalidPayloadException('LineItemAttributeCreate payload invalid:' . json_encode($lineItemAttributeCreate->listInvalidProperties()));
-            }
-        }
-
-        return $productAttributes;
-    }
-
-    /**
-     * Resolves the human-readable label of a product custom field for the current
-     * sales channel language. Falls back to en-GB and finally to the technical
-     * field name itself if no label is configured.
-     *
-     * @param string $fieldName
-     *
-     * @return string
-     */
-    protected function getProductCustomFieldLabel(string $fieldName): string
-    {
-        if ($this->productCustomFieldLabels === null) {
-            $this->productCustomFieldLabels = $this->loadProductCustomFieldLabels();
-        }
-
-        return $this->productCustomFieldLabels[$fieldName] ?? $fieldName;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function loadProductCustomFieldLabels(): array
-    {
-        $allowList = $this->settings->getProductCustomFieldsAllowList();
-        if (empty($allowList)) {
-            return [];
-        }
-
-        $locale = $this->localeCodeProvider->getLocaleCodeFromContext($this->salesChannelContext->getContext());
-
-        $criteria = new Criteria();
-        $criteria->addFilter(new EqualsAnyFilter('name', $allowList));
-
-        $customFields = $this->container->get('custom_field.repository')
-            ->search($criteria, $this->salesChannelContext->getContext())
-            ->getEntities();
-
-        $labels = [];
-        foreach ($customFields as $customField) {
-            $config = $customField->getConfig() ?? [];
-            $labelConfig = $config['label'] ?? [];
-
-            $labels[$customField->getName()] = $labelConfig[$locale]
-                ?? $labelConfig['en-GB']
-                ?? $customField->getName();
-        }
-
-        return $labels;
-    }
-
-    /**
-     * @param mixed $value
-     *
-     * @return string|null
-     */
-    protected function stringifyCustomFieldValue($value): ?string
-    {
-        if (is_bool($value)) {
-            return $value ? 'true' : 'false';
-        }
-
-        if (is_scalar($value)) {
-            return trim((string)$value);
-        }
-
-        if (is_array($value)) {
-            $parts = [];
-            foreach ($value as $item) {
-                $part = $this->stringifyCustomFieldValue($item);
-                if ($part === null || $part === '') {
-                    return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: null;
-                }
-                $parts[] = $part;
-            }
-            return implode(', ', $parts);
-        }
-
-        return null;
     }
 
     /**
@@ -815,12 +708,12 @@ class TransactionPayload extends AbstractPayload
 
                 $lineItem = (new LineItemCreate())
                     ->setAmountIncludingTax($roundedAmount)
-                    ->setName($this->fixLength($shippingName . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
+                    ->setName($this->fixLength($shippingName . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), PayloadLimits::LINE_ITEM_NAME))
                     ->setQuantity($this->order->getShippingCosts()->getQuantity() ?? 1)
-                    ->setSku($this->fixLength($shippingName . '-Shipping', 200))
+                    ->setSku($this->fixLength($shippingName . '-Shipping', PayloadLimits::LINE_ITEM_SKU))
                     /** @noinspection PhpParamsInspection */
                     ->setType(LineItemType::SHIPPING)
-                    ->setUniqueId($this->fixLength($shippingName . '-Shipping', 200));
+                    ->setUniqueId($this->fixLength($shippingName . '-Shipping', PayloadLimits::LINE_ITEM_UNIQUE_ID));
 
                 if ($this->order->getTaxStatus() !== 'tax-free') {
                     $lineItem->setTaxes($taxes);
@@ -866,11 +759,11 @@ class TransactionPayload extends AbstractPayload
                     $name = $taxRate . '%-' . $shippingName;
                     $lineItem = (new LineItemCreate())
                         ->setAmountIncludingTax($roundedAmount)
-                        ->setName($this->fixLength($name . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), 150))
+                        ->setName($this->fixLength($name . ' ' . $this->translator->trans('postfinancecheckout.payload.shipping.lineItem'), PayloadLimits::LINE_ITEM_NAME))
                         ->setQuantity($this->order->getShippingCosts()->getQuantity() ?? 1)
-                        ->setSku($this->fixLength($name . '-Shipping', 200))
+                        ->setSku($this->fixLength($name . '-Shipping', PayloadLimits::LINE_ITEM_SKU))
                         ->setType($isFirst ? LineItemType::SHIPPING : LineItemType::FEE) // First item as SHIPPING, rest as FEE
-                        ->setUniqueId($this->fixLength($name . '-Shipping', 200));
+                        ->setUniqueId($this->fixLength($name . '-Shipping', PayloadLimits::LINE_ITEM_UNIQUE_ID));
 
                     if ($this->order->getTaxStatus() !== 'tax-free') {
                         $lineItem->setTaxes([$tax]);
@@ -930,7 +823,7 @@ class TransactionPayload extends AbstractPayload
                 throw new \Exception($error);
             } else {
                 $lineItem = (new LineItemCreate())
-                    ->setName($this->translator->trans('postfinancecheckout.payload.adjustmentLineItem'))
+                    ->setName($this->fixLength($this->translator->trans('postfinancecheckout.payload.adjustmentLineItem'), PayloadLimits::LINE_ITEM_NAME))
                     ->setUniqueId('Adjustment-Line-Item')
                     ->setSku('Adjustment-Line-Item')
                     ->setQuantity(1);

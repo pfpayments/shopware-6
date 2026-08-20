@@ -14,7 +14,6 @@ use Shopware\Core\{
 use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Page\Account\Order\AccountEditOrderPageLoadedEvent;
-use Shopware\Storefront\Page\Account\PaymentMethod\AccountPaymentMethodPageLoadedEvent;
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use PostFinanceCheckoutPayment\Core\Checkout\PaymentHandler\PostFinanceCheckoutPaymentHandler;
@@ -79,9 +78,8 @@ class CheckoutSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            CheckoutConfirmPageLoadedEvent::class      => 'onPageLoaded',
-            AccountEditOrderPageLoadedEvent::class     => 'onPageLoaded',
-            AccountPaymentMethodPageLoadedEvent::class => 'onPageLoaded',
+            CheckoutConfirmPageLoadedEvent::class  => 'onPageLoaded',
+            AccountEditOrderPageLoadedEvent::class => 'onPageLoaded',
             "subscription." . CheckoutConfirmPageLoadedEvent::class => ['onPageLoaded', 1],
             MailBeforeValidateEvent::class => ['onMailBeforeValidate', 1],
         ];
@@ -110,14 +108,18 @@ class CheckoutSubscriber implements EventSubscriberInterface
             // Update the page with the filtered list.
             $event->getPage()->setPaymentMethods($filteredCollection);
 
-            // If we are on a checkout or account page and have a pending transaction, provide integration data.
-            $transactionId = $salesChannelContext->getContext()->getExtension('postfinancecheckout_transaction_id');
-            if ($transactionId) {
-                $paymentConfig = $this->paymentIntegrationService->getConfigForTransaction(
-                    (int) $transactionId->getVars()['value'],
-                    $salesChannelContext
-                );
-                $event->getPage()->addExtension('postFinanceCheckoutData', $paymentConfig);
+            // Provide the integration data the confirm page JS needs (SDK script URLs and the cart
+            // recreate / checkout URLs). Without it the storefront plugin cannot find #checkoutUrl
+            // and silently gives up, leaving the iframe/lightbox payment form unrendered.
+            //
+            // Restricted to the confirm page on purpose: it is the only page whose templates read
+            // this extension, and for the iframe and lightbox integrations building the script URL
+            // costs an API round trip.
+            if ($event instanceof CheckoutConfirmPageLoadedEvent) {
+                $paymentConfig = $this->paymentIntegrationService->getConfigForCheckoutPage($salesChannelContext);
+                if ($paymentConfig !== null) {
+                    $event->getPage()->addExtension('postFinanceCheckoutData', $paymentConfig);
+                }
             }
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());

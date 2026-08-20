@@ -80,7 +80,7 @@
 		},
 		"productCustomFieldsAllowList": {
 		  "label": "Campi personalizzati prodotto (allow list)",
-		  "tooltipText": "Selezionare i campi personalizzati del prodotto che vengono trasmessi come attributi di posizione a PostFinance Checkout. Nessuna selezione = nessun campo personalizzato viene trasmesso."
+		  "tooltipText": "Selezionare i campi personalizzati del prodotto che vengono trasmessi come attributi di posizione a PostFinanceCheckoutPayment. Nessuna selezione = nessun campo personalizzato viene trasmesso."
 		},
 		"spaceViewId": {
 		  "label": "ID della vista spazio",

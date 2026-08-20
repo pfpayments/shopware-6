@@ -49,11 +49,11 @@ use PostFinanceCheckoutPayment\Core\{
     Settings\Service\SettingsService,
     Util\LocaleCodeProvider,
     Util\Payload\CustomProducts\CustomProductsLineItemTypes,
+    Util\Payload\PayloadLimits,
     Util\Payload\TransactionPayload,
     Util\Analytics\Analytics
 };
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
-use Shopware\Core\Framework\Struct\ArrayEntity;
 use Shopware\Commercial\Subscription\Framework\Struct\SubscriptionContextStruct;
 
 /**
@@ -88,6 +88,27 @@ class TransactionService
      * @var CacheItemPoolInterface
      */
     private CacheItemPoolInterface $cache;
+
+    /**
+     * Context extension holding the per-request checkout state (pending transaction ID and the
+     * fingerprint of the payload last sent to the portal).
+     */
+    public const CHECKOUT_STATE_EXTENSION = 'checkoutState';
+
+    /**
+     * Context extension holding the memoized payment method filter result for the current request.
+     */
+    public const FILTER_MEMO_EXTENSION = 'postfinancecheckout_filter_memo';
+
+    /**
+     * Cache key prefix for the persisted pending transaction record.
+     */
+    private const PENDING_TRANSACTION_CACHE_PREFIX = 'pfcn_pending_transaction_v2_';
+
+    /**
+     * Lifetime of the pending transaction record, matching a typical cart lifetime.
+     */
+    private const PENDING_TRANSACTION_CACHE_TTL = 7200;
 
     const CARD_HOLDER_KEY = '1456765000789';
     const PSEUDO_CODE_KEY = '1485172176673';
@@ -175,7 +196,9 @@ class TransactionService
         // Create a new transaction if we don't have a valid pending one.
         if ($pendingTransaction === null) {
             $this->clearTransactionIdFromContext($salesChannelContext);
-            $pendingTransactionId = $this->createPendingTransaction($salesChannelContext);
+            // The stored ID was just cleared, so go straight to creation instead of letting
+            // createPendingTransaction() repeat the lookup we already did above.
+            $pendingTransactionId = $this->createTransaction($salesChannelContext);
             $pendingTransaction = $this->read($pendingTransactionId, $salesChannelId);
         }
 
@@ -229,20 +252,16 @@ class TransactionService
             $orderTransaction->getOrder()->getSalesChannelId()
         );
 
-        $salesChannelContext->getContext()->addExtension(
-            'checkoutState',
-            new ArrayEntity([
-                'transactionId' => null,
-                'addressHash'   => null,
-                'currency'      => null,
-            ])
-        );
+        // The pending transaction has just been confirmed and is no longer reusable. Drop the
+        // per-request checkout state and the filter memo so nothing downstream in this request
+        // keeps filtering against the consumed transaction.
+        $salesChannelContext->getContext()->removeExtension(self::CHECKOUT_STATE_EXTENSION);
+        $salesChannelContext->getContext()->removeExtension(self::FILTER_MEMO_EXTENSION);
 
-        $salesChannelContext->getContext()->addExtension(
-            'possibleMethods',
-            new ArrayEntity(['ids' => []])
-        );
-
+        // Drop the persisted record entirely. The transaction was just confirmed and can never be
+        // reused as a pending one, so keeping its ID would only cost the next checkout a read API
+        // call to rediscover that.
+        $this->clearTransactionIdFromContext($salesChannelContext);
 
         $this->holdDelivery($orderTransaction->getOrder()->getId(), $salesChannelContext->getContext());
 
@@ -579,8 +598,7 @@ class TransactionService
      */
     public function createPendingTransaction(SalesChannelContext $salesChannelContext, $event = null): int
     {
-        $expiredTransaction = true;
-        // Get transaction ID from cache (headless) or session (storefront).
+        // Get transaction ID from the persisted pending transaction record.
         $transactionId = $this->getTransactionIdFromContext($salesChannelContext);
         $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
         if (!$settings) {
@@ -592,74 +610,92 @@ class TransactionService
                 $transactionService = $settings->getApiClient()->getTransactionService();
                 $pendingTransaction = $transactionService->read($settings->getSpaceId(), $transactionId);
                 if ($pendingTransaction->getState() === TransactionState::PENDING) {
-                    $expiredTransaction = false;
+                    return $transactionId;
                 }
             } catch (\Exception $e) {
-                // Transaction may have been deleted, expired, or is invalid - treat as expired.
-                $expiredTransaction = true;
+                // Transaction may have been deleted, expired, or is invalid - fall through and create a new one.
             }
         }
 
-        if (!$transactionId || $expiredTransaction) {
-            $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
+        return $this->createTransaction($salesChannelContext, $event);
+    }
 
-            $customer = $salesChannelContext->getCustomer();
-            if ($customer === null) {
-                throw new \Exception('Customer is required to create a transaction');
-            }
+    /**
+     * Unconditionally creates a new pending transaction in the portal and persists its ID.
+     *
+     * Split out of createPendingTransaction() so callers that already validated the stored
+     * transaction do not pay for a second lookup and a second read API call.
+     *
+     * @param SalesChannelContext $salesChannelContext
+     * @param mixed $event Optional event/cart used to extract line items.
+     * @param array|null $lineItems Pre-extracted line items. Passing them guarantees the created
+     *                              transaction matches the fingerprint the caller calculated.
+     * @return int The newly created transaction ID.
+     * @throws \Exception If settings are not configured or there is no customer.
+     */
+    public function createTransaction(SalesChannelContext $salesChannelContext, $event = null, ?array $lineItems = null): int
+    {
+        $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
+        if (!$settings) {
+            throw new \Exception('Space settings not configured');
+        }
+
+        $customer = $salesChannelContext->getCustomer();
+        if ($customer === null) {
+            throw new \Exception('Customer is required to create a transaction');
+        }
+        if ($lineItems === null) {
             $lineItems = $this->extractLineItems(
                 $event,
                 $salesChannelContext,
             );
-
-            /*
-             * For guest checkouts, the customer ID is set to null rather than an empty string.
-             * This ensures consistency with TransactionPayload which also uses null for guests,
-             * preventing the Portal from treating the difference as an update/change in customer details.
-             */
-            $customerId = null;
-            if ($customer->getGuest() === false) {
-                $customerId = $customer->getCustomerNumber();
-            }
-
-            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-            $homeUrl = $protocol . $_SERVER['HTTP_HOST'];
-            $currency = $salesChannelContext->getCurrency()->getIsoCode();
-
-            $billingAddress = $this->buildAddress($salesChannelContext, $customer->getActiveBillingAddress());
-            $shippingAddress = $this->buildAddress($salesChannelContext, $customer->getActiveShippingAddress());
-
-            if (!$settings) {
-                throw new \Exception('Space settings not configured');
-            }
-
-            $language = $this->localeCodeProvider->getLocaleCodeFromContext($salesChannelContext->getContext());
-
-            $transactionPayload = (new TransactionCreate())
-                ->setBillingAddress($billingAddress)
-                ->setShippingAddress($shippingAddress)
-                ->setLineItems($lineItems)
-                ->setCurrency($currency)
-                ->setLanguage($language)
-                ->setSpaceViewId($settings->getSpaceViewId())
-                ->setAutoConfirmationEnabled(false)
-                ->setChargeRetryEnabled(false)
-                ->setCustomerEmailAddress($customer->getEmail())
-                ->setCustomerId($customerId)
-                ->setSuccessUrl($homeUrl . '?success')
-                ->setFailedUrl($homeUrl . '?fail');
-
-            if ($this->isSubscription($salesChannelContext)) {
-                $transactionPayload->setTokenizationMode(TokenizationMode::FORCE_CREATION);
-            }
-
-            $transactionService = $settings->getApiClient()->getTransactionService();
-            $transaction = $transactionService->create($settings->getSpaceId(), $transactionPayload);
-            $transactionId = $transaction->getId();
-
-            // Store in cache and session for transaction reuse.
-            $this->storeTransactionIdInContext($salesChannelContext, $transactionId);
         }
+
+        /*
+         * For guest checkouts, the customer ID is set to null rather than an empty string.
+         * This ensures consistency with TransactionPayload which also uses null for guests,
+         * preventing the Portal from treating the difference as an update/change in customer details.
+         */
+        $customerId = null;
+        if ($customer->getGuest() === false) {
+            $customerId = $customer->getCustomerNumber();
+        }
+
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+        $homeUrl = $protocol . $_SERVER['HTTP_HOST'];
+        $currency = $salesChannelContext->getCurrency()->getIsoCode();
+
+        $billingAddress = $this->buildAddress($salesChannelContext, $customer->getActiveBillingAddress());
+        $shippingAddress = $this->buildAddress($salesChannelContext, $customer->getActiveShippingAddress());
+
+        $language = $this->localeCodeProvider->getLocaleCodeFromContext($salesChannelContext->getContext());
+
+        $transactionPayload = (new TransactionCreate())
+            ->setBillingAddress($billingAddress)
+            ->setShippingAddress($shippingAddress)
+            ->setLineItems($lineItems)
+            ->setCurrency($currency)
+            ->setLanguage($language)
+            ->setSpaceViewId($settings->getSpaceViewId())
+            ->setAutoConfirmationEnabled(false)
+            ->setChargeRetryEnabled(false)
+            ->setCustomerEmailAddress($customer->getEmail())
+            ->setCustomerId($customerId)
+            ->setSuccessUrl($homeUrl . '?success')
+            ->setFailedUrl($homeUrl . '?fail');
+
+        if ($this->isSubscription($salesChannelContext)) {
+            $transactionPayload->setTokenizationMode(TokenizationMode::FORCE_CREATION);
+        }
+
+        $transactionService = $settings->getApiClient()->getTransactionService();
+        $transaction = $transactionService->create($settings->getSpaceId(), $transactionPayload);
+        $transactionId = (int) $transaction->getId();
+
+        // Persist the ID for reuse. The fingerprint is reset: the freshly created transaction
+        // already carries the current payload, so the next pass must not skip an update based on a
+        // fingerprint that belonged to the previous transaction.
+        $this->storeTransactionIdInContext($salesChannelContext, $transactionId);
 
         return $transactionId;
     }
@@ -667,16 +703,26 @@ class TransactionService
     /**
      * @param SalesChannelContext $salesChannelContext
      * @param int $transactionId
+     * @param array $lineItems
+     * @param int|null $version Version of the transaction as already known by the caller. When given,
+     *                          the redundant read API call is skipped.
      * @return void
      */
-    public function updateTempTransaction(SalesChannelContext $salesChannelContext, int $transactionId, array $lineItems = []): void
-    {
+    public function updateTempTransaction(
+        SalesChannelContext $salesChannelContext,
+        int $transactionId,
+        array $lineItems = [],
+        ?int $version = null
+    ): void {
         $pendingTransaction = new TransactionPending();
         $pendingTransaction->setId($transactionId);
 
         $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
-        $transaction = $settings->getApiClient()->getTransactionService()->read($settings->getSpaceId(), $transactionId);
-        $pendingTransaction->setVersion($transaction->getVersion());
+        if ($version === null) {
+            $transaction = $settings->getApiClient()->getTransactionService()->read($settings->getSpaceId(), $transactionId);
+            $version = $transaction->getVersion();
+        }
+        $pendingTransaction->setVersion($version);
 
         $currency = $salesChannelContext->getCurrency()->getIsoCode();
 
@@ -696,6 +742,94 @@ class TransactionService
 
         $settings->getApiClient()->getTransactionService()
             ->update($settings->getSpaceId(), $pendingTransaction);
+    }
+
+    /**
+     * Builds a fingerprint of the payload updateTempTransaction() would send.
+     *
+     * Covers exactly the fields that are transmitted - currency, language, billing address,
+     * shipping address and line items - so that an unchanged checkout produces an unchanged
+     * fingerprint and the update API call can be skipped. Anything not sent to the portal is
+     * deliberately excluded, so unrelated customer entity changes (last login, lazily loaded
+     * associations) do not invalidate it.
+     *
+     * @param SalesChannelContext $salesChannelContext
+     * @param array $lineItems Line items as they would be sent to the portal.
+     * @param string|null $previousFingerprint Fingerprint of the previous update, used to carry over
+     *                                         the line item part when the current list is empty.
+     * @return string
+     */
+    public function buildTempTransactionFingerprint(
+        SalesChannelContext $salesChannelContext,
+        array $lineItems,
+        ?string $previousFingerprint = null
+    ): string {
+        $customer = $salesChannelContext->getCustomer();
+        $billingAddress = $customer?->getActiveBillingAddress();
+        $shippingAddress = $customer?->getActiveShippingAddress();
+
+        $parts = [
+            (string) $salesChannelContext->getCurrency()->getIsoCode(),
+            (string) $this->localeCodeProvider->getLocaleCodeFromContext($salesChannelContext->getContext()),
+            $billingAddress === null
+                ? 'no-billing-address'
+                : $this->serializeForFingerprint($this->buildAddress($salesChannelContext, $billingAddress)),
+            $shippingAddress === null
+                ? 'no-shipping-address'
+                : $this->serializeForFingerprint($this->buildAddress($salesChannelContext, $shippingAddress)),
+        ];
+
+        // updateTempTransaction() only transmits line items when it has some, so an empty list must
+        // not invalidate the fingerprint - carry over the previous line item hash instead.
+        $lineItemHash = empty($lineItems)
+            ? ($this->extractLineItemFingerprintPart($previousFingerprint) ?? 'no-line-items')
+            : \hash('sha256', $this->serializeForFingerprint($lineItems));
+
+        return \hash('sha256', \implode('|', $parts)) . ':' . $lineItemHash;
+    }
+
+    /**
+     * Returns the line item part of a fingerprint produced by buildTempTransactionFingerprint().
+     *
+     * @param string|null $fingerprint
+     * @return string|null
+     */
+    private function extractLineItemFingerprintPart(?string $fingerprint): ?string
+    {
+        if ($fingerprint === null) {
+            return null;
+        }
+
+        $separatorPosition = \strpos($fingerprint, ':');
+
+        return $separatorPosition === false ? null : \substr($fingerprint, $separatorPosition + 1);
+    }
+
+    /**
+     * Serializes a value deterministically for fingerprinting.
+     *
+     * SDK models keep their data in a protected container and do not implement JsonSerializable, so
+     * json_encode() on them yields "{}". Their __toString() runs the SDK object serializer over the
+     * static property map, which is both complete and stable in ordering.
+     *
+     * @param mixed $value
+     * @return string
+     */
+    private function serializeForFingerprint($value): string
+    {
+        if (\is_array($value)) {
+            return \implode('|', \array_map(fn ($item) => $this->serializeForFingerprint($item), $value));
+        }
+
+        if (\is_object($value)) {
+            return \method_exists($value, '__toString') ? (string) $value : \serialize($value);
+        }
+
+        if (\is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+
+        return (string) $value;
     }
 
     /**
@@ -866,15 +1000,15 @@ class TransactionService
         }
 
         if ($productData instanceof LineItem) {
-            $lineItem->setName($productData->getLabel());
-            $lineItem->setUniqueId($productData->getId());
-            $lineItem->setSku($productData->getReferencedId() ?? $productData->getId());
+            $lineItem->setName($this->fixLength($productData->getLabel(), PayloadLimits::LINE_ITEM_NAME));
+            $lineItem->setUniqueId($this->fixLength($productData->getId(), PayloadLimits::LINE_ITEM_UNIQUE_ID));
+            $lineItem->setSku($this->fixLength($productData->getReferencedId() ?? $productData->getId(), PayloadLimits::LINE_ITEM_SKU));
             $lineItem->setQuantity($productData->getQuantity());
             $lineItem->setAmountIncludingTax($this->round($unit));
         } elseif ($productData instanceof OrderLineItemEntity) {
-            $lineItem->setName($productData->getLabel());
-            $lineItem->setUniqueId($productData->getId());
-            $lineItem->setSku($productData->getProductId() ?? $productData->getIdentifier() ?? $productData->getId());
+            $lineItem->setName($this->fixLength($productData->getLabel(), PayloadLimits::LINE_ITEM_NAME));
+            $lineItem->setUniqueId($this->fixLength($productData->getId(), PayloadLimits::LINE_ITEM_UNIQUE_ID));
+            $lineItem->setSku($this->fixLength($productData->getProductId() ?? $productData->getIdentifier() ?? $productData->getId(), PayloadLimits::LINE_ITEM_SKU));
             $lineItem->setQuantity($productData->getQuantity());
             $lineItem->setAmountIncludingTax($this->round($unit));
         } else {
@@ -965,19 +1099,30 @@ class TransactionService
     }
 
     /**
-     * Generates a cache key for the pending transaction ID.
-     * Uses customer ID for authenticated users, which works for both headless and storefront.
+     * Generates a cache key for the pending transaction record.
+     *
+     * The key is scoped by sales channel *and* customer. The previous implementation keyed on the
+     * customer alone, which made the same customer share one pending transaction across sales
+     * channels.
+     *
+     * Note this still does not separate the cart checkout from the "edit order" flow: the order
+     * context assembled by OrderConverter carries the same sales channel and customer, so both
+     * flows resolve to this key and the later one rewrites the transaction. Scoping by context
+     * token instead is not an option, because OrderConverter mints a random token per page load,
+     * which would create a new portal transaction on every view of the edit order page.
      *
      * @param SalesChannelContext $salesChannelContext
-     * @return string|null
+     * @return string|null Null when there is no customer (no transaction can be created either).
      */
     private function getPendingTransactionCacheKey(SalesChannelContext $salesChannelContext): ?string
     {
         $customer = $salesChannelContext->getCustomer();
-        if ($customer) {
-            return 'pfcn_pending_transaction_id_customer_' . $customer->getId();
+        if (!$customer) {
+            return null;
         }
-        return null;
+
+        return self::PENDING_TRANSACTION_CACHE_PREFIX
+            . $salesChannelContext->getSalesChannelId() . '_' . $customer->getId();
     }
 
     /**
@@ -1001,81 +1146,131 @@ class TransactionService
     }
 
     /**
-     * Retrieves the stored pending transaction ID from cache or session.
-     * Uses customer ID as cache key for headless (stateless) support.
-     * Falls back to a customer-scoped session key for Storefront compatibility.
+     * Reads the persisted pending transaction record.
+     *
+     * @param SalesChannelContext $salesChannelContext
+     * @return array{transactionId: int, fingerprint: string|null}|null
+     */
+    private function readPendingTransactionRecord(SalesChannelContext $salesChannelContext): ?array
+    {
+        $cacheKey = $this->getPendingTransactionCacheKey($salesChannelContext);
+        if (!$cacheKey) {
+            return null;
+        }
+
+        $item = $this->cache->getItem($cacheKey);
+        if (!$item->isHit()) {
+            return null;
+        }
+
+        $value = $item->get();
+        if (!\is_array($value) || empty($value['transactionId'])) {
+            return null;
+        }
+
+        return [
+            'transactionId' => (int) $value['transactionId'],
+            'fingerprint'   => isset($value['fingerprint']) ? (string) $value['fingerprint'] : null,
+        ];
+    }
+
+    /**
+     * Persists the pending transaction record.
+     *
+     * @param SalesChannelContext $salesChannelContext
+     * @param array{transactionId: int, fingerprint: string|null} $record
+     */
+    private function writePendingTransactionRecord(SalesChannelContext $salesChannelContext, array $record): void
+    {
+        $cacheKey = $this->getPendingTransactionCacheKey($salesChannelContext);
+        if (!$cacheKey) {
+            return;
+        }
+
+        $item = $this->cache->getItem($cacheKey);
+        $item->set($record);
+        // Expire after 2 hours to avoid stale data (matching typical cart lifetime).
+        $item->expiresAfter(self::PENDING_TRANSACTION_CACHE_TTL);
+        $this->cache->save($item);
+    }
+
+    /**
+     * Retrieves the stored pending transaction ID.
      *
      * @param SalesChannelContext $salesChannelContext
      * @return int|null The transaction ID if found, otherwise null.
      */
-    private function getTransactionIdFromContext(SalesChannelContext $salesChannelContext): ?int
+    public function getTransactionIdFromContext(SalesChannelContext $salesChannelContext): ?int
     {
-        // Try cache first (for headless/API where session might not persist or be shared).
-        $cacheKey = $this->getPendingTransactionCacheKey($salesChannelContext);
-        if ($cacheKey) {
-            $item = $this->cache->getItem($cacheKey);
-            if ($item->isHit()) {
-                return (int) $item->get();
-            }
-        }
+        $record = $this->readPendingTransactionRecord($salesChannelContext);
 
-        // Fallback to PHP session for traditional Storefront compatibility.
-        $sessionKey = $this->getSessionTransactionKey($salesChannelContext);
-        if ($sessionKey !== null && isset($_SESSION[$sessionKey])) {
-            return (int) $_SESSION[$sessionKey];
-        }
-
-        return null;
+        return $record === null ? null : $record['transactionId'];
     }
 
     /**
-     * Clears the pending transaction ID from cache and session.
+     * Returns the fingerprint of the payload last sent to the portal for the given transaction.
+     *
+     * Deliberately returns null when the persisted record points at a *different* transaction, so a
+     * fingerprint can never be applied to a transaction it was not calculated for.
+     *
+     * @param SalesChannelContext $salesChannelContext
+     * @param int $transactionId
+     * @return string|null
+     */
+    public function getPendingTransactionFingerprint(SalesChannelContext $salesChannelContext, int $transactionId): ?string
+    {
+        $record = $this->readPendingTransactionRecord($salesChannelContext);
+        if ($record === null || $record['transactionId'] !== $transactionId) {
+            return null;
+        }
+
+        return $record['fingerprint'];
+    }
+
+    /**
+     * Stores the fingerprint of the payload that was just sent to the portal.
+     *
+     * @param SalesChannelContext $salesChannelContext
+     * @param int $transactionId
+     * @param string $fingerprint
+     */
+    public function storePendingTransactionFingerprint(
+        SalesChannelContext $salesChannelContext,
+        int $transactionId,
+        string $fingerprint
+    ): void {
+        $this->writePendingTransactionRecord(
+            $salesChannelContext,
+            ['transactionId' => $transactionId, 'fingerprint' => $fingerprint]
+        );
+    }
+
+    /**
+     * Clears the pending transaction record.
      *
      * @param SalesChannelContext $salesChannelContext
      */
     public function clearTransactionIdFromContext(SalesChannelContext $salesChannelContext): void
     {
-        // Clear from cache key.
         $cacheKey = $this->getPendingTransactionCacheKey($salesChannelContext);
         if ($cacheKey) {
             $this->cache->deleteItem($cacheKey);
         }
-
-        // Clear from session.
-        $sessionKey = $this->getSessionTransactionKey($salesChannelContext);
-        if ($sessionKey !== null && isset($_SESSION[$sessionKey])) {
-            unset($_SESSION[$sessionKey]);
-        }
-
-        unset($_SESSION['transactionId']);
     }
 
     /**
-     * Stores the pending transaction ID in cache and session.
-     * This persists in the database (via cache) and works across all request types (Storefront & headless).
+     * Stores the pending transaction ID, discarding any fingerprint that belonged to a previous
+     * transaction.
      *
      * @param SalesChannelContext $salesChannelContext
      * @param int $transactionId
      */
     private function storeTransactionIdInContext(SalesChannelContext $salesChannelContext, int $transactionId): void
     {
-        // Store in cache for headless.
-        $cacheKey = $this->getPendingTransactionCacheKey($salesChannelContext);
-        if ($cacheKey) {
-            $item = $this->cache->getItem($cacheKey);
-            $item->set($transactionId);
-            // Expire after 2 hours to avoid stale data (matching typical cart lifetime).
-            $item->expiresAfter(7200);
-            $this->cache->save($item);
-        }
-
-        // Store in session for Storefront.
-        $sessionKey = $this->getSessionTransactionKey($salesChannelContext);
-        if ($sessionKey !== null) {
-            $_SESSION[$sessionKey] = $transactionId;
-        }
-
-        unset($_SESSION['transactionId']);
+        $this->writePendingTransactionRecord(
+            $salesChannelContext,
+            ['transactionId' => $transactionId, 'fingerprint' => null]
+        );
     }
 
     /**
@@ -1093,8 +1288,8 @@ class TransactionService
 
         $amount = abs($price->getTotalPrice());
 
-        $lineItem->setName($productData->getLabel() ?: 'Discount');
-        $lineItem->setUniqueId('discount-' . $productData->getId());
+        $lineItem->setName($this->fixLength($productData->getLabel() ?: 'Discount', PayloadLimits::LINE_ITEM_NAME));
+        $lineItem->setUniqueId($this->fixLength('discount-' . $productData->getId(), PayloadLimits::LINE_ITEM_UNIQUE_ID));
         $lineItem->setSku('discount');
         $lineItem->setQuantity(1);
         $lineItem->setAmountIncludingTax($this->round($amount));
@@ -1143,18 +1338,18 @@ class TransactionService
 
         $shippingLineItem = new LineItemCreate();
         $shippingLineItem->setAmountIncludingTax($roundedAmount)
-            ->setName($this->fixLength($shippingName . ' ' . ($translator ? $translator->trans('postfinancecheckout.payload.shipping.lineItem') : 'Shipping'), 150))
+            ->setName($this->fixLength($shippingName . ' ' . ($translator ? $translator->trans('postfinancecheckout.payload.shipping.lineItem') : 'Shipping'), PayloadLimits::LINE_ITEM_NAME))
             ->setQuantity($shippingCosts->getQuantity() ?? 1)
-            ->setSku($this->fixLength($shippingName . '-Shipping', 200))
+            ->setSku($this->fixLength($shippingName . '-Shipping', PayloadLimits::LINE_ITEM_SKU))
             ->setType(LineItemType::SHIPPING)
-            ->setUniqueId($this->fixLength($shippingName . '-Shipping', 200));
+            ->setUniqueId($this->fixLength($shippingName . '-Shipping', PayloadLimits::LINE_ITEM_UNIQUE_ID));
 
         if ($taxStatus !== 'tax-free') {
             $taxes = [];
             foreach ($shippingCosts->getCalculatedTaxes() as $calculatedTax) {
                 $tax = (new TaxCreate())
                     ->setRate($calculatedTax->getTaxRate())
-                    ->setTitle($this->fixLength($shippingName . ' : ' . $calculatedTax->getTaxRate(), 40));
+                    ->setTitle($this->fixLength($shippingName . ' : ' . $calculatedTax->getTaxRate(), PayloadLimits::TAX_TITLE));
                 $taxes[] = $tax;
             }
             $shippingLineItem->setTaxes($taxes);
@@ -1166,12 +1361,12 @@ class TransactionService
     /**
      * Fix string length to specific length.
      *
-     * @param string $string
+     * @param string|null $string
      * @param int $maxLength
      * @return string
      */
-    private function fixLength(string $string, int $maxLength): string
+    private function fixLength(?string $string, int $maxLength): string
     {
-        return \mb_substr($string, 0, $maxLength, 'UTF-8');
+        return PayloadLimits::fixLength($string, $maxLength);
     }
 }

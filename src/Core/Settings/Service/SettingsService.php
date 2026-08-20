@@ -32,7 +32,8 @@ class SettingsService {
 	public const CONFIG_PRODUCT_CUSTOM_FIELDS_ALLOW_LIST    = 'productCustomFieldsAllowList';
 
 	/**
-	 * List of config properties whose values allowed to be empty without triggering a warning in logger.	 * 
+	 * List of config properties whose values allowed to be empty without triggering a warning in logger.
+	 * 
 	 * This list is derived from testing of all config properties. The plugin fails only when either spaceId, userId, applicationKey and/or integration is empty.
 	 * On top of that, spaceId, userId, applicationKey are marked as "required" input fields in admin interface.
 	 * 
@@ -59,7 +60,8 @@ class SettingsService {
 		self::CONFIG_PRODUCT_CUSTOM_FIELDS_ALLOW_LIST
 	];
 
-	/**	 * @var \Shopware\Core\System\SystemConfig\SystemConfigService
+	/**
+	 * @var \Shopware\Core\System\SystemConfig\SystemConfigService
 	 */
 	private $systemConfigService;
 
@@ -70,6 +72,13 @@ class SettingsService {
 
 	/**
 	 * SettingsService constructor.
+	 *
+	 * NOTE: settings are deliberately NOT memoized here. Settings::getApiClient() lazily builds and
+	 * holds an SDK ApiClient, and callers mutate that client persistently - see
+	 * TransactionService::createRecurringTransaction(), which stamps a subscription header onto it
+	 * via Analytics::addHeaders(). Sharing one struct across a request would leak that header into
+	 * every later API call. Building a fresh struct is cheap; the SDK opens a new connection per
+	 * call regardless, so there is nothing to reuse.
 	 *
 	 * @param \Shopware\Core\System\SystemConfig\SystemConfigService $systemConfigService
 	 */

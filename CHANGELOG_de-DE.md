@@ -1,3 +1,10 @@
+# 7.3.5
+- Kompatibel mit Shopware 6.7.12.1
+- Problem mit der Warenkorb-Neuerstellung und Weiterleitung beim Verwenden der Zurück-Taste auf der Zahlungsseite behoben
+- Schutz für orderTransactionStateHandler hinzugefügt, um den korrekten Zahlungsstatus sicherzustellen
+- ID-Referenz in disablePaymentMethodCOnfigurations korrigiert
+- Problem mit fehlenden Positionsbildern auf der Zahlungsseite behoben
+
 # 7.3.4
 - Kompatibel mit Shopware 6.7.10.0
 - Problem behoben, bei dem der Warenkorb beim Ändern der Zahlungsmethode verloren ging

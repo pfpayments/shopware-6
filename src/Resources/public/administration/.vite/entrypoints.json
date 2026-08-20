@@ -3,11 +3,11 @@
   "entryPoints": {
     "post-finance-checkout-payment": {
       "css": [
-        "/bundles/postfinancecheckoutpayment/administration/assets/post-finance-checkout-payment-BiqAd7Bt.css"
+        "/bundles/postfinancecheckoutpayment/administration/css/post-finance-checkout-payment.css"
       ],
       "dynamic": [],
       "js": [
-        "/bundles/postfinancecheckoutpayment/administration/assets/post-finance-checkout-payment-DrT4iVNW.js"
+        "/bundles/postfinancecheckoutpayment/administration/js/post-finance-checkout-payment.js"
       ],
       "legacy": false,
       "preload": []
@@ -16,10 +16,10 @@
   "legacy": false,
   "metadatas": {},
   "version": [
-    "7.1.0",
+    "7.0.4",
     7,
-    1,
-    0
+    0,
+    4
   ],
   "viteServer": null
 }

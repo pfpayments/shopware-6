@@ -13,6 +13,7 @@ use Shopware\Core\Framework\Log\Package;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Psr\Log\LoggerInterface;
 use PostFinanceCheckoutPayment\Core\Checkout\Service\PaymentMethodFilterService;
 
 #[Package('checkout')]
@@ -35,6 +36,11 @@ class PaymentMethodRouteDecorator extends AbstractPaymentMethodRoute
     private PaymentMethodFilterService $paymentMethodFilterService;
 
     /**
+     * @var LoggerInterface|null
+     */
+    private ?LoggerInterface $logger = null;
+
+    /**
      * @param AbstractPaymentMethodRoute $decorated
      * @param PaymentMethodFilterService $paymentMethodFilterService
      */
@@ -44,6 +50,14 @@ class PaymentMethodRouteDecorator extends AbstractPaymentMethodRoute
     ) {
         $this->decorated = $decorated;
         $this->paymentMethodFilterService = $paymentMethodFilterService;
+    }
+
+    /**
+     * @param LoggerInterface $logger
+     */
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
     /**
@@ -83,10 +97,18 @@ class PaymentMethodRouteDecorator extends AbstractPaymentMethodRoute
         $paymentMethods = $response->getPaymentMethods();
 
         // Apply WhitelabelMachineName-specific filtering logic via the dedicated service.
-        $filteredCollection = $this->paymentMethodFilterService->filterPaymentMethods(
-            $paymentMethods,
-            $context
-        );
+        // A failure here (API outage, transaction versioning conflict, ...) must not break the route,
+        // so we fall back to the unfiltered list instead of letting the exception surface as a 500.
+        try {
+            $filteredCollection = $this->paymentMethodFilterService->filterPaymentMethods(
+                $paymentMethods,
+                $context
+            );
+        } catch (\Exception $e) {
+            $this->logger?->error($e->getMessage());
+
+            return $response;
+        }
 
         // Return the filtered results as a new response.
         return new PaymentMethodRouteResponse(

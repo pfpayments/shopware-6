@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PostFinanceCheckoutPayment\Core\Checkout\Service;
 
+use Shopware\Core\Framework\Struct\ArrayEntity;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -13,7 +14,6 @@ use PostFinanceCheckoutPayment\Core\Settings\Options\Integration;
 use PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService;
 use PostFinanceCheckoutPayment\Core\Checkout\Struct\PaymentConfigStruct;
 use PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider;
-use PostFinanceCheckout\Sdk\Model\TransactionState;
 
 /**
  * This service provides the consolidated payment configuration needed for the frontend.
@@ -83,25 +83,68 @@ class PaymentIntegrationService
         int $transactionId,
         SalesChannelContext $salesChannelContext
     ): PaymentConfigStruct {
-        $settings = $this->settingsService->getSettings($salesChannelContext->getSalesChannel()->getId());
+        return $this->buildConfig($transactionId, $salesChannelContext, true);
+    }
 
-        // Fetch the transaction details from WhitelabelMachineName API.
-        $postfinancecheckoutTransaction = $settings->getApiClient()->getTransactionService()->read(
-            $settings->getSpaceId(),
-            $transactionId
-        );
+    /**
+     * Builds the integration data the checkout confirm page needs.
+     *
+     * The transaction ID is taken from the payment method filtering that already ran for this
+     * request, so no extra lookup is needed. The possible payment methods are skipped: the confirm
+     * page templates do not read them, and fetching them is an API round trip.
+     *
+     * @param SalesChannelContext $salesChannelContext The context.
+     * @return PaymentConfigStruct|null Null when no transaction was resolved for this request.
+     */
+    public function getConfigForCheckoutPage(SalesChannelContext $salesChannelContext): ?PaymentConfigStruct
+    {
+        /** @var ArrayEntity|null $memo */
+        $memo = $salesChannelContext->getContext()->getExtension(TransactionService::FILTER_MEMO_EXTENSION);
+
+        // No memo means payment method filtering did not run (missing settings, no customer), so
+        // there is no transaction this page could be talking about.
+        if (!$memo instanceof ArrayEntity) {
+            return null;
+        }
+
+        $transactionId = (int) $memo->get('transactionId');
+        if ($transactionId <= 0) {
+            return null;
+        }
+
+        return $this->buildConfig($transactionId, $salesChannelContext, false);
+    }
+
+    /**
+     * Assembles the integration data for a transaction.
+     *
+     * @param int $transactionId The WhitelabelMachineName transaction ID.
+     * @param SalesChannelContext $salesChannelContext The context.
+     * @param bool $withPossiblePaymentMethods Whether to fetch the possible payment methods, which
+     *                                         costs an API round trip.
+     * @return PaymentConfigStruct The consolidated integration data.
+     */
+    private function buildConfig(
+        int $transactionId,
+        SalesChannelContext $salesChannelContext,
+        bool $withPossiblePaymentMethods
+    ): PaymentConfigStruct {
+        $settings = $this->settingsService->getSettings($salesChannelContext->getSalesChannel()->getId());
 
         $localeCode = $this->localeCodeProvider->getLocaleCodeFromContext($salesChannelContext->getContext());
         $paymentPageLocale = $this->localeCodeProvider->mapToPaymentPageLocale($localeCode);
         $javascriptUrl = $this->getTransactionJavaScriptUrl($settings, $transactionId, $paymentPageLocale);
 
-        $possiblePaymentMethods = $settings->getApiClient()
-            ->getTransactionService()
-            ->fetchPaymentMethods(
-                $settings->getSpaceId(),
-                $transactionId,
-                $settings->getIntegration()
-            );
+        $possiblePaymentMethods = [];
+        if ($withPossiblePaymentMethods) {
+            $possiblePaymentMethods = $settings->getApiClient()
+                ->getTransactionService()
+                ->fetchPaymentMethods(
+                    $settings->getSpaceId(),
+                    $transactionId,
+                    $settings->getIntegration()
+                );
+        }
 
         $cartRecreateUrl = $this->router->generate(
             'frontend.checkout.cart.page',

@@ -1,3 +1,10 @@
+# 7.3.5
+- Shopware 6.7.12.1 compatible
+- Fix cart recreation and redirection when back button is used from payment page
+- Added guard for orderTransactionStateHandler to ensure payment is in correct state
+- Fixed id reference in disablePaymentMethodCOnfigurations
+- Fix for missing line item images on payment page
+
 # 7.3.4
 - Shopware 6.7.10.0 compatible
 - Fix for cart being lost when changing payment methods

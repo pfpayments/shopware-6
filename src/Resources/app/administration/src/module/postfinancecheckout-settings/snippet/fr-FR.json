@@ -80,11 +80,12 @@
 		  },
 		  "productCustomFieldsAllowList": {
 			"label": "Champs personnalisés produit (liste blanche)",
-			"tooltipText": "Sélectionnez les champs personnalisés produit qui sont transmis comme attributs de ligne à PostFinance Checkout. Aucune sélection = aucun champ personnalisé n'est transmis."
+			"tooltipText": "Sélectionnez les champs personnalisés produit qui sont transmis comme attributs de ligne à PostFinanceCheckoutPayment. Aucune sélection = aucun champ personnalisé n'est transmis."
 		  },
 		  "spaceViewId": {
 			"label": "Space View ID",
-			"tooltipText": "Space View ID"		  }
+			"tooltipText": "Space View ID"
+		  }
 		},
 		"save": "Enregistrer",
 		"storefrontOptions": {

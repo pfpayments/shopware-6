@@ -23,7 +23,7 @@
 		</a>
 	</li>
 	<li>
-		<a href="https://github.com/pfpayments/shopware-6/releases/tag/7.3.5/">
+		<a href="https://github.com/pfpayments/shopware-6/releases/tag/7.3.6/">
 			Source
 		</a>
 	</li>
@@ -158,10 +158,10 @@ php bin/console plugin:install --activate --clearCache PostFinanceCheckout</code
 </li>
 </ol>
 </div>					</div>
-</div>					<div class="section" id="_via_composer_recommended_2">
+</div>					<div class="section" id="_manuelle_installation">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">4.3</span>Via Composer (Recommended)					</h2>
+			<span class="title-number">4.3</span>Manuelle Installation					</h2>
 	</div>
 	<div class="section-body">
 					<div class="olist arabic">
@@ -878,10 +878,45 @@ A: Das Plugin verwendet die iFrame-Integration, wodurch die PCI-Anforderungen au
 A: Ja, das Plugin unterstützt Wallets wie Apple Pay.</p>
 </div>					</div>
 </div>			</div>
+</div>	<div class="chapter" id="_gdpr">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">10</span>GDPR					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>Dieses Plugin verwendet Cookies für die nachfolgend beschriebenen Zwecke:</p>
+</div><table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 16%;"/>
+<col style="width: 16%;"/>
+<col style="width: 16%;"/>
+<col style="width: 16%;"/>
+<col style="width: 33%;"/>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Zweck</th>
+<th class="tableblock halign-left valign-top">Dauer</th>
+<th class="tableblock halign-left valign-top">Herkunft</th>
+<th class="tableblock halign-left valign-top">Beschreibung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>postfinancecheckoutNewUi</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Funktional</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Dauerhaft (10 Jahre)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PostFinance Checkout</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Umschalter für die UI-Version des PostFinance Checkout-Händlerportals (alte vs. neue Oberfläche). Wird bei jeder Anmeldung automatisch anhand der gespeicherten Präferenz des Benutzers gesetzt und kann vom Benutzer umgeschaltet werden. HttpOnly, Secure bei HTTPS.</p></td>
+</tr>
+</tbody>
+</table>					</div>
 </div>	<div class="chapter" id="_änderungsprotokoll">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">10</span>Änderungsprotokoll					</h1>
+			<span class="title-number">11</span>Änderungsprotokoll					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -890,7 +925,7 @@ A: Ja, das Plugin unterstützt Wallets wie Apple Pay.</p>
 </div>	<div class="chapter" id="_mitwirken">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">11</span>Mitwirken					</h1>
+			<span class="title-number">12</span>Mitwirken					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -901,7 +936,7 @@ A: Ja, das Plugin unterstützt Wallets wie Apple Pay.</p>
 </div>	<div class="chapter" id="_support">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">12</span>Support					</h1>
+			<span class="title-number">13</span>Support					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -946,9 +981,9 @@ A: Ja, das Plugin unterstützt Wallets wie Apple Pay.</p>
 		<span class="item-title">Via Composer (Recommended)</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
-	<a href="#_via_composer_recommended_2">
+	<a href="#_manuelle_installation">
 		<span class="item-number">4.3</span>
-		<span class="item-title">Via Composer (Recommended)</span>
+		<span class="item-title">Manuelle Installation</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_postfinancecheckout_erscheint_nicht_in_den_einstellungen">
@@ -1089,18 +1124,23 @@ A: Ja, das Plugin unterstützt Wallets wie Apple Pay.</p>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
-	<a href="#_änderungsprotokoll">
+	<a href="#_gdpr">
 		<span class="item-number">10</span>
+		<span class="item-title">GDPR</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#_änderungsprotokoll">
+		<span class="item-number">11</span>
 		<span class="item-title">Änderungsprotokoll</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_mitwirken">
-		<span class="item-number">11</span>
+		<span class="item-number">12</span>
 		<span class="item-title">Mitwirken</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_support">
-		<span class="item-number">12</span>
+		<span class="item-number">13</span>
 		<span class="item-title">Support</span>
 			</a>
     </li>			</ul>

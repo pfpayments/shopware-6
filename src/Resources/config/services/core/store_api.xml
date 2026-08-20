@@ -10,6 +10,9 @@
 				 decoration-inner-name="PostFinanceCheckoutPayment\Core\Checkout\PaymentMethod\SalesChannel\PaymentMethodRouteDecorator.inner">
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Checkout\PaymentMethod\SalesChannel\PaymentMethodRouteDecorator.inner"/>
 			<argument type="service" id="PostFinanceCheckoutPayment\Core\Checkout\Service\PaymentMethodFilterService"/>
+			<call method="setLogger">
+				<argument type="service" id="monolog.logger.postfinancecheckout_payment"/>
+			</call>
 		</service>
 
 		<service id="PostFinanceCheckoutPayment\Core\Checkout\StoreApi\Route\WhitelabelMachineNameTransactionInfoRoute">

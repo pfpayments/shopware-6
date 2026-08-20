@@ -80,11 +80,12 @@
 		},
 		"productCustomFieldsAllowList": {
 		  "label": "Produkt-Zusatzfelder (Allow-List)",
-		  "tooltipText": "Wählen Sie die Produkt-Zusatzfelder aus, die als Positions-Attribute an PostFinance Checkout übertragen werden. Keine Auswahl = es werden keine Zusatzfelder übertragen."
+		  "tooltipText": "Wählen Sie die Produkt-Zusatzfelder aus, die als Positions-Attribute an PostFinanceCheckoutPayment übertragen werden. Keine Auswahl = es werden keine Zusatzfelder übertragen."
 		},
 		"spaceViewId": {
 		  "label": "Space View ID",
-		  "tooltipText": "Space View ID"		}
+		  "tooltipText": "Space View ID"
+		}
 	  },
 	  "save": "Speichern",
 	  "storefrontOptions": {

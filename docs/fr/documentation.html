@@ -23,7 +23,7 @@
 		</a>
 	</li>
 	<li>
-		<a href="https://github.com/pfpayments/shopware-6/releases/tag/7.3.5/">
+		<a href="https://github.com/pfpayments/shopware-6/releases/tag/7.3.6/">
 			Source
 		</a>
 	</li>
@@ -152,10 +152,10 @@ php bin/console plugin:install --activate --clearCache PostFinanceCheckout</code
 </li>
 </ol>
 </div>					</div>
-</div>					<div class="section" id="_via_composer_recommended">
+</div>					<div class="section" id="_installation_manuelle">
 	<div class="section-title">
 		<h2>
-			<span class="title-number">4.3</span>Via Composer (Recommended)					</h2>
+			<span class="title-number">4.3</span>Installation Manuelle					</h2>
 	</div>
 	<div class="section-body">
 					<div class="paragraph">
@@ -866,10 +866,45 @@ A: Le plugin utilise l&#8217;intégration iFrame, réduisant les exigences PCI �
 A: Oui, le plugin prend en charge les portefeuilles comme Apple Pay.</p>
 </div>					</div>
 </div>			</div>
+</div>	<div class="chapter" id="_gdpr">
+	<div class="chapter-title">
+		<h1>
+			<span class="title-number">10</span>GDPR					</h1>
+	</div>
+	<div class="chapter-body">
+					<div class="paragraph">
+<p>Ce plugin utilise des cookies aux fins décrites ci-dessous :</p>
+</div><table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 16%;"/>
+<col style="width: 16%;"/>
+<col style="width: 16%;"/>
+<col style="width: 16%;"/>
+<col style="width: 33%;"/>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Nom</th>
+<th class="tableblock halign-left valign-top">Finalité</th>
+<th class="tableblock halign-left valign-top">Durée</th>
+<th class="tableblock halign-left valign-top">Origine</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>postfinancecheckoutNewUi</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Fonctionnel</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Persistant (10 ans)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PostFinance Checkout</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bascule de version de l&#8217;interface du portail marchand PostFinance Checkout (ancienne ou nouvelle interface). Défini automatiquement à chaque connexion selon la préférence enregistrée de l&#8217;utilisateur, et peut être basculé par l&#8217;utilisateur. HttpOnly, Secure en HTTPS.</p></td>
+</tr>
+</tbody>
+</table>					</div>
 </div>	<div class="chapter" id="_changelog">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">10</span>Changelog					</h1>
+			<span class="title-number">11</span>Changelog					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -878,7 +913,7 @@ A: Oui, le plugin prend en charge les portefeuilles comme Apple Pay.</p>
 </div>	<div class="chapter" id="_contribuer">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">11</span>Contribuer					</h1>
+			<span class="title-number">12</span>Contribuer					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -889,7 +924,7 @@ A: Oui, le plugin prend en charge les portefeuilles comme Apple Pay.</p>
 </div>	<div class="chapter" id="_support">
 	<div class="chapter-title">
 		<h1>
-			<span class="title-number">12</span>Support					</h1>
+			<span class="title-number">13</span>Support					</h1>
 	</div>
 	<div class="chapter-body">
 					<div class="paragraph">
@@ -934,9 +969,9 @@ A: Oui, le plugin prend en charge les portefeuilles comme Apple Pay.</p>
 		<span class="item-title">Via Composer (Recommendé)</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
-	<a href="#_via_composer_recommended">
+	<a href="#_installation_manuelle">
 		<span class="item-number">4.3</span>
-		<span class="item-title">Via Composer (Recommended)</span>
+		<span class="item-title">Installation Manuelle</span>
 			</a>
     </li>    		    			<li class="nav-level-2">
 	<a href="#_si_postfinancecheckout_n_apparaît_pas_dans_les_paramètres">
@@ -1077,18 +1112,23 @@ A: Oui, le plugin prend en charge les portefeuilles comme Apple Pay.</p>
 			</a>
     </li>    		    	</ul>
     </li>					<li class="nav-level-1">
-	<a href="#_changelog">
+	<a href="#_gdpr">
 		<span class="item-number">10</span>
+		<span class="item-title">GDPR</span>
+			</a>
+    </li>					<li class="nav-level-1">
+	<a href="#_changelog">
+		<span class="item-number">11</span>
 		<span class="item-title">Changelog</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_contribuer">
-		<span class="item-number">11</span>
+		<span class="item-number">12</span>
 		<span class="item-title">Contribuer</span>
 			</a>
     </li>					<li class="nav-level-1">
 	<a href="#_support">
-		<span class="item-number">12</span>
+		<span class="item-number">13</span>
 		<span class="item-title">Support</span>
 			</a>
     </li>			</ul>
