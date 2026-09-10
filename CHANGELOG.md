@@ -1,3 +1,14 @@
+## Security Update (v 6.2.6)
+- This release addresses a security vulnerability affecting earlier versions of the integration plugin. 
+All merchants are strongly advised to update to version 6.2.6 immediately to ensure the security of their integration.
+
+### What's Changed
+- Security: Resolved an issue that could allow unauthorized access to certain data under specific configurations.
+
+### Required Action
+- Download and install this update as soon as possible. No configuration changes are required after upgrading.
+For full installation instructions or support, please refer to our documentation or reach out to our integration team.
+
 # 6.2.5
 -  Trim line item names that exceed 150 chars to prevent API rejection
 

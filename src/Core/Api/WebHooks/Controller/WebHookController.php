@@ -280,7 +280,7 @@ class WebHookController extends AbstractController {
 	 * @deprecated 6.1.8 No longer used by internal code and not recommended.
 	 * @see WebHookPaymentMethodConfigurationStrategy
 	 */
-	private function updatePaymentMethodConfiguration(Context $context, string $salesChannelId = null): Response
+	private function updatePaymentMethodConfiguration(Context $context, ?string $salesChannelId = null): Response
 	{
 		$result = $this->paymentMethodConfigurationService->setSalesChannelId($salesChannelId)->synchronize($context);
 

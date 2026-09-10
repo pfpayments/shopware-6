@@ -250,8 +250,8 @@ class TransactionService
     public function upsert(
         Transaction $transaction,
         Context     $context,
-        string      $paymentMethodId = null,
-        string      $salesChannelId = null
+        ?string     $paymentMethodId = null,
+        ?string     $salesChannelId = null
     ): void
     {
         try {

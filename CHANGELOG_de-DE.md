@@ -1,3 +1,14 @@
+## Sicherheitsupdate (v 6.2.6)
+- Diese Version behebt eine Sicherheitslücke, die frühere Versionen des Integrations-Plugins betraf.
+Allen Händlern wird dringend empfohlen, sofort auf Version 6.2.6 zu aktualisieren, um die Sicherheit ihrer Integration zu gewährleisten.
+
+### Änderungen
+- Sicherheit: Ein Problem wurde behoben, das unter bestimmten Konfigurationen unbefugten Zugriff auf bestimmte Daten ermöglichen konnte.
+
+### Erforderliche Maßnahmen
+- Laden Sie dieses Update so bald wie möglich herunter und installieren Sie es. Nach dem Upgrade sind keine Konfigurationsänderungen erforderlich.
+Für eine vollständige Installationsanleitung oder bei Fragen wenden Sie sich bitte an unsere Dokumentation oder an unser Integrationsteam.
+
 # 6.2.5
 - Positionsnamen mit mehr als 150 Zeichen werden gekürzt, um API-Ablehnungen zu vermeiden
 
