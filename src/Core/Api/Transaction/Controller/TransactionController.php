@@ -95,8 +95,9 @@ class TransactionController extends AbstractController {
 	}
 
 	/**
-	 * @param string $salesChannelId
-	 * @param int    $transactionId
+	 * @param string                           $salesChannelId
+	 * @param int                              $transactionId
+	 * @param \Shopware\Core\Framework\Context $context
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
@@ -107,11 +108,15 @@ class TransactionController extends AbstractController {
 	 *     "/api/_action/postfinancecheckout/transaction/get-invoice-document/{salesChannelId}/{transactionId}",
 	 *     name="api.action.postfinancecheckout.transaction.get-invoice-document",
 	 *     methods={"GET"},
-	 *     defaults={"csrf_protected"=false, "auth_required"=false}
+	 *     defaults={"_acl"={"order:read"}}
 	 *     )
 	 */
-	public function getInvoiceDocument(string $salesChannelId, int $transactionId): Response
+	public function getInvoiceDocument(string $salesChannelId, int $transactionId, Context $context): Response
 	{
+		if (!$this->isTransactionOfSalesChannel($salesChannelId, $transactionId, $context)) {
+			return $this->documentAccessDenied();
+		}
+
 		$settings  = $this->settingsService->getSettings($salesChannelId);
 		$apiClient = $settings->getApiClient();
 
@@ -131,8 +136,9 @@ class TransactionController extends AbstractController {
 	}
 
 	/**
-	 * @param string $salesChannelId
-	 * @param int    $transactionId
+	 * @param string                           $salesChannelId
+	 * @param int                              $transactionId
+	 * @param \Shopware\Core\Framework\Context $context
 	 *
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 * @throws \PostFinanceCheckout\Sdk\ApiException
@@ -143,11 +149,15 @@ class TransactionController extends AbstractController {
 	 *     "/api/_action/postfinancecheckout/transaction/get-packing-slip/{salesChannelId}/{transactionId}",
 	 *     name="api.action.postfinancecheckout.transaction.get-packing-slip",
 	 *     methods={"GET"},
-	 *     defaults={"csrf_protected"=false, "auth_required"=false}
+	 *     defaults={"_acl"={"order:read"}}
 	 *     )
 	 */
-	public function getPackingSlip(string $salesChannelId, int $transactionId): Response
+	public function getPackingSlip(string $salesChannelId, int $transactionId, Context $context): Response
 	{
+		if (!$this->isTransactionOfSalesChannel($salesChannelId, $transactionId, $context)) {
+			return $this->documentAccessDenied();
+		}
+
 		$settings  = $this->settingsService->getSettings($salesChannelId);
 		$apiClient = $settings->getApiClient();
 
@@ -166,5 +176,47 @@ class TransactionController extends AbstractController {
 		$response->headers->set('Content-Disposition', $disposition);
 
 		return $response;
+	}
+
+	/**
+	 * Checks that the requested document really belongs to the given sales channel.
+	 *
+	 * The transaction id is sequential and the sales channel id is attacker controlled, so
+	 * authentication alone is not enough: without this lookup any caller could iterate the
+	 * ids and pull documents that are not covered by the sales channel they asked for.
+	 *
+	 * @param string                           $salesChannelId
+	 * @param int                              $transactionId
+	 * @param \Shopware\Core\Framework\Context $context
+	 *
+	 * @return bool
+	 */
+	private function isTransactionOfSalesChannel(string $salesChannelId, int $transactionId, Context $context): bool
+	{
+		try {
+			$transaction = $this->transactionService->getByTransactionId($transactionId, $context);
+		} catch (\Exception $exception) {
+			$this->logger->error(__CLASS__ . ' : ' . __FUNCTION__ . ' : ' . $exception->getMessage());
+
+			return false;
+		}
+
+		return $transaction !== null && $transaction->getSalesChannelId() === $salesChannelId;
+	}
+
+	/**
+	 * Uniform rejection for documents the caller may not read.
+	 *
+	 * The same response is used for "unknown transaction" and "wrong sales channel" so the
+	 * endpoint cannot be used to probe which transaction ids exist.
+	 *
+	 * @return \Symfony\Component\HttpFoundation\JsonResponse
+	 */
+	private function documentAccessDenied(): JsonResponse
+	{
+		return new JsonResponse(
+			['error' => 'The requested document is not available for this sales channel.'],
+			Response::HTTP_FORBIDDEN
+		);
 	}
 }

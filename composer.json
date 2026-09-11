@@ -57,10 +57,10 @@
         "ext-json": "*",
         "ext-mbstring": "*",
         "php": ">=7.4",
-        "postfinancecheckout/sdk": "4.5.0",
+        "postfinancecheckout/sdk": "4.9.1",
         "shopware/core": "6.5.*",
         "shopware/storefront": "6.5.*"
     },
     "type": "shopware-platform-plugin",
-    "version": "5.0.15"
+    "version": "5.0.17"
 }

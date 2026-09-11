@@ -1,3 +1,17 @@
+## Security Update (v5.0.17)
+This release addresses a security vulnerability affecting earlier versions of the integration plugin. 
+All merchants are strongly advised to update to v5.0.17 immediately to ensure the security of their integration.
+
+## What's Changed
+• Security: Resolved an issue that could allow unauthorized access to certain data under specific configurations.
+
+## Required Action
+Download and install this update as soon as possible. No configuration changes are required after upgrading.
+For full installation instructions or support, please refer to our documentation or reach out to our integration team.
+
+# 5.0.16
+- Incorporate headless support
+
 # 5.0.15
 - Fix for duplicate payment methods in the database
 - Fix for SDK install issue
