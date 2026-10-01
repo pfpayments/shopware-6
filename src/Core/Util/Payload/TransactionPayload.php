@@ -396,8 +396,14 @@ class TransactionPayload extends AbstractPayload
         $discountName = $discount->getLabel() ?? 'Unnamed';
         $definition = $discount->getPriceDefinition();
 
-        if ($this->order->getTaxStatus() === 'net' || $definition instanceof \Shopware\Core\Checkout\Cart\Price\Struct\AbsolutePriceDefinition) {
-            $calculatedTaxesCollection = $calculatedPrice->getCalculatedTaxes();
+        $calculatedTaxesCollection = $calculatedPrice->getCalculatedTaxes();
+
+        // Calculated taxes hold the discount already split per tax rate, also for percentage discounts
+        if (
+            $this->order->getTaxStatus() === 'net'
+            || $definition instanceof \Shopware\Core\Checkout\Cart\Price\Struct\AbsolutePriceDefinition
+            || $calculatedTaxesCollection->count() > 0
+        ) {
             foreach ($calculatedTaxesCollection as $calculatedTax) {
                 $rate = $calculatedTax->getTaxRate();
                 $amount = $this->calculateDiscountAmount($calculatedTax);
