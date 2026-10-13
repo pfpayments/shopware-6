@@ -1,6 +1,10 @@
+# 7.4.0
+- Kompatibilitätsproblem mit MySQL 8.4 und bestimmten Fremdschlüsseln behoben
+- - Dies beinhaltet eine kompatibilitätsbrechende Änderung. Es ist unbedingt erforderlich, dass die Migrationen nach der Aktualisierung des Plugins ausgeführt werden. Dies kann entweder über die Shopware-Erweiterungsoberfläche (auf „Aktualisieren“ klicken) oder über die Befehlszeile (`console plugin:update`) erfolgen. 
+
 ## Sicherheitsupdate (v 7.3.7)
 - Diese Version behebt eine Sicherheitslücke, die frühere Versionen des Integrations-Plugins betraf.
-Allen Händlern wird dringend empfohlen, sofort auf Version x.x.x zu aktualisieren, um die Sicherheit ihrer Integration zu gewährleisten.
+Allen Händlern wird dringend empfohlen, sofort auf Version 7.3.7 zu aktualisieren, um die Sicherheit ihrer Integration zu gewährleisten.
 
 ### Änderungen
 - Sicherheit: Ein Problem wurde behoben, das unter bestimmten Konfigurationen unbefugten Zugriff auf bestimmte Daten ermöglichen konnte.

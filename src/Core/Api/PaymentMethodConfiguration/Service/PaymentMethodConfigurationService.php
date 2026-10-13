@@ -13,6 +13,7 @@ use Shopware\Core\{
 	Framework\DataAbstractionLayer\EntityRepository,
 	Framework\DataAbstractionLayer\Search\Criteria,
 	Framework\DataAbstractionLayer\Search\EntitySearchResult,
+	Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter,
 	Framework\DataAbstractionLayer\Search\Filter\EqualsFilter,
 	Framework\Plugin\Util\PluginIdProvider,
 	Framework\Uuid\Uuid};
@@ -344,6 +345,9 @@ class PaymentMethodConfigurationService {
 		$paymentMethodConfigurations = $this->getPaymentMethodConfigurations();
 		$this->logger->debug('Updating payment methods', $paymentMethodConfigurations);
 
+		$syncedConfigurationIds = [];
+		$syncedPaymentMethodIds = [];
+
 		foreach ($paymentMethodConfigurations as $paymentMethodConfiguration) {
 			$entity = $this->getPaymentMethodConfigurationEntity(
 			  $paymentMethodConfiguration->getSpaceId(),
@@ -375,9 +379,64 @@ class PaymentMethodConfigurationService {
 				$this->container
 				  ->get(PaymentMethodConfigurationEntityDefinition::ENTITY_NAME . '.repository')
 				  ->upsert([$data], $context);
+
+				$syncedConfigurationIds[] = (int) $paymentMethodConfiguration->getId();
+				$syncedPaymentMethodIds[$paymentMethodId] = $paymentMethodId;
 			} catch (\Exception $e) {
 				$this->logger->error($e->getMessage(), [$e->getTraceAsString()]);
 			}
+		}
+
+		$this->removeStalePaymentMethodConfigurations($syncedPaymentMethodIds, $syncedConfigurationIds, $context);
+	}
+
+	/**
+	 * Drops configuration rows that share a payment method with a configuration just synced from the
+	 * portal, but no longer exist there themselves.
+	 *
+	 * A payment method deleted in the portal and recreated under the same name reuses the existing
+	 * Shopware payment method, so the row of the deleted configuration stays behind pointing at the
+	 * same payment method. Leaving it there means checkout can pick the deleted configuration and the
+	 * portal rejects the transaction confirmation ("The entity with id … is deleted"). Only rows that
+	 * the portal no longer reports are removed, so a configuration merely disabled for this sync run
+	 * is kept.
+	 *
+	 * @param string[]                         $syncedPaymentMethodIds
+	 * @param int[]                            $syncedConfigurationIds
+	 * @param \Shopware\Core\Framework\Context $context
+	 */
+	private function removeStalePaymentMethodConfigurations(
+		array $syncedPaymentMethodIds,
+		array $syncedConfigurationIds,
+		Context $context
+	): void {
+		if (empty($syncedPaymentMethodIds)) {
+			return;
+		}
+
+		$criteria = (new Criteria())
+			->addFilter(new EqualsFilter('spaceId', $this->getSpaceId()))
+			->addFilter(new EqualsAnyFilter('paymentMethodId', array_values($syncedPaymentMethodIds)));
+
+		try {
+			$configurations = $this->postFinanceCheckoutPaymentMethodConfigurationRepository
+				->search($criteria, $context)
+				->getEntities();
+
+			$stale = [];
+			foreach ($configurations as $configuration) {
+				if (in_array((int) $configuration->getPaymentMethodConfigurationId(), $syncedConfigurationIds, true)) {
+					continue;
+				}
+				$stale[] = ['id' => $configuration->getId()];
+			}
+
+			if (!empty($stale)) {
+				$this->logger->info('Removing stale payment method configurations', $stale);
+				$this->postFinanceCheckoutPaymentMethodConfigurationRepository->delete($stale, $context);
+			}
+		} catch (\Exception $e) {
+			$this->logger->error($e->getMessage(), [$e->getTraceAsString()]);
 		}
 	}
 

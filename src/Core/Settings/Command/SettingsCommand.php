@@ -21,6 +21,36 @@ use PostFinanceCheckoutPayment\Core\{
 class SettingsCommand extends Command {
 
 	/**
+	 * Every setting this command can write, in the order they are declared in configure().
+	 */
+	private const SETTINGS = [
+		SettingsService::CONFIG_APPLICATION_KEY,
+		SettingsService::CONFIG_SPACE_ID,
+		SettingsService::CONFIG_USER_ID,
+		SettingsService::CONFIG_EMAIL_ENABLED,
+		SettingsService::CONFIG_INTEGRATION,
+		SettingsService::CONFIG_LINE_ITEM_CONSISTENCY_ENABLED,
+		SettingsService::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN,
+		SettingsService::CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED,
+		SettingsService::CONFIG_SPACE_VIEW_ID,
+		SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED,
+		SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED,
+	];
+
+	/**
+	 * Settings stored as a boolean. Passed on the command line they arrive as a string, and
+	 * "false" or "off" would be stored as a truthy value without normalising them first.
+	 */
+	private const BOOLEAN_SETTINGS = [
+		SettingsService::CONFIG_EMAIL_ENABLED,
+		SettingsService::CONFIG_LINE_ITEM_CONSISTENCY_ENABLED,
+		SettingsService::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN,
+		SettingsService::CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED,
+		SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED,
+		SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED,
+	];
+
+	/**
 	 * @var \PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService
 	 */
 	protected $settingsService;
@@ -43,19 +73,31 @@ class SettingsCommand extends Command {
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$output->writeln('Set PostFinanceCheckoutPayment settings...');
-		$this->settingsService->updateSettings([
-			SettingsService::CONFIG_APPLICATION_KEY                     => $input->getOption(SettingsService::CONFIG_APPLICATION_KEY),
-			SettingsService::CONFIG_EMAIL_ENABLED                       => $input->getOption(SettingsService::CONFIG_EMAIL_ENABLED),
-			SettingsService::CONFIG_INTEGRATION                         => $input->getOption(SettingsService::CONFIG_INTEGRATION),
-			SettingsService::CONFIG_LINE_ITEM_CONSISTENCY_ENABLED       => $input->getOption(SettingsService::CONFIG_LINE_ITEM_CONSISTENCY_ENABLED),
-			SettingsService::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN     => $input->getOption(SettingsService::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN),
-			SettingsService::CONFIG_SPACE_ID                            => $input->getOption(SettingsService::CONFIG_SPACE_ID),
-			SettingsService::CONFIG_SPACE_VIEW_ID                       => $input->getOption(SettingsService::CONFIG_SPACE_VIEW_ID),
-			SettingsService::CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED => $input->getOption(SettingsService::CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED),
-			SettingsService::CONFIG_USER_ID                             => $input->getOption(SettingsService::CONFIG_USER_ID),
-			SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED  => $input->getOption(SettingsService::CONFIG_STOREFRONT_WEBHOOKS_UPDATE_ENABLED),
-			SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED  => $input->getOption(SettingsService::CONFIG_STOREFRONT_PAYMENTS_UPDATE_ENABLED),
-		]);
+
+		// Only settings that were actually passed are written. Storing the default of every
+		// option would record it as a merchant choice: it makes the defaults of the
+		// administration UI unreachable, because those only apply while the key is absent
+		// from the configuration, and it lets a second run overwrite saved values.
+		$settings = [];
+		foreach (self::SETTINGS as $setting) {
+			if (!$input->hasParameterOption(['--' . $setting, '-' . $setting])) {
+				continue;
+			}
+
+			$value = $input->getOption($setting);
+			if (in_array($setting, self::BOOLEAN_SETTINGS, true)) {
+				$value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+			}
+
+			$settings[$setting] = $value;
+		}
+
+		if (empty($settings)) {
+			$output->writeln('No settings were passed, nothing to update.');
+			return Command::SUCCESS;
+		}
+
+		$this->settingsService->updateSettings($settings);
 		return Command::SUCCESS;
 	}
 
@@ -110,7 +152,8 @@ class SettingsCommand extends Command {
 				 SettingsService::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN,
 				 InputOption::VALUE_OPTIONAL,
 				 SettingsService::CONFIG_KEEP_FAILED_PAYMENTS_ORDER_OPEN,
-				 true
+				 // Keeping a failed payment's order open is off by default, as in the administration UI.
+				 false
 			 )
 			 ->addOption(
 				 SettingsService::CONFIG_STOREFRONT_INVOICE_DOWNLOAD_ENABLED,

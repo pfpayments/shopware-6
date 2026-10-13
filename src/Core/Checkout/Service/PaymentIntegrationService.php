@@ -248,6 +248,6 @@ class PaymentIntegrationService
      */
     private function getDeviceJavascriptUrl(int $spaceId): string
     {
-        return 'https://checkout.postfinance.ch/s/' . $spaceId . '/payment/device.js?session=' . Uuid::randomHex();
+        return 'https://checkout.postfinance.ch/s/' . $spaceId . '/payment/device.js?sessionIdentifier=' . Uuid::randomHex();
     }
 }

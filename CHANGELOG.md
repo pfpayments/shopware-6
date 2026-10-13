@@ -1,6 +1,10 @@
+# 7.4.0
+- Fixed compatibility issue with MySql 8.4 and certain foreign keys
+- - This contains a breaking change. It is vital that the migrations are run after updating the plugin. This can be done either via the Shopware extensions interface (click update) or via the command line (`console plugin:update`). 
+
 ## Security Update (v 7.3.7)
 - This release addresses a security vulnerability affecting earlier versions of the integration plugin. 
-All merchants are strongly advised to update to version x.x.x immediately to ensure the security of their integration.
+All merchants are strongly advised to update to version 7.3.7 immediately to ensure the security of their integration.
 
 ### What's Changed
 - Security: Resolved an issue that could allow unauthorized access to certain data under specific configurations.

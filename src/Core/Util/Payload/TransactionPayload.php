@@ -19,6 +19,7 @@ use Shopware\Core\{
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\Framework\Api\Context\SalesChannelApiSource;
 
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -992,6 +993,13 @@ class TransactionPayload extends AbstractPayload
     }
 
     /**
+     * One Shopware payment method can carry more than one configuration row: deleting a payment
+     * method in the portal and recreating it under the same name yields a new configuration that
+     * maps onto the same payment method, while the row of the deleted one stays behind as INACTIVE.
+     * Confirming a transaction against the deleted configuration fails with "The entity with id …
+     * is deleted and as such it cannot be modified anymore", so only ACTIVE rows may be used, most
+     * recent first (updatedAt is null on a freshly inserted row, hence the createdAt tie-break).
+     *
      * @param string $paymentMethodId
      * @param int $spaceId
      * @return PaymentMethodConfigurationEntity|null
@@ -1001,6 +1009,10 @@ class TransactionPayload extends AbstractPayload
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('paymentMethodId', $paymentMethodId));
         $criteria->addFilter(new EqualsFilter('spaceId', $spaceId));
+        $criteria->addFilter(new EqualsFilter('state', CreationEntityState::ACTIVE));
+        $criteria->addSorting(new FieldSorting('updatedAt', FieldSorting::DESCENDING));
+        $criteria->addSorting(new FieldSorting('createdAt', FieldSorting::DESCENDING));
+        $criteria->setLimit(1);
 
         return $this->container->get('postfinancecheckout_payment_method_configuration.repository')
             ->search($criteria, $this->salesChannelContext->getContext())

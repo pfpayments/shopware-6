@@ -30,6 +30,15 @@ class Migration1590156974TransactionEntity extends MigrationStep {
 	 */
 	public function update(Connection $connection): void
 	{
+		// `order` and `order_transaction` have a composite primary key (`id`, `version_id`), and since
+		// MySQL 8.4 a foreign key must reference a complete unique/primary key. The single-column
+		// foreign keys this migration used to create are therefore invalid DDL on MySQL 8.4 and made
+		// a fresh installation abort here with error 6125.
+		//
+		// They are not declared any more. Both are produced later with the correct composite form, so
+		// the end result is unchanged: `order_id` by Migration1605701048, `order_transaction_id` by
+		// Migration1788457529. Nothing else about this statement changes, and an installation that
+		// already ran this migration is not affected, because a migration never re-runs.
 		$connection->executeStatement('
             CREATE TABLE IF NOT EXISTS `postfinancecheckout_transaction_tmp` (
               `id` BINARY(16) NOT NULL,
@@ -49,8 +58,6 @@ class Migration1590156974TransactionEntity extends MigrationStep {
               KEY `fk.pfc_transaction.order_transaction_id` (`order_transaction_id`),
               KEY `fk.pfc_transaction.payment_method_id` (`payment_method_id`),
               KEY `fk.pfc_transaction.sales_channel_id` (`sales_channel_id`),
-              CONSTRAINT `fk.pfc_transaction.order_id` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE CASCADE,
-              CONSTRAINT `fk.pfc_transaction.order_transaction_id` FOREIGN KEY (`order_transaction_id`) REFERENCES `order_transaction` (`id`) ON DELETE CASCADE,
               CONSTRAINT `fk.pfc_transaction.payment_method_id` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`id`) ON DELETE CASCADE,
               CONSTRAINT `fk.pfc_transaction.sales_channel_id` FOREIGN KEY (`sales_channel_id`) REFERENCES `sales_channel` (`id`) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

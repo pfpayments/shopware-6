@@ -41,6 +41,11 @@ class CustomCartPersister extends AbstractCartPersister
 		$this->inner->replace($oldToken, $newToken, $context);
 	}
 
+	public function prune(int $days): void
+	{
+		$this->inner->prune($days);
+	}
+
 	public function getDecorated(): AbstractCartPersister
 	{
 		return $this->inner;
