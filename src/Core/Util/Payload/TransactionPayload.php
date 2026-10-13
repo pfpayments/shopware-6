@@ -10,6 +10,7 @@ use Shopware\Core\{
     Checkout\Cart\Tax\Struct\CalculatedTaxCollection,
     Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity,
     Checkout\Customer\CustomerEntity,
+    Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity,
     Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity,
     Checkout\Order\OrderEntity,
     Checkout\Payment\Cart\PaymentTransactionStruct,
@@ -164,6 +165,15 @@ class TransactionPayload extends AbstractPayload
             ->addAssociation('orderCustomer')
             ->addAssociation('transactions')
             ->addAssociation('currency')
+            // The order addresses are the authoritative source for the payload: they hold
+            // the addresses the customer actually confirmed in the checkout, including a
+            // shipping address that differs from the customer's default one.
+            ->addAssociation('billingAddress.country')
+            ->addAssociation('billingAddress.countryState')
+            ->addAssociation('billingAddress.salutation')
+            ->addAssociation('deliveries.shippingOrderAddress.country')
+            ->addAssociation('deliveries.shippingOrderAddress.countryState')
+            ->addAssociation('deliveries.shippingOrderAddress.salutation')
         ;
 
         $this->order = $this->container->get('order.repository')->search($criteria, $this->salesChannelContext->getContext())->getEntities()->first();
@@ -190,18 +200,26 @@ class TransactionPayload extends AbstractPayload
     {
         $customerId = $this->order->getOrderCustomer()->getCustomerId();
         $criteria = new Criteria([$customerId]);
-        $criteria->addAssociation('activeBillingAddress')
-            ->addAssociation('activeShippingAddress')
-            ->addAssociation('activeShippingAddress')
-            ->addAssociation('defaultBillingAddress')
-            ->addAssociation('defaultShippingAddress')
+        // 'activeBillingAddress' and 'activeShippingAddress' are runtime fields (there are no
+        // active_*_address_id columns), so they cannot be loaded here - they are only populated
+        // by the SalesChannelContextFactory. The default addresses are loaded as a last-resort
+        // fallback for resolveBillingAddress()/resolveShippingAddress().
+        $criteria->addAssociation('defaultBillingAddress.country')
+            ->addAssociation('defaultBillingAddress.countryState')
+            ->addAssociation('defaultBillingAddress.salutation')
+            ->addAssociation('defaultShippingAddress.country')
+            ->addAssociation('defaultShippingAddress.countryState')
+            ->addAssociation('defaultShippingAddress.salutation')
             ->addAssociation('salutation');
         $customer = $this->container->get('customer.repository')->search($criteria, $this->salesChannelContext->getContext())->getEntities()->first();
 
         $lineItems = $this->getLineItems();
 
-        $billingAddress = $this->getAddressPayload($customer, $customer->getActiveBillingAddress());
-        $shippingAddress = $this->getAddressPayload($customer, $customer->getActiveShippingAddress(), false);
+        $billingAddressEntity = $this->resolveBillingAddress($customer);
+        $shippingAddressEntity = $this->resolveShippingAddress($customer);
+
+        $billingAddress = $this->getAddressPayload($customer, $billingAddressEntity);
+        $shippingAddress = $this->getAddressPayload($customer, $shippingAddressEntity, false);
 
         $customerId = null;
         $customerName = null;
@@ -231,11 +249,11 @@ class TransactionPayload extends AbstractPayload
         ];
 
         // we have to manually check for these additional fields as they might not be active
-        if (!empty($additionalAddress1 = $customer->getDefaultBillingAddress()->getAdditionalAddressLine1())) {
+        if (!empty($additionalAddress1 = $billingAddressEntity->getAdditionalAddressLine1())) {
             $transactionData['meta_data']['additionalAddress1'] = $additionalAddress1;
         }
 
-        if (!empty($additionalAddress2 = $customer->getDefaultBillingAddress()->getAdditionalAddressLine2())) {
+        if (!empty($additionalAddress2 = $billingAddressEntity->getAdditionalAddressLine2())) {
             $transactionData['meta_data']['additionalAddress2'] = $additionalAddress2;
         }
 
@@ -249,11 +267,11 @@ class TransactionPayload extends AbstractPayload
             $transactionData['meta_data']['taxNumber'] = $taxNumber;
         }
 
-        if (!empty($companyDepartment = $customer->getDefaultBillingAddress()->getDepartment())) {
+        if (!empty($companyDepartment = $billingAddressEntity->getDepartment())) {
             $transactionData['meta_data']['billingCompanyDepartment'] = $companyDepartment;
         }
 
-        if (!empty($companyDepartment = $customer->getDefaultShippingAddress()->getDepartment())) {
+        if (!empty($companyDepartment = $shippingAddressEntity->getDepartment())) {
             $transactionData['meta_data']['shippingCompanyDepartment'] = $companyDepartment;
         }
 
@@ -397,8 +415,14 @@ class TransactionPayload extends AbstractPayload
         $discountName = $discount->getLabel() ?? 'Unnamed';
         $definition = $discount->getPriceDefinition();
 
-        if ($this->order->getTaxStatus() === 'net' || $definition instanceof \Shopware\Core\Checkout\Cart\Price\Struct\AbsolutePriceDefinition) {
-            $calculatedTaxesCollection = $calculatedPrice->getCalculatedTaxes();
+        $calculatedTaxesCollection = $calculatedPrice->getCalculatedTaxes();
+
+        // Calculated taxes hold the discount already split per tax rate, also for percentage discounts
+        if (
+            $this->order->getTaxStatus() === 'net'
+            || $definition instanceof \Shopware\Core\Checkout\Cart\Price\Struct\AbsolutePriceDefinition
+            || $calculatedTaxesCollection->count() > 0
+        ) {
             foreach ($calculatedTaxesCollection as $calculatedTax) {
                 $rate = $calculatedTax->getTaxRate();
                 $amount = $this->calculateDiscountAmount($calculatedTax);
@@ -844,15 +868,67 @@ class TransactionPayload extends AbstractPayload
     }
 
     /**
+     * Resolve the billing address that belongs to this transaction.
+     *
+     * The order address is authoritative: it holds the address the customer confirmed in the
+     * checkout. Only if it is unavailable we fall back to the address of the current sales
+     * channel context and finally to the customer's default address.
+     *
+     * @throws \PostFinanceCheckoutPayment\Core\Util\Exception\InvalidPayloadException
+     */
+    protected function resolveBillingAddress(CustomerEntity $customer): CustomerAddressEntity|OrderAddressEntity
+    {
+        $address = $this->order->getBillingAddress()
+            ?? $this->salesChannelContext->getCustomer()?->getActiveBillingAddress()
+            ?? $customer->getActiveBillingAddress();
+
+        if ($address === null) {
+            throw new InvalidPayloadException(sprintf(
+                'No billing address could be resolved for order %s.',
+                $this->order->getId()
+            ));
+        }
+
+        return $address;
+    }
+
+    /**
+     * Resolve the shipping address that belongs to this transaction.
+     *
+     * @see self::resolveBillingAddress() for the fallback chain.
+     *
+     * @throws \PostFinanceCheckoutPayment\Core\Util\Exception\InvalidPayloadException
+     */
+    protected function resolveShippingAddress(CustomerEntity $customer): CustomerAddressEntity|OrderAddressEntity
+    {
+        $address = $this->order->getDeliveries()?->first()?->getShippingOrderAddress()
+            ?? $this->salesChannelContext->getCustomer()?->getActiveShippingAddress()
+            ?? $customer->getActiveShippingAddress();
+
+        if ($address === null) {
+            throw new InvalidPayloadException(sprintf(
+                'No shipping address could be resolved for order %s.',
+                $this->order->getId()
+            ));
+        }
+
+        return $address;
+    }
+
+    /**
      * Get address payload
      *
      * @param \Shopware\Core\Checkout\Customer\CustomerEntity $customer
-     * @param \Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity $customerAddressEntity
+     * @param \Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity|\Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity $customerAddressEntity
      *
      * @return \PostFinanceCheckout\Sdk\Model\AddressCreate
      * @throws \Exception
      */
-    protected function getAddressPayload(CustomerEntity $customer, CustomerAddressEntity $customerAddressEntity, bool $returnSalesTaxNumber = true): AddressCreate
+    protected function getAddressPayload(
+        CustomerEntity $customer,
+        CustomerAddressEntity|OrderAddressEntity $customerAddressEntity,
+        bool $returnSalesTaxNumber = true
+    ): AddressCreate
     {
         // Family name
         $family_name = null;
