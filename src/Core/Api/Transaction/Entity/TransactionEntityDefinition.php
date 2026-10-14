@@ -65,6 +65,13 @@ class TransactionEntityDefinition extends EntityDefinition {
 			(new OneToManyAssociationField('refunds', RefundEntityDefinition::class, 'transaction_id', 'transaction_id'))->addFlags(new CascadeDelete()),
 			new OneToOneAssociationField('salesChannel', 'sales_channel_id', 'id', SalesChannelDefinition::class, true),
             (new ReferenceVersionField(OrderDefinition::class))->addFlags(new ApiAware(), new Required()),
+			// `order_transaction` is versioned, and since MySQL 8.4 the foreign key to it has to be
+			// composite, so the DAL needs to know about `order_transaction_version_id` as well. This
+			// field must stay in sync with Migration1788457529, which creates the column - without
+			// that column every write fails with "Unknown column", and TransactionService::upsert()
+			// only logs the error, so transactions would silently stop being persisted.
+			// The DAL maps version fields transparently, no property/getter is needed on the entity.
+			(new ReferenceVersionField(OrderTransactionDefinition::class))->addFlags(new ApiAware(), new Required()),
             new CreatedAtField(),
 			new UpdatedAtField(),
 		]);

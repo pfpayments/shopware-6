@@ -202,14 +202,15 @@ class TransactionService
             $transaction->getOrderTransaction()->getPaymentMethodId(),
             $transaction->getOrder()->getSalesChannelId()
         );
-		// The pending transaction has just been confirmed and is no longer reusable. Drop the
-		// per-request checkout state and the allowed method list so nothing downstream in this
-		// request keeps filtering against the consumed transaction, and drop the fingerprint so the
-		// next checkout cannot skip an update based on it.
-		$salesChannelContext->getContext()->removeExtension(self::CHECKOUT_STATE_EXTENSION);
-		$salesChannelContext->getContext()->removeExtension(self::POSSIBLE_METHODS_EXTENSION);
-		$this->clearPendingTransactionFingerprint();
+        // The pending transaction has just been confirmed and is no longer reusable. Drop the
+        // per-request checkout state and the allowed method list so nothing downstream in this
+        // request keeps filtering against the consumed transaction, and drop the fingerprint so the
+        // next checkout cannot skip an update based on it.
+        $salesChannelContext->getContext()->removeExtension(self::CHECKOUT_STATE_EXTENSION);
+        $salesChannelContext->getContext()->removeExtension(self::POSSIBLE_METHODS_EXTENSION);
+        $this->clearPendingTransactionFingerprint();
 
+        unset($_SESSION['transactionId']);
 
         $this->holdDelivery($transaction->getOrder()->getId(), $salesChannelContext->getContext());
 
@@ -507,8 +508,8 @@ class TransactionService
      * @return int
      */
 
-	public function createPendingTransaction(SalesChannelContext $salesChannelContext, $event = null): int
-	{
+    public function createPendingTransaction(SalesChannelContext $salesChannelContext, $event = null): int
+    {
         return $this->resolvePendingTransaction($salesChannelContext, $event)[0];
     }
 
@@ -528,24 +529,19 @@ class TransactionService
     {
         $transactionId = $_SESSION['transactionId'] ?? null;
         $settings = $this->settingsService->getValidSettings($salesChannelContext->getSalesChannel()->getId());
-		if (!$settings) {
-			throw new \Exception('Space settings not configured');
-		}
+        if (!$settings) {
+            throw new \Exception('Space settings not configured');
+        }
 
         if ($transactionId) {
-            $failedStates = [
-                TransactionState::DECLINE,
-                TransactionState::FAILED,
-                TransactionState::VOIDED,
-				null
-            ];
-
             try {
                 $transactionService = $settings->getApiClient()->getTransactionService();
                 $pendingTransaction = $transactionService->read($settings->getSpaceId(), $transactionId);
-                if (!in_array($pendingTransaction->getState(), $failedStates)) {
+                if ($pendingTransaction->getState() === TransactionState::PENDING) {
                     return [(int) $transactionId, $pendingTransaction];
                 }
+                unset($_SESSION['transactionId']);
+                $this->clearPendingTransactionFingerprint();
             } catch (\Exception $e) {
                 // Transaction may have been deleted, expired, or is invalid - fall through and create a new one.
             }
@@ -636,20 +632,20 @@ class TransactionService
 
         $lineItems = [];
         if ($event) {
-				if ($event instanceof CheckoutConfirmPageLoadedEvent) {
-					$cartLineItems = $event->getPage()->getCart()->getLineItems()->getElements();
-					foreach ($cartLineItems as $cartLineItem) {
-						if ($cartLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
-							continue;
-						}
-						$lineItems[] = $this->createTempLineItem($cartLineItem);
-					}
-				} elseif ($event instanceof AccountEditOrderPageLoadedEvent) {
-					$order = $event->getPage()->getOrder();
-					foreach ($order->getLineItems() as $orderLineItem) {
-						$lineItems[] = $this->createTempLineItem($orderLineItem);
-					}
-				}
+                if ($event instanceof CheckoutConfirmPageLoadedEvent) {
+                    $cartLineItems = $event->getPage()->getCart()->getLineItems()->getElements();
+                    foreach ($cartLineItems as $cartLineItem) {
+                        if ($cartLineItem->getType() === CustomProductsLineItemTypes::LINE_ITEM_TYPE_CUSTOMIZED_PRODUCTS) {
+                            continue;
+                        }
+                        $lineItems[] = $this->createTempLineItem($cartLineItem);
+                    }
+                } elseif ($event instanceof AccountEditOrderPageLoadedEvent) {
+                    $order = $event->getPage()->getOrder();
+                    foreach ($order->getLineItems() as $orderLineItem) {
+                        $lineItems[] = $this->createTempLineItem($orderLineItem);
+                    }
+                }
         }
 
         $customerId = "";
@@ -937,28 +933,28 @@ class TransactionService
      * @param LineItem $productData
      * @return LineItemCreate
      */
-	private function createTempLineItem($productData): LineItemCreate
-	{
-		$lineItem = new LineItemCreate();
+    private function createTempLineItem($productData): LineItemCreate
+    {
+        $lineItem = new LineItemCreate();
 
-		if ($productData instanceof LineItem) {
-			$lineItem->setName(PayloadLimits::fixLength($productData->getLabel(), PayloadLimits::LINE_ITEM_NAME));
-			$lineItem->setUniqueId(PayloadLimits::fixLength($productData->getId(), PayloadLimits::LINE_ITEM_UNIQUE_ID));
-			$lineItem->setSku(PayloadLimits::fixLength($productData->getReferencedId() ?? $productData->getId(), PayloadLimits::LINE_ITEM_SKU));
-			$lineItem->setQuantity($productData->getQuantity());
-			$lineItem->setAmountIncludingTax($productData->getPrice()->getUnitPrice());
-		} elseif ($productData instanceof OrderLineItemEntity) {
-			$lineItem->setName(PayloadLimits::fixLength($productData->getLabel(), PayloadLimits::LINE_ITEM_NAME));
-			$lineItem->setUniqueId(PayloadLimits::fixLength($productData->getId(), PayloadLimits::LINE_ITEM_UNIQUE_ID));
-			$lineItem->setSku(PayloadLimits::fixLength($productData->getProductId() ?? $productData->getIdentifier() ?? $productData->getId(), PayloadLimits::LINE_ITEM_SKU));
-			$lineItem->setQuantity($productData->getQuantity());
-			$lineItem->setAmountIncludingTax($productData->getUnitPrice());
-		} else {
-			throw new \InvalidArgumentException('Unsupported line item type: ' . get_class($productData));
-		}
+        if ($productData instanceof LineItem) {
+            $lineItem->setName(PayloadLimits::fixLength($productData->getLabel(), PayloadLimits::LINE_ITEM_NAME));
+            $lineItem->setUniqueId(PayloadLimits::fixLength($productData->getId(), PayloadLimits::LINE_ITEM_UNIQUE_ID));
+            $lineItem->setSku(PayloadLimits::fixLength($productData->getReferencedId() ?? $productData->getId(), PayloadLimits::LINE_ITEM_SKU));
+            $lineItem->setQuantity($productData->getQuantity());
+            $lineItem->setAmountIncludingTax($productData->getPrice()->getUnitPrice());
+        } elseif ($productData instanceof OrderLineItemEntity) {
+            $lineItem->setName(PayloadLimits::fixLength($productData->getLabel(), PayloadLimits::LINE_ITEM_NAME));
+            $lineItem->setUniqueId(PayloadLimits::fixLength($productData->getId(), PayloadLimits::LINE_ITEM_UNIQUE_ID));
+            $lineItem->setSku(PayloadLimits::fixLength($productData->getProductId() ?? $productData->getIdentifier() ?? $productData->getId(), PayloadLimits::LINE_ITEM_SKU));
+            $lineItem->setQuantity($productData->getQuantity());
+            $lineItem->setAmountIncludingTax($productData->getUnitPrice());
+        } else {
+            throw new \InvalidArgumentException('Unsupported line item type: ' . get_class($productData));
+        }
 
-		$lineItem->setType(LineItemType::PRODUCT);
+        $lineItem->setType(LineItemType::PRODUCT);
 
-		return $lineItem;
-	}
+        return $lineItem;
+    }
 }

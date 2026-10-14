@@ -26,6 +26,12 @@ class Migration1605701048TransactionEntity extends MigrationStep
 	/**
 	 * update non-destructive changes
 	 *
+	 * The single-column foreign keys on `order_id` and `order_transaction_id` are no longer declared
+	 * by Migration1590156974, because they are invalid DDL on MySQL 8.4. They are dropped
+	 * conditionally here so that this migration keeps working both on an installation that still has
+	 * them and on a fresh one that never created them. Without that, the failing DROP would be
+	 * swallowed by the catch below and the composite foreign keys would never be created.
+	 *
 	 * @param \Doctrine\DBAL\Connection $connection
 	 */
     public function update(Connection $connection): void
@@ -44,13 +50,10 @@ class Migration1605701048TransactionEntity extends MigrationStep
                     SET t1.order_version_id = t2.version_id;
             ');
 
-            $connection->executeStatement('
-                ALTER TABLE `postfinancecheckout_transaction_tmp`
-                    DROP FOREIGN KEY `fk.pfc_transaction.order_id`,
-                    DROP FOREIGN KEY `fk.pfc_transaction.order_transaction_id`,
-                    DROP FOREIGN KEY `fk.pfc_transaction.payment_method_id`,
-                    DROP FOREIGN KEY `fk.pfc_transaction.sales_channel_id`;
-            ');
+            $this->dropForeignKeyIfExists($connection, 'postfinancecheckout_transaction_tmp', 'fk.pfc_transaction.order_id');
+            $this->dropForeignKeyIfExists($connection, 'postfinancecheckout_transaction_tmp', 'fk.pfc_transaction.order_transaction_id');
+            $this->dropForeignKeyIfExists($connection, 'postfinancecheckout_transaction_tmp', 'fk.pfc_transaction.payment_method_id');
+            $this->dropForeignKeyIfExists($connection, 'postfinancecheckout_transaction_tmp', 'fk.pfc_transaction.sales_channel_id');
 
             $connection->executeStatement('
                 ALTER TABLE `postfinancecheckout_transaction_tmp`

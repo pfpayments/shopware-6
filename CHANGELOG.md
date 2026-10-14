@@ -1,3 +1,8 @@
+# 6.3.0
+- Fixed compatibility issue with MySql 8.4 and certain foreign keys
+- - This contains a breaking change. It is vital that the migrations are run after updating the plugin. This can be done either via the Shopware extensions interface (click update) or via the command line (`console plugin:update`).
+- Fixed issue where, after multiple transactions in the same session, only one payment method would be loaded
+
 ## Security Update (v 6.2.6)
 - This release addresses a security vulnerability affecting earlier versions of the integration plugin. 
 All merchants are strongly advised to update to version 6.2.6 immediately to ensure the security of their integration.

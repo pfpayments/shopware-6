@@ -1,3 +1,8 @@
+# 6.3.0
+- Kompatibilitätsproblem mit MySQL 8.4 und bestimmten Fremdschlüsseln behoben
+- - Dies beinhaltet eine kompatibilitätsbrechende Änderung. Es ist unbedingt erforderlich, dass die Migrationen nach der Aktualisierung des Plugins ausgeführt werden. Dies kann entweder über die Shopware-Erweiterungsoberfläche (auf „Aktualisieren“ klicken) oder über die Befehlszeile (`console plugin:update`) erfolgen.
+- Problem behoben, bei dem nach mehreren Transaktionen in derselben Sitzung nur eine Zahlungsmethode geladen wurde. 
+
 ## Sicherheitsupdate (v 6.2.6)
 - Diese Version behebt eine Sicherheitslücke, die frühere Versionen des Integrations-Plugins betraf.
 Allen Händlern wird dringend empfohlen, sofort auf Version 6.2.6 zu aktualisieren, um die Sicherheit ihrer Integration zu gewährleisten.
