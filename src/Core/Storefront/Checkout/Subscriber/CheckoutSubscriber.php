@@ -6,16 +6,19 @@ namespace PostFinanceCheckoutPayment\Core\Storefront\Checkout\Subscriber;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\{
+    Checkout\Cart\Event\CheckoutOrderPlacedEvent,
     Checkout\Order\Aggregate\OrderTransaction\OrderTransactionCollection,
     Checkout\Order\Aggregate\OrderTransaction\OrderTransactionStates,
     Checkout\Order\OrderEntity,
-    Content\MailTemplate\Service\Event\MailBeforeValidateEvent
+    Content\MailTemplate\Service\Event\MailBeforeValidateEvent,
+    Content\MailTemplate\Service\Event\MailErrorEvent
 };
 use Shopware\Core\Checkout\Payment\PaymentMethodCollection;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Storefront\Page\Account\Order\AccountEditOrderPageLoadedEvent;
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use PostFinanceCheckoutPayment\Core\Api\Transaction\Service\OrderMailService;
 use PostFinanceCheckoutPayment\Core\Checkout\PaymentHandler\PostFinanceCheckoutPaymentHandler;
 use PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService;
 use PostFinanceCheckoutPayment\Core\Checkout\Service\PaymentMethodFilterService;
@@ -82,6 +85,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
             AccountEditOrderPageLoadedEvent::class => 'onPageLoaded',
             "subscription." . CheckoutConfirmPageLoadedEvent::class => ['onPageLoaded', 1],
             MailBeforeValidateEvent::class => ['onMailBeforeValidate', 1],
+            MailErrorEvent::class => 'onMailError',
         ];
     }
 
@@ -135,17 +139,18 @@ class CheckoutSubscriber implements EventSubscriberInterface
     {
         $templateData = $event->getTemplateData();
 
+        if (!empty($templateData[OrderMailService::EMAIL_ORIGIN_IS_POSTFINANCECHECKOUT])) {
+            return;
+        }
+
+        if (($templateData['eventName'] ?? null) !== CheckoutOrderPlacedEvent::EVENT_NAME) {
+            return;
+        }
+
         /** @var OrderEntity|null $order */
         $order = !empty($templateData['order']) && $templateData['order'] instanceof OrderEntity ? $templateData['order'] : null;
 
         if (!empty($order) && $order->getAmountTotal() > 0) {
-            // Check if WhitelabelMachineName emails are enabled for this sales channel.
-            $isPostFinanceCheckoutEmailSettingEnabled = (bool)$this->settingsService->getSettings($order->getSalesChannelId())->isEmailEnabled();
-
-            if (!$isPostFinanceCheckoutEmailSettingEnabled) {
-                return;
-            }
-
             $orderTransactions = $order->getTransactions();
             if (!($orderTransactions instanceof OrderTransactionCollection)) {
                 return;
@@ -162,6 +167,16 @@ class CheckoutSubscriber implements EventSubscriberInterface
                 return;
             }
 
+            // Check if WhitelabelMachineName emails are enabled for this sales channel.
+            $isPostFinanceCheckoutEmailSettingEnabled = (bool)$this->settingsService->getSettings($order->getSalesChannelId())->isEmailEnabled();
+            if (!$isPostFinanceCheckoutEmailSettingEnabled) {
+                $this->logger->debug('Order confirmation mail not sent. "Send order confirmation email" setting is disabled.', [
+                    'orderId' => $order->getId(),
+                ]);
+                $event->stopPropagation();
+                return;
+            }
+
             // Verify if the transaction is in a state where an email should be handled.
             $isOrderTransactionStateOpen = in_array(
                 $orderTransactionLast->getStateMachineState()->getTechnicalName(),
@@ -174,6 +189,23 @@ class CheckoutSubscriber implements EventSubscriberInterface
             if (!$isOrderTransactionStateOpen) {
                 return;
             }
+
+            $this->logger->debug('Order confirmation mail deferred until the payment is successful.', [
+                'orderId' => $order->getId(),
+            ]);
+            $event->stopPropagation();
         }
+    }
+
+    public function onMailError(MailErrorEvent $event): void
+    {
+        $templateData = $event->getTemplateData() ?? [];
+        if (empty($templateData[OrderMailService::EMAIL_ORIGIN_IS_POSTFINANCECHECKOUT])) {
+            return;
+        }
+
+        $this->logger->error('Order confirmation mail could not be sent and will not be resent: '. $event->getMessage(), [
+            'orderId' => $templateData['orderId'] ?? null,
+        ]);
     }
 }

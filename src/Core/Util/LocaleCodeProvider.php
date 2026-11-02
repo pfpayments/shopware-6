@@ -8,7 +8,7 @@ use Shopware\Core\{
 	Defaults,
 	Framework\Adapter\Translation\Translator,
 	Framework\Context,
-	Framework\DataAbstractionLayer\EntityRepositoryInterface,
+	Framework\DataAbstractionLayer\EntityRepository,
 	Framework\DataAbstractionLayer\Search\Criteria,
 	System\Language\LanguageCollection,
 	System\Language\LanguageEntity};
@@ -39,7 +39,7 @@ class LocaleCodeProvider {
 	 */
 	protected $translator;
 	/**
-	 * @var EntityRepositoryInterface
+	 * @var EntityRepository
 	 */
 	private $languageRepository;
 

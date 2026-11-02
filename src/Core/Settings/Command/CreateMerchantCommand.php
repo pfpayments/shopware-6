@@ -12,7 +12,6 @@ use Symfony\Component\{
 	PasswordHasher\Hasher\UserPasswordHasherInterface};
 use Shopware\Core\Framework\{
 	DataAbstractionLayer\EntityRepository,
-	DataAbstractionLayer\EntityRepositoryInterface,
 	DataAbstractionLayer\Search\Criteria,
 	DataAbstractionLayer\Search\Filter\EqualsFilter,
 	Uuid\Uuid,
@@ -30,26 +29,26 @@ use PostFinanceCheckoutPayment\Core\{
 class CreateMerchantCommand extends Command {
 
 	/**
-	 * @var EntityRepositoryInterface Repository for user entities
+	 * @var EntityRepository Repository for user entities
 	 */
 	private $userRepository;
 
 	/**
-	 * @var EntityRepositoryInterface Repository for user role entities
+	 * @var EntityRepository Repository for user role entities
 	 */
 	private $userRoleRepository;
 
 	/**
-	 * @var EntityRepositoryInterface Repository for locale entities
+	 * @var EntityRepository Repository for locale entities
 	 */
 	private $localeRepository;
 
 	/**
 	 * CreateMerchantUserCommand constructor.
 	 * 
-	 * @param EntityRepositoryInterface $userRepository
-	 * @param EntityRepositoryInterface $userRoleRepository
-	 * @param EntityRepositoryInterface $localeRepository
+	 * @param EntityRepository $userRepository
+	 * @param EntityRepository $userRoleRepository
+	 * @param EntityRepository $localeRepository
 	 */
 	public function __construct(
 		EntityRepository $userRepository,

@@ -27,7 +27,7 @@ use PostFinanceCheckoutPayment\Core\{
  *
  * Converts allow-listed product custom fields into line item attributes.
  *
- * @package WalleePayment\Core\Util\Payload\CustomFields
+ * @package PostFinanceCheckoutPayment\Core\Util\Payload\CustomFields
  */
 class ProductCustomFieldAttributeService
 {
@@ -49,12 +49,12 @@ class ProductCustomFieldAttributeService
     private $salesChannelContext;
 
     /**
-     * @var \WalleePayment\Core\Util\LocaleCodeProvider
+     * @var \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider
      */
     private $localeCodeProvider;
 
     /**
-     * @var \WalleePayment\Core\Checkout\Order\OrderEntity|null
+     * @var \PostFinanceCheckoutPayment\Core\Checkout\Order\OrderEntity|null
      */
     private $order = null;
 
@@ -68,7 +68,7 @@ class ProductCustomFieldAttributeService
      *
      * @param \Psr\Container\ContainerInterface $container
      * @param \Shopware\Core\System\SalesChannel\SalesChannelContext $salesChannelContext
-     * @param \WalleePayment\Core\Util\LocaleCodeProvider $localeCodeProvider
+     * @param \PostFinanceCheckoutPayment\Core\Util\LocaleCodeProvider $localeCodeProvider
      * @param array $allowFields
      * @param \Psr\Log\LoggerInterface|null $logger
      * @param \Shopware\Core\Checkout\Order\OrderEntity|null $order

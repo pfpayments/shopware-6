@@ -469,9 +469,9 @@ abstract class WebHookStrategyBase implements WebHookStrategyInterface {
 	}
 
 	/**
-	 * Sends an email based on the transaction state.
+	 * Triggers order confirmation mail for successful transaction states.
 	 *
-	 * This method checks if the transaction state matches any of the successful states and sends an email if enabled in the settings.
+	 * Whether a mail is sent at all is decided by OrderMailService::send().
 	 *
 	 * @param Transaction $transaction The transaction object containing the state and metadata.
 	 * @param Context $context The context of the current operation, including scope and permissions.
@@ -479,10 +479,7 @@ abstract class WebHookStrategyBase implements WebHookStrategyInterface {
 	 */
 	protected function sendEmail(Transaction $transaction, Context $context, string $orderId): void
 	{
-		$salesChannelId = $this->getSalesChannelId();
-		$this->settings = $this->getSettingsBySalesChannel($salesChannelId);
-		if ($this->settings->isEmailEnabled()
-			&& in_array($transaction->getState(), $this->postfinancecheckoutTransactionSuccessStates)) {
+		if (in_array($transaction->getState(), $this->postfinancecheckoutTransactionSuccessStates)) {
 			$this->orderMailService->send($orderId, $context);
 		}
 	}

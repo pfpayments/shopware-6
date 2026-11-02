@@ -17,7 +17,6 @@ use Shopware\Core\{
 	Framework\Context,
 	Framework\DataAbstractionLayer\Search\Criteria,
 	Framework\DataAbstractionLayer\Search\Sorting\FieldSorting,
-	Framework\Routing\Annotation\RouteScope,
 	System\StateMachine\Aggregation\StateMachineTransition\StateMachineTransitionActions,
 	System\StateMachine\Exception\IllegalTransitionException};
 use Shopware\Core\Checkout\Order\OrderStates;

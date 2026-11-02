@@ -31,12 +31,12 @@ class PaymentMethodUtil {
 	protected $container;
 
 	/**
-	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository
 	 */
 	private $paymentRepository;
 
 	/**
-	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository
 	 */
 	private $salesChannelRepository;
 

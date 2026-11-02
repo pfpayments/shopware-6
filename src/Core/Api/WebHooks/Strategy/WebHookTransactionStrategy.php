@@ -163,7 +163,6 @@ class WebHookTransactionStrategy extends WebHookStrategyBase implements WebhookS
                                 }
                                 if (!in_array($orderTransaction->getStateMachineState()?->getTechnicalName(), $this->transactionFinalStates)) {
                                     $this->orderTransactionStateHandler->process($orderTransactionId, $context);
-                                    $this->sendEmail($transaction, $context, $orderId);
                                 } else {
                                     $this->logger->info('Skipping process(): transaction already in final state for orderTransaction: ' . $orderTransactionId);
                                 }
@@ -172,6 +171,8 @@ class WebHookTransactionStrategy extends WebHookStrategyBase implements WebhookS
 								break;
 						}
 					}
+
+				$this->sendEmail($transaction, $context, $orderId);
 
 				});
 			}

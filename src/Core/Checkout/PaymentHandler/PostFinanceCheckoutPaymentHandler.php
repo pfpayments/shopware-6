@@ -14,7 +14,6 @@ use Shopware\Core\{
     Checkout\Payment\Cart\PaymentHandler\AbstractPaymentHandler,
     Checkout\Payment\Cart\PaymentHandler\PaymentHandlerType,
     Checkout\Payment\PaymentException,
-    Checkout\Payment\Exception\CustomerCanceledAsyncPaymentException,
     Framework\App\AppException,
     Framework\Api\Context\SalesChannelApiSource,
     Framework\Context,

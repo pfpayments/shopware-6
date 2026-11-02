@@ -415,14 +415,8 @@ class TransactionPayload extends AbstractPayload
         $discountName = $discount->getLabel() ?? 'Unnamed';
         $definition = $discount->getPriceDefinition();
 
-        $calculatedTaxesCollection = $calculatedPrice->getCalculatedTaxes();
-
-        // Calculated taxes hold the discount already split per tax rate, also for percentage discounts
-        if (
-            $this->order->getTaxStatus() === 'net'
-            || $definition instanceof \Shopware\Core\Checkout\Cart\Price\Struct\AbsolutePriceDefinition
-            || $calculatedTaxesCollection->count() > 0
-        ) {
+        if ($this->order->getTaxStatus() === 'net' || $definition instanceof \Shopware\Core\Checkout\Cart\Price\Struct\AbsolutePriceDefinition) {
+            $calculatedTaxesCollection = $calculatedPrice->getCalculatedTaxes();
             foreach ($calculatedTaxesCollection as $calculatedTax) {
                 $rate = $calculatedTax->getTaxRate();
                 $amount = $this->calculateDiscountAmount($calculatedTax);
@@ -901,7 +895,10 @@ class TransactionPayload extends AbstractPayload
      */
     protected function resolveShippingAddress(CustomerEntity $customer): CustomerAddressEntity|OrderAddressEntity
     {
-        $address = $this->order->getDeliveries()?->first()?->getShippingOrderAddress()
+        $deliveries = $this->order->getDeliveries();
+        $delivery = $deliveries?->get($this->order->getPrimaryOrderDeliveryId() ?? '') ?? $deliveries?->first();
+
+        $address = $delivery?->getShippingOrderAddress()
             ?? $this->salesChannelContext->getCustomer()?->getActiveShippingAddress()
             ?? $customer->getActiveShippingAddress();
 

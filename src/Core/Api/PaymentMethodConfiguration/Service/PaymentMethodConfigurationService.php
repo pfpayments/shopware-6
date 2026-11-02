@@ -95,37 +95,37 @@ class PaymentMethodConfigurationService {
 	private $localeCodeProvider;
 
 	/**
-	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository
 	 */
 	private $ruleRepository;
 
 	/**
-	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository
 	 */
 	private $paymentMethodRepository;
 
 	/**
-	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository
 	 */
 	private $salesChannelPaymentRepository;
 
 	/**
-	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository
 	 */
 	private $mediaRepository;
 
 	/**
-	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository
 	 */
 	private $mediaFolderRepository;
 
 	/**
-	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository
 	 */
 	private $mediaDefaultFolderRepository;
 
 	/**
-	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface
+	 * @var \Shopware\Core\Framework\DataAbstractionLayer\EntityRepository
 	 */
 	private $postFinanceCheckoutPaymentMethodConfigurationRepository;
 
