@@ -56,8 +56,22 @@
     "shopware/core": "~6.7.0",
     "shopware/administration": "~6.7.0",
     "shopware/storefront":"~6.7.0",
-    "postfinancecheckout/sdk": "^4.8.1"
+    "postfinancecheckout/sdk": "^4.9.3",
+	"postfinancecheckout/plugin-core": "^0.1.11"
+  },
+  "require-dev": {
+	"friendsofphp/php-cs-fixer": "^3.88",
+	"phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^11.5"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "PostFinanceCheckoutPayment\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test:unit": "phpunit --testsuite unit"
   },
   "type": "shopware-platform-plugin",
-  "version": "7.4.1"
+  "version": "7.5.0"
 }

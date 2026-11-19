@@ -459,7 +459,7 @@ class ProductCustomFieldAttributeService
      * Renders a custom field value as text.
      *
      * @param mixed $value
-     * 
+     *
      * @return string|null
      */
     public function stringifyValue($value): ?string

@@ -7,6 +7,7 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Log\Package;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\{
+  HttpFoundation\JsonResponse,
   HttpFoundation\Request,
   HttpFoundation\Response,
   Routing\Attribute\Route,
@@ -196,6 +197,13 @@ class RefundController extends AbstractController
         } catch (RefundNotSupportedException $exception) {
             $this->logger->info('Payment method does not support online refunds for transaction: ' . $transactionId);
             return new Response('methodDoesNotSupportRefund', Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($refund === null) {
+            return new JsonResponse(['errors' => [[
+                'title' => 'Refund was not created',
+                'detail' => 'Please check the refund amount.',
+            ]]], Response::HTTP_BAD_REQUEST);
         }
         
         return new Response(null, Response::HTTP_NO_CONTENT);

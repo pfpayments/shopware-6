@@ -5,7 +5,6 @@ namespace PostFinanceCheckoutPayment\Core\Settings\Struct;
 use Shopware\Core\Framework\Struct\Struct;
 use PostFinanceCheckout\Sdk\ApiClient;
 use PostFinanceCheckoutPayment\Core\Settings\Options\Integration;
-use PostFinanceCheckoutPayment\Core\Util\Analytics\Analytics;
 
 /**
  * Class Settings
@@ -18,6 +17,11 @@ class Settings extends Struct {
 	 * @var \PostFinanceCheckout\Sdk\ApiClient
 	 */
 	protected $apiClient;
+
+	/**
+	 * @var \Closure(Settings): ApiClient|null
+	 */
+	protected $apiClientFactory;
 
 	/**
 	 * Application Key
@@ -262,12 +266,22 @@ class Settings extends Struct {
 	public function getApiClient(): ApiClient
 	{
 		if (is_null($this->apiClient)) {
-			$this->apiClient   = new ApiClient($this->getUserId(), $this->getApplicationKey());
-			$apiClientBasePath = getenv('POSTFINANCECHECKOUT_API_BASE_PATH') ? getenv('POSTFINANCECHECKOUT_API_BASE_PATH') : $this->apiClient->getBasePath();
-			$this->apiClient->setBasePath($apiClientBasePath);
-			Analytics::addHeaders($this->apiClient);
+			if (is_null($this->apiClientFactory)) {
+				throw new \LogicException('Settings have no API client factory. Get them from SettingsService::getSettings().');
+			}
+			$this->apiClient = ($this->apiClientFactory)($this);
 		}
 		return $this->apiClient;
+	}
+
+	/**
+	 * Sets the function that creates the SDK ApiClient for these settings.
+	 *
+	 * @param \Closure(Settings): ApiClient $apiClientFactory
+	 */
+	public function setApiClientFactory(\Closure $apiClientFactory): void
+	{
+		$this->apiClientFactory = $apiClientFactory;
 	}
 
 	/**

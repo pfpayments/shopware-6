@@ -407,36 +407,55 @@ class TransactionPayload extends AbstractPayload
     }
 
     /**
-     * Add discount line item.
+     * Adds a promotion to the payload as one discount line item per tax rate.
+     *
+     * Each line item carries that rate's share of the discount, taken from the taxes Shopware
+     * calculated for the promotion, so the line items add up to the discount total. Tax-free
+     * orders, or a discount without a tax breakdown, get a single line item.
      */
     protected function addDiscountLineItem($discount, array &$lineItems): void
     {
         $calculatedPrice = $discount->getPrice();
         $discountName = $discount->getLabel() ?? 'Unnamed';
-        $definition = $discount->getPriceDefinition();
+        $calculatedTaxes = $calculatedPrice->getCalculatedTaxes();
 
-        if ($this->order->getTaxStatus() === 'net' || $definition instanceof \Shopware\Core\Checkout\Cart\Price\Struct\AbsolutePriceDefinition) {
-            $calculatedTaxesCollection = $calculatedPrice->getCalculatedTaxes();
-            foreach ($calculatedTaxesCollection as $calculatedTax) {
-                $rate = $calculatedTax->getTaxRate();
-                $amount = $this->calculateDiscountAmount($calculatedTax);
-
-                $lineItems[] = $this->createDiscountLineItem($discountName, $amount, $rate, $discount->getId());
-            }
-        } else {
+        if ($calculatedTaxes === null || $calculatedTaxes->count() === 0 || $this->order->getTaxStatus() === 'tax-free') {
             $taxRules = $calculatedPrice->getTaxRules();
-
-            if ($taxRules && $taxRules->count() > 0) {
-                foreach ($taxRules as $taxRule) {
-                    $rate = $taxRule->getTaxRate();
-                    $amount = $calculatedPrice->getTotalPrice();
-                    $lineItems[] = $this->createDiscountLineItem($discountName, $amount, $rate, $discount->getId());
-                }
+            if ($this->order->getTaxStatus() === 'tax-free') {
+                $rate = 0.0;
+            } elseif ($taxRules && $taxRules->count() === 1) {
+                $rate = $taxRules->first()->getTaxRate();
             } else {
                 $rate = $this->getDefaultTaxRate();
-                $amount = $calculatedPrice->getTotalPrice();
-                $lineItems[] = $this->createDiscountLineItem($discountName, $amount, $rate, $discount->getId());
             }
+            $lineItems[] = $this->createDiscountLineItem($discountName, $calculatedPrice->getTotalPrice(), $rate, $discount->getId());
+            return;
+        }
+
+        $portions = [];
+        foreach ($calculatedTaxes as $calculatedTax) {
+            $portions[] = [
+                'rate' => $calculatedTax->getTaxRate(),
+                'amount' => $this->calculateDiscountAmount($calculatedTax),
+            ];
+        }
+
+        if ($this->order->getTaxStatus() !== 'net') {
+            $sum = self::round(array_sum(array_column($portions, 'amount')));
+            $difference = self::round($calculatedPrice->getTotalPrice() - $sum);
+            if ($difference != 0.0) {
+                $largest = 0;
+                foreach ($portions as $index => $portion) {
+                    if (abs($portion['amount']) > abs($portions[$largest]['amount'])) {
+                        $largest = $index;
+                    }
+                }
+                $portions[$largest]['amount'] = self::round($portions[$largest]['amount'] + $difference);
+            }
+        }
+
+        foreach ($portions as $portion) {
+            $lineItems[] = $this->createDiscountLineItem($discountName, $portion['amount'], $portion['rate'], $discount->getId());
         }
     }
 

@@ -4,8 +4,12 @@ namespace PostFinanceCheckoutPayment\Core\Settings\Service;
 
 use Psr\Log\LoggerInterface;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
+use PostFinanceCheckout\PluginCore\Sdk\ClientMetadataProviderInterface;
+use PostFinanceCheckout\PluginCore\Sdk\SdkProvider;
+use PostFinanceCheckout\PluginCore\Settings\Settings as PluginCoreSettings;
+use PostFinanceCheckoutPayment\Core\PluginCore\Exception\PluginCoreNotConfiguredException;
+use PostFinanceCheckoutPayment\Core\PluginCore\Settings\SettingsProvider;
 use PostFinanceCheckoutPayment\Core\Settings\Struct\Settings;
-
 
 /**
  * Class SettingsService
@@ -71,20 +75,30 @@ class SettingsService {
 	private $logger;
 
 	/**
+	 * Provides the shop and plugin version headers for the SDK ApiClient.
+	 *
+	 * @var \PostFinanceCheckout\PluginCore\Sdk\ClientMetadataProviderInterface|null
+	 */
+	private $clientMetadataProvider;
+
+	/**
 	 * SettingsService constructor.
 	 *
 	 * NOTE: settings are deliberately NOT memoized here. Settings::getApiClient() lazily builds and
 	 * holds an SDK ApiClient, and callers mutate that client persistently - see
-	 * TransactionService::createRecurringTransaction(), which stamps a subscription header onto it
-	 * via Analytics::addHeaders(). Sharing one struct across a request would leak that header into
-	 * every later API call. Building a fresh struct is cheap; the SDK opens a new connection per
-	 * call regardless, so there is nothing to reuse.
+	 * TransactionService::createRecurringTransaction(), which adds a subscription header to it.
+	 * Sharing one struct across a request would leak that header into every later API call.
+	 * Building a fresh struct is cheap; the SDK opens a new connection per call regardless, so
+	 * there is nothing to reuse.
 	 *
 	 * @param \Shopware\Core\System\SystemConfig\SystemConfigService $systemConfigService
 	 */
-	public function __construct(SystemConfigService $systemConfigService)
-	{
+	public function __construct(
+		SystemConfigService $systemConfigService,
+		?ClientMetadataProviderInterface $clientMetadataProvider = null,
+	) {
 		$this->systemConfigService = $systemConfigService;
+		$this->clientMetadataProvider = $clientMetadataProvider;
 	}
 
 	/**
@@ -182,6 +196,27 @@ class SettingsService {
 			$propertyValuePairs[$property] = $value;
 		}
 
-		return (new Settings())->assign($propertyValuePairs);
+		$settings = (new Settings())->assign($propertyValuePairs);
+		$settings->setApiClientFactory(fn (Settings $settings) => $this->createApiClient($settings, $salesChannelId));
+
+		return $settings;
+	}
+
+	/**
+	 * Creates the SDK ApiClient for the given settings through plugin-core's SdkProvider.
+	 *
+	 * @param Settings $settings
+	 * @param string|null $salesChannelId
+	 * @return \PostFinanceCheckout\Sdk\ApiClient
+	 * @throws \InvalidArgumentException
+	 */
+	private function createApiClient(Settings $settings, ?string $salesChannelId)
+	{
+		$settingsProvider = new SettingsProvider($this, $salesChannelId, $settings);
+		try {
+			return (new SdkProvider(new PluginCoreSettings($settingsProvider), $this->clientMetadataProvider))->getApiClient();
+		} catch (\InvalidArgumentException $e) {
+			throw PluginCoreNotConfiguredException::forSalesChannel($salesChannelId, $e);
+		}
 	}
 }

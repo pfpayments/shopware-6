@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+
+<container xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		   xmlns="http://symfony.com/schema/dic/services"
+		   xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+	<services>
+		<service id="PostFinanceCheckoutPayment\Core\PluginCore\PluginCoreFactory" public="true">
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\Settings\Service\SettingsService"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\PluginCore\Log\PluginCoreLogger"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\PluginCore\Sdk\ClientMetadataProvider"/>
+			<argument type="service" id="PostFinanceCheckoutPayment\Core\PluginCore\Cache\PluginCoreCache"/>
+			<tag name="kernel.reset" method="reset"/>
+		</service>
+
+		<service id="PostFinanceCheckoutPayment\Core\PluginCore\Log\PluginCoreLogger">
+			<argument type="service" id="monolog.logger.postfinancecheckout_payment"/>
+		</service>
+
+		<service id="PostFinanceCheckoutPayment\Core\PluginCore\Sdk\ClientMetadataProvider">
+			<argument>%kernel.shopware_version%</argument>
+		</service>
+
+		<service id="PostFinanceCheckoutPayment\Core\PluginCore\Cache\PluginCoreCache">
+			<argument type="service" id="cache.object"/>
+		</service>
+	</services>
+
+</container>

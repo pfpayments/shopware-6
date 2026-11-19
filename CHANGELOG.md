@@ -1,3 +1,14 @@
+# 7.5.0
+- Plugin Core now handles the gateway, settings and logger
+- - Important: This requires the update process to be run: This can be done either via the Shopware extensions interface (click update) or via the command line (`console plugin:update`).
+- Fixed issue with line items not matching order total for mixed tax rates
+- Fixed issue with system language mismatch
+
+# 7.4.1
+- Began work to integrate Plugin Core; a centralised SDK wrapper
+- Fixed issue where default shipping address was being sent for logged in customers
+- Removed reference to deprecated class (EventAction) from order mail service
+
 # 7.4.0
 - Fixed compatibility issue with MySql 8.4 and certain foreign keys
 - - This contains a breaking change. It is vital that the migrations are run after updating the plugin. This can be done either via the Shopware extensions interface (click update) or via the command line (`console plugin:update`). 

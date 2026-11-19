@@ -12,6 +12,7 @@ use Shopware\Core\{
 };
 use PostFinanceCheckout\Sdk\{
   Model\Refund,
+  Model\RefundState,
   Model\Transaction,
   Model\CriteriaOperator,
   Model\EntityQueryFilter,
@@ -97,8 +98,9 @@ class RefundService
             $apiClient = $settings->getApiClient();
             $refundPayloadClass = new RefundPayload();
             $refundPayloadClass->setLogger($this->logger);
-            
-            $refundPayload = $refundPayloadClass->get($transaction, $lineItemId, $quantity);
+
+            $previousReductions = $this->getPreviousReductions($transaction, $context);
+            $refundPayload = $refundPayloadClass->get($transaction, $lineItemId, $quantity, $previousReductions);
             
             if (!is_null($refundPayload)) {
                 $refund = $apiClient->getRefundService()->refund($settings->getSpaceId(), $refundPayload);
@@ -181,7 +183,8 @@ class RefundService
             $refundPayloadClass = new RefundPayload();
             $refundPayloadClass->setLogger($this->logger);
             
-            $refundPayload = $refundPayloadClass->getForPartial($transaction, $lineItemId, $amount);
+            $previousReductions = $this->getPreviousReductions($transaction, $context);
+            $refundPayload = $refundPayloadClass->getForPartial($transaction, $lineItemId, $amount, $previousReductions);
             
             if (!is_null($refundPayload)) {
                 $refund = $apiClient->getRefundService()->refund($settings->getSpaceId(), $refundPayload);
@@ -275,6 +278,28 @@ class RefundService
      * @return int
      */
     public function getRefundedQuantity(Transaction $transaction, Context $context, string $lineItemId): int {
+        $refundedQuantity = 0;
+
+        foreach ($this->getPreviousReductions($transaction, $context) as $reduction) {
+            if ($reduction->getLineItemUniqueId() === $lineItemId) {
+                $refundedQuantity += (int) $reduction->getQuantityReduction();
+            }
+        }
+
+        return $refundedQuantity;
+    }
+
+    /**
+     * Loads the line item reductions of the transaction's earlier refunds from PostFinanceCheckout.
+     *
+     * Failed refunds are skipped, as they didn't change the transaction.
+     *
+     * @param Transaction $transaction
+     * @param Context $context
+     *
+     * @return array
+     */
+    public function getPreviousReductions(Transaction $transaction, Context $context): array {
         $transactionEntity = $this->getTransactionEntityByTransactionId($transaction->getId(), $context);
         $settings = $this->settingsService->getSettings($transactionEntity->getSalesChannel()->getId());
         $apiClient = $settings->getApiClient();
@@ -289,17 +314,17 @@ class RefundService
 
         $refunds = $apiClient->getRefundService()->search($settings->getSpaceId(), $query);
 
-        $refundedQuantity = 0;
-
+        $reductions = [];
         foreach ($refunds as $refund) {
-            foreach ($refund->getReductions() as $reduction) {
-                if ($reduction->getLineItemUniqueId() === $lineItemId) {
-                    $refundedQuantity += (int) $reduction->getQuantityReduction();
-                }
+            if ($refund->getState() === RefundState::FAILED) {
+                continue;
+            }
+            foreach ($refund->getReductions() ?? [] as $reduction) {
+                $reductions[] = $reduction;
             }
         }
 
-        return $refundedQuantity;
+        return $reductions;
     }
 
     /**

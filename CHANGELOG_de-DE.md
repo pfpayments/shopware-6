@@ -1,3 +1,14 @@
+# 7.5.0
+- Der Plugin-Kern übernimmt nun die Verwaltung von Gateway, Einstellungen und Logging.
+- - Wichtig: Hierfür muss der Update-Prozess ausgeführt werden. Dies kann entweder über die Shopware-Erweiterungsoberfläche (auf „Update“ klicken) oder über die Befehlszeile (`console plugin:update`) erfolgen.
+- Fehler behoben, bei dem die Summe der einzelnen Positionen bei gemischten Steuersätzen nicht mit dem Gesamtbetrag der Bestellung übereinstimmte.
+- Fehler behoben, bei dem es zu Diskrepanzen bei der Systemsprache kam.
+
+# 7.4.1
+- Beginn der Arbeiten zur Integration von „Plugin Core“ – einem zentralisierten SDK-Wrapper
+- Fehler behoben, bei dem für angemeldete Kunden die Standard-Versandadresse übermittelt wurde
+- Verweis auf eine veraltete Klasse („EventAction“) aus dem E-Mail-Dienst für Bestellungen entfernt
+
 # 7.4.0
 - Kompatibilitätsproblem mit MySQL 8.4 und bestimmten Fremdschlüsseln behoben
 - - Dies beinhaltet eine kompatibilitätsbrechende Änderung. Es ist unbedingt erforderlich, dass die Migrationen nach der Aktualisierung des Plugins ausgeführt werden. Dies kann entweder über die Shopware-Erweiterungsoberfläche (auf „Aktualisieren“ klicken) oder über die Befehlszeile (`console plugin:update`) erfolgen. 

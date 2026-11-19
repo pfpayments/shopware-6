@@ -9,6 +9,7 @@ use Shopware\Core\{
 	Content\ImportExport\DataAbstractionLayer\Serializer\SerializerRegistry,
 	Content\ImportExport\Struct\Config,
 	Content\Media\MediaDefinition,
+	Defaults,
 	Framework\Context,
 	Framework\DataAbstractionLayer\EntityRepository,
 	Framework\DataAbstractionLayer\Search\Criteria,
@@ -457,7 +458,11 @@ class PaymentMethodConfigurationService {
 		  'id' => $paymentMethodId,
 		  'handlerIdentifier' => $handlerIdentifier,
 		  'technicalName' => $technicalName,
-		  'name' => $technicalName,
+		  // A plain 'name' is stored for the language of the context, and for a new payment method
+		  // Shopware rejects a write that leaves its required translated fields without a system
+		  // translation. The administration sends its content language in the sw-language-id header,
+		  // so a synchronisation started in any other language than the system one would do that.
+		  'translations' => [Defaults::LANGUAGE_SYSTEM => ['name' => $technicalName]],
 		  'active' => false,
 		]], $context);
 

@@ -50,8 +50,7 @@ use PostFinanceCheckoutPayment\Core\{
     Util\LocaleCodeProvider,
     Util\Payload\CustomProducts\CustomProductsLineItemTypes,
     Util\Payload\PayloadLimits,
-    Util\Payload\TransactionPayload,
-    Util\Analytics\Analytics
+    Util\Payload\TransactionPayload
 };
 use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
 use Shopware\Commercial\Subscription\Framework\Struct\SubscriptionContextStruct;
@@ -63,6 +62,8 @@ use Shopware\Commercial\Subscription\Framework\Struct\SubscriptionContextStruct;
  */
 class TransactionService
 {
+    private const HEADER_SUBSCRIPTION_TRANSACTION = 'x-meta-subscription-transaction';
+
     /**
      * @var \Psr\Container\ContainerInterface
      */
@@ -281,9 +282,7 @@ class TransactionService
         }
 
         $apiClient = $settings->getApiClient();
-        Analytics::addHeaders($apiClient, [
-            Analytics::SUBSCRIPTION_TRANSACTION => true
-        ]);
+        $apiClient->addDefaultHeader(self::HEADER_SUBSCRIPTION_TRANSACTION, '1');
 
         $sdkTransaction = $apiClient->getTransactionService()->create($spaceId, $sdkTransactionCreate);
         if ($sdkTransaction->valid()) {

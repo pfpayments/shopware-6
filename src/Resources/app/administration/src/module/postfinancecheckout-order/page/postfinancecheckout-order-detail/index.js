@@ -419,12 +419,17 @@ Component.register('postfinancecheckout-order-detail', {
 
                 // Force the DOM to update before proceeding with the asynchronous operations
                 this.$nextTick(() => {
-                    const refundPromises = this.selectedItems.map((item) => {
-                        return this.lineItemRefundBulk(item.uniqueId, item.quantity); // Simulated refund action with delay
-                    });
+                    // Refund one item after another, as each refund has to see the reductions of the
+                    // previous ones. A failed item is skipped instead of stopping the ones after it;
+                    // lineItemRefundBulk() has already reported it to the user.
+                    const refunds = this.selectedItems.reduce(
+                        (previous, item) => previous.then(
+                            () => this.lineItemRefundBulk(item.uniqueId, item.quantity).catch(() => {})
+                        ),
+                        Promise.resolve()
+                    );
 
-                    // Wait for all refund promises to complete
-                    Promise.all(refundPromises)
+                    refunds
                         .then(() => {
                             // Once all promises are resolved, hide the loader and close the modal
                             this.isLoading = false;
